@@ -1,0 +1,13 @@
+packages:
+  - site
+
+# 扁平布局：node_modules 里直接是可读目录，不依赖符号链接。
+# 这样在 Windows 上（无开发者模式 / 受限环境）也能装，CI 上行为一致。
+nodeLinker: hoisted
+
+# pnpm 11 起这些构建设置放在这里（不再读 package.json 的 pnpm 字段）。
+# Next / Tailwind v4 的原生依赖需要跑安装脚本，否则构建时会缺 binding。
+onlyBuiltDependencies:
+  - "@tailwindcss/oxide"
+  - sharp
+  - unrs-resolver

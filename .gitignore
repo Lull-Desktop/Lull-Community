@@ -1,0 +1,21 @@
+# 依赖与构建产物
+node_modules/
+.pnpm-store/
+
+# 由 scripts/build-catalog.mjs 生成，不入库
+site/src/generated/
+site/public/content-assets/
+site/public/downloads/
+site/out/
+site/.next/
+site/next-env.d.ts
+
+# 本地打包产物
+artifacts/
+
+# 编辑器 / 系统
+.DS_Store
+Thumbs.db
+*.log
+.idea/
+.vscode/

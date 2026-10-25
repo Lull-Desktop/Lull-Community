@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 2,
+  "type": "widget",
+  "id": "community-breath",
+  "name": "呼吸节奏",
+  "version": "1.0.0",
+  "description": "4-7-8 呼吸引导：跟着圆圈吸、停、呼，完成一轮记一次。不申请任何宿主能力。",
+  "author": "Lull Community",
+  "license": "MIT",
+  "builtin": false,
+  "hostApi": 1,
+  "entry": "index.html",
+  "lifecycle": "background",
+  "capabilities": ["widget.ui"],
+  "window": {
+    "width": 420,
+    "height": 440,
+    "minWidth": 420,
+    "minHeight": 440,
+    "resizable": false,
+    "transparent": true,
+    "chrome": "host"
+  },
+  "network": []
+}

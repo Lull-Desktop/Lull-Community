@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "scenes": [
+    {
+      "schemaVersion": 1,
+      "type": "scene",
+      "id": "community.aurora-veil",
+      "name": "极光帷幕",
+      "version": "1.0.0",
+      "description": "三层被柔化的极光色带在星野上缓慢摆动，山脊压住地平线的冷光。纯 CSS 动画，无脚本、无外部资源。",
+      "author": "Lull Community",
+      "license": "CC-BY-4.0",
+      "capabilities": [
+        "wallpaper.viewport",
+        "wallpaper.canvas"
+      ],
+      "entry": "scenes/aurora-veil/index.html",
+      "theme": {
+        "background": "#04060e",
+        "accent": "#48d6b2"
+      },
+      "performance": {
+        "tier": "low",
+        "targetFps": 30
+      },
+      "compatibility": {
+        "hostApi": 1,
+        "platforms": [
+          "windows"
+        ]
+      },
+      "integrity": {
+        "algorithm": "sha256",
+        "scope": "package",
+        "digest": "2fffe53b91b5b0cf4900929fdeeb7c3335ddfe76e1e2beafcec3ffca1277b650"
+      }
+    }
+  ]
+}

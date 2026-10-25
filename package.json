@@ -1,0 +1,24 @@
+{
+  "name": "lull-community",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "packageManager": "pnpm@11.11.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "content:check": "node scripts/validate-content.mjs",
+    "content:hash": "node scripts/validate-content.mjs --fix",
+    "content:pack": "node scripts/package-content.mjs",
+    "build:catalog": "node scripts/build-catalog.mjs",
+    "build:site": "pnpm --dir site build",
+    "build": "pnpm content:check && pnpm build:catalog && pnpm build:site",
+    "dev": "pnpm build:catalog && pnpm --dir site dev",
+    "new": "node scripts/new-item.mjs"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1"
+  }
+}

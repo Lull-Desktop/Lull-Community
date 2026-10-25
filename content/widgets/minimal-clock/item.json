@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "slug": "minimal-clock",
+  "tags": ["时钟", "玻璃", "零权限"],
+  "featured": true,
+  "addedAt": "2026-10-25",
+  "preview": "preview.webp"
+}

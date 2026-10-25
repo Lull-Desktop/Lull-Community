@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "slug": "mist",
+  "tags": ["薄雾", "极简", "低功耗"],
+  "featured": true,
+  "addedAt": "2026-10-20",
+  "preview": "preview.webp",
+  "authorUrl": "https://github.com/lull-desktop",
+  "note": "种子内容：来自 Lull 官方内容目录，摘要与 Rust 侧已知值一致，用作算法自检基准。"
+}

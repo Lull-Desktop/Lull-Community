@@ -1,0 +1,47 @@
+name: 作品问题反馈
+description: 某个壁纸或工具装不上、显示异常，或存在安全/许可问题
+title: "[作品问题] "
+labels: ["content-issue"]
+body:
+  - type: input
+    id: item
+    attributes:
+      label: 作品
+      description: 作品名或 id，例如「雾岚 / community.mist」
+      placeholder: community.mist
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: 问题类型
+      options:
+        - 装不上（安装器报错）
+        - 装上但显示/运行异常
+        - 性能问题（掉帧、占 CPU）
+        - 许可或素材来源问题
+        - 安全问题
+    validations:
+      required: true
+
+  - type: textarea
+    id: detail
+    attributes:
+      label: 现象与复现步骤
+      description: 有错误码请一并贴出（扩展中心详情里可以看到 code 与原因）
+      placeholder: |
+        Lull 版本：
+        系统版本：
+        步骤：设置 → 扩展 → 从文件安装 → …
+        现象：
+        错误码：
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: 作品版本
+      description: 作品页上显示的版本号，或 zip 文件名
+      placeholder: 1.0.0

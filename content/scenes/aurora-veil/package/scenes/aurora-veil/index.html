@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>极光帷幕 · Lull 社区场景</title>
+    <style>
+      /* 纯静态场景：只有 HTML 与 CSS，运行在 sandbox="" 的 iframe 里，不执行 JS。
+         没有远程字体、脚本、图片；所有素材都是渐变与形状。 */
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 100%; height: 100%; overflow: hidden;
+        background: #04060e;
+        color-scheme: dark;
+      }
+
+      .sky {
+        position: fixed; inset: 0;
+        background:
+          radial-gradient(120% 80% at 50% 118%, rgba(24, 66, 84, 0.55), transparent 62%),
+          radial-gradient(70% 50% at 18% 8%, rgba(38, 54, 108, 0.45), transparent 70%),
+          linear-gradient(180deg, #05070f 0%, #070c1a 42%, #04060e 100%);
+      }
+
+      /* 星空：三层不同密度与亮度的点，缓慢闪烁制造纵深 */
+      .stars {
+        position: absolute; inset: -10%;
+        background-repeat: repeat;
+        animation: twinkle 9s ease-in-out infinite alternate;
+      }
+      .stars.a {
+        background-image:
+          radial-gradient(1.4px 1.4px at 20% 30%, #e8f3ff 40%, transparent 41%),
+          radial-gradient(1.2px 1.2px at 62% 18%, #dce9ff 40%, transparent 41%),
+          radial-gradient(1.6px 1.6px at 84% 46%, #ffffff 40%, transparent 41%),
+          radial-gradient(1.1px 1.1px at 38% 68%, #cfe0ff 40%, transparent 41%);
+        background-size: 420px 420px, 560px 560px, 700px 700px, 340px 340px;
+        opacity: 0.85;
+      }
+      .stars.b {
+        background-image:
+          radial-gradient(1px 1px at 12% 52%, #bcd4ff 40%, transparent 41%),
+          radial-gradient(1px 1px at 48% 8%, #e6f0ff 40%, transparent 41%),
+          radial-gradient(1px 1px at 72% 74%, #cbd9ff 40%, transparent 41%),
+          radial-gradient(1px 1px at 90% 22%, #ffffff 40%, transparent 41%),
+          radial-gradient(1px 1px at 30% 88%, #b9cdf5 40%, transparent 41%);
+        background-size: 300px 300px, 380px 380px, 460px 460px, 520px 520px, 260px 260px;
+        opacity: 0.55;
+        animation-delay: -3s;
+        animation-duration: 13s;
+      }
+
+      /* 极光帷幕：三片色带先被 clip-path 切成折线，再由父层统一模糊。
+         模糊必须放在父层——先模糊再裁剪会让边缘重新变硬。 */
+      .veils {
+        position: absolute; inset: -30% -20%;
+        filter: blur(52px) saturate(160%);
+        mix-blend-mode: screen;
+        pointer-events: none;
+      }
+      .veil {
+        position: absolute; inset: 0;
+        transform-origin: 50% 100%;
+        will-change: transform;
+      }
+      .veil.v1 {
+        background: linear-gradient(
+          100deg,
+          transparent 12%,
+          rgba(72, 214, 178, 0.42) 34%,
+          rgba(126, 255, 214, 0.28) 48%,
+          transparent 68%
+        );
+        clip-path: polygon(0% 100%, 24% 34%, 46% 62%, 68% 22%, 100% 100%);
+        animation: sway 46s ease-in-out infinite alternate;
+      }
+      .veil.v2 {
+        background: linear-gradient(
+          80deg,
+          transparent 8%,
+          rgba(96, 140, 255, 0.32) 36%,
+          rgba(168, 154, 255, 0.26) 52%,
+          transparent 76%
+        );
+        clip-path: polygon(6% 100%, 34% 46%, 58% 68%, 82% 30%, 100% 100%);
+        animation: sway 64s ease-in-out infinite alternate-reverse;
+      }
+      .veil.v3 {
+        background: linear-gradient(
+          120deg,
+          transparent 20%,
+          rgba(58, 190, 176, 0.24) 44%,
+          rgba(120, 230, 210, 0.16) 58%,
+          transparent 82%
+        );
+        clip-path: polygon(0% 100%, 40% 62%, 62% 44%, 100% 100%);
+        animation: sway 80s ease-in-out infinite alternate;
+        animation-delay: -12s;
+      }
+
+      /* 地平线冷光，把天空与山体分开 */
+      .glow {
+        position: absolute; left: -10%; right: -10%; bottom: -12%; height: 46%;
+        background: radial-gradient(50% 100% at 50% 100%, rgba(90, 214, 196, 0.28), transparent 70%);
+        filter: blur(20px);
+      }
+
+      .ridge {
+        position: absolute; left: -2%; right: -2%; bottom: 0;
+      }
+      .ridge.far {
+        height: 34%;
+        background: linear-gradient(180deg, #0a1424 0%, #070d18 100%);
+        clip-path: polygon(0% 62%, 8% 46%, 17% 58%, 26% 34%, 36% 52%, 47% 40%, 58% 56%, 68% 36%, 79% 54%, 90% 42%, 100% 58%, 100% 100%, 0% 100%);
+        opacity: 0.85;
+      }
+      .ridge.near {
+        height: 24%;
+        background: linear-gradient(180deg, #05090f 0%, #03060a 100%);
+        clip-path: polygon(0% 70%, 12% 50%, 22% 64%, 34% 44%, 45% 60%, 56% 46%, 70% 66%, 82% 50%, 92% 62%, 100% 54%, 100% 100%, 0% 100%);
+      }
+
+      /* 轻微暗角，避免边缘抢视线 */
+      .vignette {
+        position: absolute; inset: 0;
+        background: radial-gradient(120% 90% at 50% 42%, transparent 52%, rgba(2, 4, 8, 0.72) 100%);
+        pointer-events: none;
+      }
+
+      @keyframes sway {
+        from { transform: translate3d(-3%, 1%, 0) rotate(-2.4deg) scale(1.04); }
+        to   { transform: translate3d(3%, -1.5%, 0) rotate(2.2deg) scale(1.1); }
+      }
+      @keyframes twinkle {
+        from { opacity: 0.42; }
+        to   { opacity: 0.92; }
+      }
+
+      /* 尊重系统的「减少动态效果」 */
+      @media (prefers-reduced-motion: reduce) {
+        .veil, .stars { animation: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="sky"></div>
+    <div class="stars a"></div>
+    <div class="stars b"></div>
+    <div class="veils">
+      <div class="veil v3"></div>
+      <div class="veil v2"></div>
+      <div class="veil v1"></div>
+    </div>
+    <div class="glow"></div>
+    <div class="ridge far"></div>
+    <div class="ridge near"></div>
+    <div class="vignette"></div>
+  </body>
+</html>

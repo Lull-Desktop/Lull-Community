@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "scenes": [
+    {
+      "schemaVersion": 1,
+      "type": "scene",
+      "id": "community.mist",
+      "name": "雾岚",
+      "version": "1.0.0",
+      "description": "薄雾漫过远山的极简夜景。纯静态 HTML/CSS，不执行脚本，长时间挂在桌面上也不耗电。",
+      "author": "Lull Community",
+      "license": "CC-BY-4.0",
+      "capabilities": ["wallpaper.viewport", "wallpaper.canvas"],
+      "entry": "scenes/mist/index.html",
+      "theme": { "background": "#0a1416", "accent": "#9fc7c2" },
+      "performance": { "tier": "low", "targetFps": 30 },
+      "compatibility": { "hostApi": 1, "platforms": ["windows"] },
+      "integrity": {
+        "algorithm": "sha256",
+        "scope": "package",
+        "digest": "f6b86e63434d810099e293bfa74c556542a02fbe96fc7ce97390e0938a608ecb"
+      }
+    }
+  ]
+}

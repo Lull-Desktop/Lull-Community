@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>呼吸节奏</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="head">
+        <span class="eyebrow">4 · 7 · 8 BREATHING</span>
+        <span class="cycle">第 <b id="cycle">0</b> 轮</span>
+      </header>
+
+      <div class="stage">
+        <svg class="ring" viewBox="0 0 240 240" aria-hidden="true">
+          <circle class="track" cx="120" cy="120" r="104" />
+          <circle class="progress" id="progress" cx="120" cy="120" r="104" />
+        </svg>
+        <div class="orb" id="orb"></div>
+        <div class="readout">
+          <p class="phase" id="phase">准备</p>
+          <p class="count" id="count">—</p>
+        </div>
+      </div>
+
+      <p class="hint">让圆圈带着呼吸，慢一点。</p>
+    </main>
+    <script src="./main.js" type="module"></script>
+  </body>
+</html>

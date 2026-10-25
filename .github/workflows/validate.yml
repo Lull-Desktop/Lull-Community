@@ -1,0 +1,64 @@
+name: Validate content
+
+# PR 只做校验与试构建，永远不发布。权限也只给读。
+on:
+  pull_request:
+    paths:
+      - "content/**"
+      - "scripts/**"
+      - "schemas/**"
+      - "site/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: content + site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # 校验用的是 Lull 自己的规范：JSON Schema + Rust 侧的 widget 规则 + 整包摘要
+      - name: Validate community content
+        run: pnpm content:check
+
+      - name: Generate catalog
+        run: pnpm build:catalog
+
+      # 站点构建会跑类型检查，能挡住"改了索引字段但页面没跟上"这类问题
+      - name: Build static site
+        run: pnpm --dir site build
+
+      # 把打好的包传上来，reviewer 可以直接下载试装，不用本地跑一遍
+      - name: Upload downloadable packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: lull-packages
+          path: site/public/downloads/
+          retention-days: 7
+          if-no-files-found: warn
