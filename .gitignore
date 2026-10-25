@@ -19,3 +19,6 @@ Thumbs.db
 *.log
 .idea/
 .vscode/
+
+# 本地助手的工作记录，不随仓库发布
+.workbuddy/
