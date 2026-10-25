@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 import "./globals.css";
 import { SiteFooter } from "@/components/site-footer";
@@ -18,6 +18,11 @@ export const metadata: Metadata = {
     description: "第三方壁纸场景与桌面工具，内容即仓库，合并即发布。",
     type: "website",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#05060d",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

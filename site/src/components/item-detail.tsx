@@ -17,38 +17,47 @@ function Masthead({ item }: { item: CatalogItem }) {
   const categoryHref = item.kind === "scene" ? "/scenes" : "/widgets";
 
   return (
-    <div className="border-b border-line pb-7">
-      <nav className="flex items-center gap-2 text-[12px] text-muted" aria-label="位置">
-        <Link href="/" className="hover:text-accent">
+    <div>
+      <nav className="flex items-center gap-2 text-[11.5px] text-muted" aria-label="位置">
+        <Link href="/" className="transition-colors hover:text-ink">
           首页
         </Link>
         <span aria-hidden="true">/</span>
-        <Link href={categoryHref} className="hover:text-accent">
+        <Link href={categoryHref} className="transition-colors hover:text-ink">
           {kindLabel(item.kind)}
         </Link>
         <span aria-hidden="true">/</span>
         <span className="text-ink-soft">{item.name}</span>
       </nav>
 
-      <div className="mt-5 flex flex-wrap items-start justify-between gap-6">
+      <div className="mt-5 flex flex-wrap items-end justify-between gap-6">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-accent-soft px-2.5 py-0.5 text-[11.5px] font-medium text-accent-deep">
+            <span className="rounded-md bg-gradient-to-r from-violet/85 to-fuchsia/85 px-2 py-0.5 text-[10.5px] font-medium text-white">
               {kindLabel(item.kind)}
             </span>
-            <span className="font-mono text-[11.5px] text-muted">v{item.version}</span>
-            <span className="font-mono text-[11.5px] text-muted">·</span>
-            <span className="text-[11.5px] text-muted">{item.license}</span>
+            <span className="rounded-md border border-line-2 px-2 py-0.5 font-mono text-[10.5px] text-ink-soft">
+              v{item.version}
+            </span>
+            <span className="rounded-md border border-line-2 px-2 py-0.5 font-mono text-[10.5px] text-ink-soft">
+              {item.license}
+            </span>
+            {item.featured && (
+              <span className="rounded-md bg-teal/15 px-2 py-0.5 text-[10.5px] text-teal ring-1 ring-inset ring-teal/30">
+                精选
+              </span>
+            )}
           </div>
-          <h1 className="mt-3 text-[clamp(1.7rem,3.4vw,2.4rem)] font-semibold leading-tight tracking-[-0.02em]">
+
+          <h1 className="mt-3.5 text-[clamp(1.8rem,3.6vw,2.6rem)] font-semibold leading-[1.15] tracking-[-0.03em]">
             {item.name}
           </h1>
-          <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-muted">
+          <p className="mt-3 max-w-2xl text-[13.5px] leading-relaxed text-muted">
             {item.description}
           </p>
         </div>
 
-        <div className="flex flex-col items-start gap-1.5 text-[12.5px] sm:items-end">
+        <div className="flex flex-col gap-1.5 text-[12px] sm:items-end">
           <p className="text-muted">
             作者{" "}
             {item.authorUrl ? (
@@ -56,7 +65,7 @@ function Masthead({ item }: { item: CatalogItem }) {
                 href={item.authorUrl}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="text-ink hover:text-accent"
+                className="text-ink transition-colors hover:text-fuchsia"
               >
                 {item.author}
               </a>
@@ -71,7 +80,7 @@ function Masthead({ item }: { item: CatalogItem }) {
             href={itemSourceUrl(item)}
             target="_blank"
             rel="noreferrer noopener"
-            className="text-accent hover:underline"
+            className="text-fuchsia transition-opacity hover:opacity-80"
           >
             查看源码 →
           </a>
@@ -83,24 +92,20 @@ function Masthead({ item }: { item: CatalogItem }) {
 
 function InstallCard({ item }: { item: CatalogItem }) {
   return (
-    <div className="rounded-2xl border border-line bg-surface p-5">
+    <div className="card-glow p-5">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-[13.5px] font-semibold">下载内容包</p>
-          <p className="mt-1 font-mono text-[11.5px] text-muted">
+          <p className="text-[13px] font-semibold text-ink">下载内容包</p>
+          <p className="mt-1 font-mono text-[11px] text-muted">
             {formatBytes(item.downloadBytes)} · {item.fileCount} 个文件
           </p>
         </div>
-        <a
-          href={itemDownloadUrl(item)}
-          download
-          className="inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-[13px] font-medium text-paper transition-transform hover:-translate-y-0.5"
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <a href={itemDownloadUrl(item)} download className="btn-primary !px-4 !py-2 !text-[12.5px]">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path
               d="M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5M4 20h16"
               stroke="currentColor"
-              strokeWidth="1.8"
+              strokeWidth="1.9"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
@@ -109,31 +114,31 @@ function InstallCard({ item }: { item: CatalogItem }) {
         </a>
       </div>
 
-      <ol className="mt-5 space-y-2.5 border-t border-line pt-4 text-[12.5px] text-ink-soft">
+      <ol className="mt-5 space-y-2.5 border-t border-line pt-4 text-[12px] leading-relaxed text-ink-soft">
         <li className="flex gap-2.5">
-          <span className="font-mono text-line-strong">01</span>
+          <span className="font-mono text-line-2">01</span>
           打开 Lull 设置 → 扩展 → 「从文件安装」，选择刚下载的 zip。
         </li>
         <li className="flex gap-2.5">
-          <span className="font-mono text-line-strong">02</span>
+          <span className="font-mono text-line-2">02</span>
           {item.kind === "scene"
             ? "安装后到「壁纸 → 场景」里选择它。壁纸包不执行脚本，装完直接生效。"
             : "启用前会列出它申请的能力；确认后点「打开」才会创建窗口。"}
         </li>
         <li className="flex gap-2.5">
-          <span className="font-mono text-line-strong">03</span>
+          <span className="font-mono text-line-2">03</span>
           卸载在扩展中心里完成；scene 被壁纸引用时会先提示切换场景。
         </li>
       </ol>
 
       <details className="mt-4 border-t border-line pt-3">
-        <summary className="cursor-pointer text-[11.5px] text-muted hover:text-ink">
+        <summary className="cursor-pointer text-[11px] text-muted transition-colors hover:text-ink">
           包摘要（sha256）
         </summary>
-        <p className="mt-2 break-all rounded-lg bg-paper-deep p-2.5 font-mono text-[10.5px] leading-relaxed text-ink-soft">
+        <p className="mt-2 break-all rounded-lg bg-void/70 p-2.5 font-mono text-[10px] leading-relaxed text-ink-soft ring-1 ring-inset ring-line">
           {item.integrity}
         </p>
-        <p className="mt-2 text-[11px] leading-relaxed text-muted">
+        <p className="mt-2 text-[10.5px] leading-relaxed text-muted">
           摘要只证明「下载到的文件与发布时一致」，不是作者签名。安装器会复算并拒绝被改过的包。
         </p>
       </details>
@@ -145,44 +150,48 @@ function CapabilitySection({ item }: { item: CatalogItem }) {
   if (item.capabilities.length === 0) {
     return (
       <section>
-        <h2 className="text-[15px] font-semibold tracking-tight">能力与权限</h2>
-        <p className="mt-2 text-[13px] text-muted">未申请任何能力。</p>
+        <h2 className="text-[14.5px] font-semibold tracking-tight text-ink">能力与权限</h2>
+        <p className="mt-2 text-[12.5px] text-muted">未申请任何能力。</p>
       </section>
     );
   }
 
   return (
     <section>
-      <h2 className="text-[15px] font-semibold tracking-tight">能力与权限</h2>
+      <h2 className="text-[14.5px] font-semibold tracking-tight text-ink">能力与权限</h2>
       <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
-        清单里声明的能力，{item.kind === "widget" ? "启用时由用户逐项确认" : "决定宿主放开哪种运行环境"}。
+        清单里声明的能力，
+        {item.kind === "widget" ? "启用时由用户逐项确认" : "决定宿主放开哪种运行环境"}。
         「硬约束」是宿主真正能拦住的部分，「软约束」只是产品策略。
       </p>
 
-      <ul className="mt-4 space-y-2.5">
+      <ul className="mt-4 space-y-2">
         {item.capabilities.map((capability) => {
           const info = capabilityInfo(capability);
           return (
-            <li key={capability} className="rounded-xl border border-line bg-surface px-4 py-3">
+            <li
+              key={capability}
+              className="rounded-xl border border-line bg-panel/60 px-4 py-3 transition-colors hover:border-line-2"
+            >
               <div className="flex flex-wrap items-center gap-2">
-                <code className="font-mono text-[12px] text-ink">{capability}</code>
-                <span className="text-[12.5px] text-ink-soft">{info.label}</span>
+                <code className="font-mono text-[11.5px] text-[#c9b8ff]">{capability}</code>
+                <span className="text-[12px] text-ink-soft">{info.label}</span>
                 <span
-                  className={`ml-auto rounded-full px-2 py-0.5 text-[10.5px] ${LEVEL_STYLE[info.level]}`}
+                  className={`ml-auto rounded-full px-2 py-0.5 text-[10px] ${LEVEL_STYLE[info.level]}`}
                 >
                   {info.level}
                 </span>
               </div>
-              <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted">{info.detail}</p>
+              <p className="mt-1.5 text-[12px] leading-relaxed text-muted">{info.detail}</p>
             </li>
           );
         })}
       </ul>
 
       {item.network && item.network.length > 0 && (
-        <div className="mt-3 rounded-xl border border-line bg-surface px-4 py-3">
-          <p className="text-[12.5px] font-medium">允许访问的网络源</p>
-          <ul className="mt-2 space-y-1 font-mono text-[11.5px] text-ink-soft">
+        <div className="mt-2 rounded-xl border border-line bg-panel/60 px-4 py-3">
+          <p className="text-[12px] font-medium text-ink">允许访问的网络源</p>
+          <ul className="mt-2 space-y-1 font-mono text-[11px] text-ink-soft">
             {item.network.map((source) => (
               <li key={source}>{source}</li>
             ))}
@@ -210,10 +219,7 @@ function SpecsSection({ item }: { item: CatalogItem }) {
       });
     }
     if (item.compatibility) {
-      rows.push({
-        label: "宿主 API",
-        value: `>= ${item.compatibility.hostApi}`,
-      });
+      rows.push({ label: "宿主 API", value: `>= ${item.compatibility.hostApi}` });
       if (item.compatibility.platforms) {
         rows.push({ label: "平台", value: item.compatibility.platforms.join(" / ") });
       }
@@ -236,17 +242,17 @@ function SpecsSection({ item }: { item: CatalogItem }) {
 
   return (
     <section>
-      <h2 className="text-[15px] font-semibold tracking-tight">包信息</h2>
+      <h2 className="text-[14.5px] font-semibold tracking-tight text-ink">包信息</h2>
       <dl className="mt-3 overflow-hidden rounded-xl border border-line">
         {rows.map((row, index) => (
           <div
             key={row.label}
-            className={`grid grid-cols-[7.5rem_1fr] gap-3 px-4 py-2.5 text-[12.5px] ${
-              index % 2 === 0 ? "bg-surface" : "bg-paper"
+            className={`grid grid-cols-[7rem_1fr] gap-3 px-4 py-2.5 text-[12px] ${
+              index % 2 === 0 ? "bg-panel/60" : "bg-panel/25"
             }`}
           >
             <dt className="text-muted">{row.label}</dt>
-            <dd className="break-all font-mono text-[11.5px] text-ink-soft">{row.value}</dd>
+            <dd className="break-all font-mono text-[11px] text-ink-soft">{row.value}</dd>
           </div>
         ))}
       </dl>
@@ -259,14 +265,12 @@ function ParamsSection({ item }: { item: CatalogItem }) {
 
   return (
     <section>
-      <h2 className="text-[15px] font-semibold tracking-tight">可调参数</h2>
-      <p className="mt-2 text-[12.5px] text-muted">
-        在 Lull 的壁纸设置里调整，改完即时生效。
-      </p>
+      <h2 className="text-[14.5px] font-semibold tracking-tight text-ink">可调参数</h2>
+      <p className="mt-2 text-[12.5px] text-muted">在 Lull 的壁纸设置里调整，改完即时生效。</p>
       <div className="mt-3 overflow-x-auto rounded-xl border border-line">
-        <table className="w-full min-w-[28rem] border-collapse text-[12.5px]">
+        <table className="w-full min-w-[28rem] border-collapse text-[12px]">
           <thead>
-            <tr className="bg-paper-deep text-left text-[11.5px] text-muted">
+            <tr className="bg-white/[0.04] text-left text-[10.5px] uppercase tracking-[0.12em] text-muted">
               <th className="px-3.5 py-2 font-medium">参数</th>
               <th className="px-3.5 py-2 font-medium">类型</th>
               <th className="px-3.5 py-2 font-medium">默认</th>
@@ -285,10 +289,10 @@ function ParamsSection({ item }: { item: CatalogItem }) {
                 <tr key={param.key} className="border-t border-line">
                   <td className="px-3.5 py-2.5">
                     <span className="text-ink">{param.label}</span>
-                    <code className="ml-2 font-mono text-[10.5px] text-muted">{param.key}</code>
+                    <code className="ml-2 font-mono text-[10px] text-muted">{param.key}</code>
                   </td>
-                  <td className="px-3.5 py-2.5 font-mono text-[11.5px] text-ink-soft">{param.type}</td>
-                  <td className="px-3.5 py-2.5 font-mono text-[11.5px] text-ink-soft">
+                  <td className="px-3.5 py-2.5 font-mono text-[11px] text-ink-soft">{param.type}</td>
+                  <td className="px-3.5 py-2.5 font-mono text-[11px] text-ink-soft">
                     {JSON.stringify(param.default)}
                   </td>
                   <td className="px-3.5 py-2.5 text-ink-soft">{range}</td>
@@ -305,119 +309,137 @@ function ParamsSection({ item }: { item: CatalogItem }) {
 /** 场景与工具详情页共用：结构相同，只有少数条目按 kind 显示。 */
 export function ItemDetail({ item }: { item: CatalogItem }) {
   return (
-    <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
-      <Masthead item={item} />
+    <div className="relative">
+      {/* 顶部环境光：壁纸直接用自己的画面，工具用一层紫光（截图当背景会把界面文字放大成噪点） */}
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] overflow-hidden">
+        {item.kind === "scene" ? (
+          <img
+            src={asset(item.preview)}
+            alt=""
+            aria-hidden="true"
+            className="h-full w-full scale-110 object-cover object-center opacity-[0.18] blur-[14px]"
+          />
+        ) : (
+          <div className="absolute inset-0 bg-[radial-gradient(55%_90%_at_22%_0%,rgba(139,92,246,0.22),transparent_66%),radial-gradient(45%_80%_at_86%_4%,rgba(217,70,239,0.14),transparent_70%)]" />
+        )}
+        <div className="grid-lines absolute inset-0 opacity-40" />
+        <div className="absolute inset-0 bg-gradient-to-b from-void/40 via-void/80 to-void" />
+      </div>
 
-      <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
-        <div className="min-w-0">
-          <div className="overflow-hidden rounded-2xl border border-line bg-night">
-            <img
-              src={asset(item.preview)}
-              alt={`${item.name} 预览`}
-              className="aspect-[16/9] w-full object-cover"
-            />
+      <div className="mx-auto max-w-6xl px-5 py-10 sm:px-8">
+        <Masthead item={item} />
+
+        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_19.5rem]">
+          <div className="min-w-0">
+            <div className="overflow-hidden rounded-2xl ring-1 ring-white/12 shadow-[0_40px_90px_-50px_rgba(139,92,246,0.85)]">
+              <img
+                src={asset(item.preview)}
+                alt={`${item.name} 预览`}
+                className="aspect-[16/9] w-full object-cover"
+              />
+            </div>
+
+            {item.screenshots.length > 0 && (
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                {item.screenshots.map((shot, index) => (
+                  <img
+                    key={shot}
+                    src={asset(shot)}
+                    alt={`${item.name} 截图 ${index + 1}`}
+                    className="aspect-[16/10] w-full rounded-xl ring-1 ring-white/10 object-cover"
+                  />
+                ))}
+              </div>
+            )}
+
+            <div className="mt-8 space-y-8">
+              <div className="lg:hidden">
+                <InstallCard item={item} />
+              </div>
+              <CapabilitySection item={item} />
+              <SpecsSection item={item} />
+              <ParamsSection item={item} />
+
+              {item.readme && (
+                <section>
+                  <h2 className="text-[14.5px] font-semibold tracking-tight text-ink">作品说明</h2>
+                  <div
+                    className="prose-lull mt-3"
+                    // README 在构建时用 markdown-it 渲染，且关闭了裸 HTML，不含用户注入的标签
+                    dangerouslySetInnerHTML={{ __html: renderMarkdown(item.readme) }}
+                  />
+                </section>
+              )}
+
+              {item.tags.length > 0 && (
+                <section>
+                  <h2 className="text-[14.5px] font-semibold tracking-tight text-ink">标签</h2>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {item.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-full border border-line px-2.5 py-1 text-[11.5px] text-ink-soft"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </section>
+              )}
+            </div>
           </div>
 
-          {item.screenshots.length > 0 && (
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              {item.screenshots.map((shot, index) => (
-                <img
-                  key={shot}
-                  src={asset(shot)}
-                  alt={`${item.name} 截图 ${index + 1}`}
-                  className="aspect-[16/10] w-full rounded-xl border border-line object-cover"
-                />
-              ))}
-            </div>
-          )}
-
-          <div className="mt-8 space-y-9">
-            <div className="lg:hidden">
+          <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+            <div className="hidden lg:block">
               <InstallCard item={item} />
             </div>
-            <CapabilitySection item={item} />
-            <SpecsSection item={item} />
-            <ParamsSection item={item} />
 
-            {item.readme && (
-              <section>
-                <h2 className="text-[15px] font-semibold tracking-tight">作品说明</h2>
-                <div
-                  className="prose-lull mt-3"
-                  // README 在构建时用 markdown-it 渲染，且关闭了裸 HTML，不含用户注入的标签
-                  dangerouslySetInnerHTML={{ __html: renderMarkdown(item.readme) }}
-                />
-              </section>
-            )}
+            <div className="rounded-2xl border border-line bg-panel/50 p-4">
+              <p className="text-[12.5px] font-semibold text-ink">许可与署名</p>
+              <p className="mt-2 text-[12px] leading-relaxed text-muted">
+                作品以 <span className="font-mono text-ink-soft">{item.license}</span> 发布，
+                署名 <span className="text-ink-soft">{item.author}</span>。
+                转载或二次分发请保留署名与许可声明。
+              </p>
+              {item.homepage && (
+                <a
+                  href={item.homepage}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="mt-2.5 block text-[12px] text-fuchsia hover:underline"
+                >
+                  作品主页 →
+                </a>
+              )}
+              <a
+                href={itemSourceUrl(item)}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="mt-2.5 block text-[12px] text-fuchsia hover:underline"
+              >
+                仓库目录与清单 →
+              </a>
+              {item.licensePath && (
+                <a
+                  href={`${catalog.repo.url}/blob/${catalog.repo.branch}/${item.licensePath}`}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="mt-2.5 block text-[12px] text-fuchsia hover:underline"
+                >
+                  许可原文（{item.license}）→
+                </a>
+              )}
+            </div>
 
-            {item.tags.length > 0 && (
-              <section>
-                <h2 className="text-[15px] font-semibold tracking-tight">标签</h2>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  {item.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full border border-line bg-surface px-3 py-1 text-[12px] text-ink-soft"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
+            <div className="rounded-2xl border border-line bg-panel/40 p-4">
+              <p className="text-[12.5px] font-semibold text-ink">发现安全问题？</p>
+              <p className="mt-2 text-[12px] leading-relaxed text-muted">
+                内容包只能读自己的资源；工具运行在不透明源 iframe 里，能力逐项授权。
+                仍然发现问题请开 issue 并标注作品 id。
+              </p>
+            </div>
+          </aside>
         </div>
-
-        <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-          <div className="hidden lg:block">
-            <InstallCard item={item} />
-          </div>
-
-          <div className="rounded-2xl border border-line bg-surface p-5">
-            <p className="text-[13px] font-semibold">许可与署名</p>
-            <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
-              作品以 <span className="font-mono text-ink-soft">{item.license}</span> 发布，
-              署名 <span className="text-ink-soft">{item.author}</span>。
-              转载或二次分发请保留署名与许可声明。
-            </p>
-            {item.homepage && (
-              <a
-                href={item.homepage}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="mt-3 inline-block text-[12.5px] text-accent hover:underline"
-              >
-                作品主页 →
-              </a>
-            )}
-            <a
-              href={`${itemSourceUrl(item)}`}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="mt-3 block text-[12.5px] text-accent hover:underline"
-            >
-              仓库目录与清单 →
-            </a>
-            {item.licensePath && (
-              <a
-                href={`${catalog.repo.url}/blob/${catalog.repo.branch}/${item.licensePath}`}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="mt-3 block text-[12.5px] text-accent hover:underline"
-              >
-                许可原文（{item.license}）→
-              </a>
-            )}
-          </div>
-
-          <div className="rounded-2xl border border-line bg-paper-deep/60 p-5">
-            <p className="text-[13px] font-semibold">发现安全问题？</p>
-            <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
-              内容包只能读自己的资源；工具运行在不透明源 iframe 里，能力逐项授权。
-              仍然发现问题请开 issue 并标注作品 id。
-            </p>
-          </div>
-        </aside>
       </div>
     </div>
   );

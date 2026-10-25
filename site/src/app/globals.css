@@ -1,22 +1,21 @@
 @import "tailwindcss";
 
-/* 一套克制的色板：暖白纸面 + 深墨绿文字 + 青绿点缀。
-   社区站是「画廊」，背景要退到后面，让作品的预览图占据注意力。 */
+/* 深色霓虹画廊：底色压到近黑，用紫→品红→青的渐变做唯一强调色。
+   视觉作品社区要让预览图发光，界面本身必须退到后面。 */
 @theme {
-  --color-paper: #f7f6f2;
-  --color-paper-deep: #efece4;
-  --color-surface: #ffffff;
-  --color-ink: #101a18;
-  --color-ink-soft: #3b4a46;
-  --color-muted: #5f6d68;
-  --color-line: #e2dfd6;
-  --color-line-strong: #cfcabc;
-  --color-accent: #2c6a60;
-  --color-accent-deep: #17453e;
-  --color-accent-soft: #e4efe9;
-  --color-night: #06100e;
-  --color-night-soft: #0d1c19;
-  --color-sand: #c9a97a;
+  --color-void: #05060d;
+  --color-void-2: #0a0b16;
+  --color-panel: #0d0f1d;
+  --color-panel-2: #14162a;
+  --color-ink: #edefff;
+  --color-ink-soft: #c2c6e2;
+  --color-muted: #8b90b2;
+  --color-line: #1e2038;
+  --color-line-2: #2c3054;
+  --color-violet: #8b5cf6;
+  --color-fuchsia: #d946ef;
+  --color-teal: #3ddcbf;
+  --color-sand: #f5c97b;
 
   --font-sans: "Inter", "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui,
     sans-serif;
@@ -28,25 +27,32 @@
   html {
     -webkit-text-size-adjust: 100%;
     scroll-behavior: smooth;
+    color-scheme: dark;
   }
 
   body {
-    background-color: var(--color-paper);
+    background-color: var(--color-void);
     color: var(--color-ink);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    /* 两处极淡的环境光，让整页不像纯黑贴图 */
+    background-image:
+      radial-gradient(90rem 42rem at 12% -8%, rgba(139, 92, 246, 0.16), transparent 60%),
+      radial-gradient(70rem 38rem at 92% 8%, rgba(217, 70, 239, 0.1), transparent 62%);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
   }
 
   ::selection {
-    background: var(--color-accent-soft);
-    color: var(--color-accent-deep);
+    background: rgba(139, 92, 246, 0.42);
+    color: #fff;
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-accent);
+    outline: 2px solid var(--color-violet);
     outline-offset: 3px;
-    border-radius: 4px;
+    border-radius: 6px;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -63,10 +69,117 @@
 }
 
 @layer components {
-  /* 正文排版：README 渲染结果直接套用，避免每个页面各写一套 */
+  /* 渐变文字：标题里那个"会动的东西" */
+  .text-aurora {
+    background-image: linear-gradient(
+      100deg,
+      #c4b5fd 0%,
+      #e879f9 38%,
+      #7dd3fc 68%,
+      #3ddcbf 100%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* 发光描边卡片：1px 渐变边 + 内侧高光，替代实心描边 */
+  .card-glow {
+    position: relative;
+    border-radius: 18px;
+    background:
+      linear-gradient(180deg, rgba(20, 22, 42, 0.92), rgba(11, 12, 24, 0.94));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.05),
+      0 24px 60px -34px rgba(0, 0, 0, 0.9);
+  }
+  .card-glow::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(
+      150deg,
+      rgba(160, 130, 255, 0.4),
+      rgba(255, 255, 255, 0.05) 38%,
+      rgba(61, 220, 191, 0.22)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    transition: opacity 240ms ease;
+  }
+
+  /* 主按钮：渐变底 + 外发光 */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    padding: 0.7rem 1.25rem;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #fff;
+    background-image: linear-gradient(100deg, #7c3aed, #d946ef);
+    box-shadow:
+      0 10px 30px -12px rgba(168, 85, 247, 0.75),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    transition:
+      transform 200ms ease,
+      box-shadow 200ms ease,
+      filter 200ms ease;
+  }
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.06);
+    box-shadow:
+      0 16px 38px -14px rgba(217, 70, 239, 0.8),
+      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 999px;
+    padding: 0.7rem 1.15rem;
+    font-size: 13.5px;
+    color: var(--color-ink-soft);
+    border: 1px solid var(--color-line-2);
+    background: rgba(255, 255, 255, 0.02);
+    transition:
+      border-color 200ms ease,
+      color 200ms ease,
+      background 200ms ease;
+  }
+  .btn-ghost:hover {
+    color: #fff;
+    border-color: rgba(139, 92, 246, 0.6);
+    background: rgba(139, 92, 246, 0.1);
+  }
+
+  /* 章节小标题 */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--color-muted);
+  }
+
+  /* 正文排版：README 渲染结果 */
   .prose-lull {
     color: var(--color-ink-soft);
-    font-size: 15px;
+    font-size: 14.5px;
     line-height: 1.85;
   }
   .prose-lull > * + * {
@@ -78,27 +191,30 @@
     color: var(--color-ink);
     font-weight: 600;
     letter-spacing: -0.01em;
-    margin-top: 1.8em;
+    margin-top: 1.9em;
     line-height: 1.4;
   }
   .prose-lull h1 {
-    font-size: 1.35rem;
+    font-size: 1.3rem;
   }
   .prose-lull h2 {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
   }
   .prose-lull h3 {
-    font-size: 1rem;
+    font-size: 0.98rem;
   }
   .prose-lull strong {
-    color: var(--color-ink);
+    color: #fff;
     font-weight: 600;
   }
   .prose-lull a {
-    color: var(--color-accent);
+    color: #c4b5fd;
     text-decoration: underline;
     text-underline-offset: 3px;
     text-decoration-thickness: 1px;
+  }
+  .prose-lull a:hover {
+    color: #e879f9;
   }
   .prose-lull ul,
   .prose-lull ol {
@@ -114,18 +230,20 @@
     margin-top: 0.35em;
   }
   .prose-lull li::marker {
-    color: var(--color-line-strong);
+    color: var(--color-line-2);
   }
   .prose-lull code {
     font-family: var(--font-mono);
     font-size: 0.86em;
-    background: var(--color-paper-deep);
+    background: rgba(139, 92, 246, 0.14);
+    color: #ddd6fe;
     border-radius: 5px;
     padding: 0.12em 0.4em;
   }
   .prose-lull pre {
-    background: var(--color-night);
-    color: #dbe9e4;
+    background: #070812;
+    border: 1px solid var(--color-line);
+    color: #cfd6f5;
     border-radius: 12px;
     padding: 1rem 1.1rem;
     overflow-x: auto;
@@ -139,14 +257,14 @@
     font-size: inherit;
   }
   .prose-lull blockquote {
-    border-left: 2px solid var(--color-line-strong);
+    border-left: 2px solid rgba(139, 92, 246, 0.5);
     padding-left: 0.9em;
     color: var(--color-muted);
   }
   .prose-lull table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 13.5px;
+    font-size: 13px;
   }
   .prose-lull th,
   .prose-lull td {
@@ -158,7 +276,7 @@
   .prose-lull th {
     color: var(--color-ink);
     font-weight: 600;
-    background: var(--color-paper);
+    background: rgba(139, 92, 246, 0.08);
   }
   .prose-lull hr {
     border: 0;
@@ -166,5 +284,37 @@
   }
   .prose-lull img {
     border-radius: 12px;
+  }
+}
+
+@layer utilities {
+  /* 卡片悬停时的外发光 */
+  .glow-hover {
+    transition:
+      transform 260ms ease,
+      box-shadow 260ms ease,
+      border-color 260ms ease;
+  }
+  .glow-hover:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 30px 70px -40px rgba(139, 92, 246, 0.9),
+      0 0 0 1px rgba(139, 92, 246, 0.35);
+  }
+
+  /* 网格底纹，给深色区一点结构感 */
+  .grid-lines {
+    background-image:
+      linear-gradient(to right, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
+    background-size: 64px 64px;
+    mask-image: radial-gradient(80% 70% at 50% 0%, #000 20%, transparent 75%);
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
   }
 }

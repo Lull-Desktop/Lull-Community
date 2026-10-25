@@ -91,7 +91,7 @@ export function capabilityInfo(capability: string): CapabilityInfo {
 }
 
 export const LEVEL_STYLE: Record<CapabilityInfo["level"], string> = {
-  基础: "bg-accent-soft text-accent-deep",
-  软约束: "bg-amber-50 text-amber-800",
-  硬约束: "bg-rose-50 text-rose-800",
+  基础: "bg-violet/15 text-[#c9b8ff] ring-1 ring-inset ring-violet/35",
+  软约束: "bg-amber-400/10 text-amber-300 ring-1 ring-inset ring-amber-400/25",
+  硬约束: "bg-rose-500/10 text-rose-300 ring-1 ring-inset ring-rose-400/25",
 };

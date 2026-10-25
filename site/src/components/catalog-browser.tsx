@@ -72,20 +72,20 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="搜作品名、作者或标签…"
-              className="h-10 w-full rounded-full border border-line bg-surface pl-10 pr-4 text-[13.5px] text-ink placeholder:text-muted/70 focus:border-accent focus:outline-none"
+              className="h-10 w-full rounded-full border border-line-2 bg-white/[0.03] pl-10 pr-4 text-[13px] text-ink placeholder:text-muted/80 transition-colors focus:border-violet/60 focus:outline-none"
             />
           </label>
 
-          <div className="flex items-center gap-1 rounded-full border border-line bg-surface p-1">
+          <div className="flex items-center gap-1 rounded-full border border-line-2 bg-white/[0.03] p-1">
             {SORTS.map((option) => (
               <button
                 key={option.key}
                 type="button"
                 onClick={() => setSort(option.key)}
                 aria-pressed={sort === option.key}
-                className={`rounded-full px-3 py-1.5 text-[12.5px] transition-colors ${
+                className={`rounded-full px-3 py-1.5 text-[12px] transition-colors ${
                   sort === option.key
-                    ? "bg-ink text-paper"
+                    ? "bg-violet/25 text-ink shadow-[inset_0_0_0_1px_rgba(139,92,246,0.5)]"
                     : "text-muted hover:text-ink"
                 }`}
               >
@@ -101,10 +101,10 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
               type="button"
               onClick={() => setTag(null)}
               aria-pressed={tag === null}
-              className={`rounded-full border px-3 py-1 text-[12px] transition-colors ${
+              className={`rounded-full border px-3 py-1 text-[11.5px] transition-colors ${
                 tag === null
-                  ? "border-accent bg-accent-soft text-accent-deep"
-                  : "border-line text-muted hover:border-line-strong hover:text-ink"
+                  ? "border-violet/60 bg-violet/15 text-ink"
+                  : "border-line text-muted hover:border-line-2 hover:text-ink"
               }`}
             >
               全部
@@ -115,30 +115,30 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
                 type="button"
                 onClick={() => setTag(tag === value ? null : value)}
                 aria-pressed={tag === value}
-                className={`rounded-full border px-3 py-1 text-[12px] transition-colors ${
+                className={`rounded-full border px-3 py-1 text-[11.5px] transition-colors ${
                   tag === value
-                    ? "border-accent bg-accent-soft text-accent-deep"
-                    : "border-line text-muted hover:border-line-strong hover:text-ink"
+                    ? "border-violet/60 bg-violet/15 text-ink"
+                    : "border-line text-muted hover:border-line-2 hover:text-ink"
                 }`}
               >
                 {value}
-                <span className="ml-1.5 text-[10.5px] opacity-60">{count}</span>
+                <span className="ml-1.5 text-[10px] opacity-60">{count}</span>
               </button>
             ))}
           </div>
         )}
       </div>
 
-      <p className="py-4 text-[12.5px] text-muted">
+      <p className="py-4 text-[12px] text-muted">
         共 <span className="font-mono text-ink">{visible.length}</span> 个作品
         {tag && <span> · 标签「{tag}」</span>}
         {query.trim() && <span> · 关键词「{query.trim()}」</span>}
       </p>
 
       {visible.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-line-strong bg-surface/60 px-6 py-16 text-center">
-          <p className="text-[14px] text-ink">没有匹配的作品</p>
-          <p className="mt-1.5 text-[13px] text-muted">
+        <div className="rounded-2xl border border-dashed border-line-2 bg-panel/40 px-6 py-16 text-center">
+          <p className="text-[13.5px] text-ink">没有匹配的作品</p>
+          <p className="mt-1.5 text-[12.5px] text-muted">
             换个关键词，或者清掉筛选条件看看全部。
           </p>
           <button
@@ -147,13 +147,13 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
               setQuery("");
               setTag(null);
             }}
-            className="mt-5 rounded-full border border-line-strong px-4 py-1.5 text-[12.5px] text-ink-soft hover:border-accent hover:text-accent"
+            className="mt-5 rounded-full border border-line-2 px-4 py-1.5 text-[12px] text-ink-soft transition-colors hover:border-violet/60 hover:text-ink"
           >
             清除筛选
           </button>
         </div>
       ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((item) => (
             <ItemCard key={`${item.kind}-${item.slug}`} item={item} />
           ))}
