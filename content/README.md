@@ -70,13 +70,23 @@ pnpm new widget my-tool
 
 ## 种子内容
 
-现有四个作品用来验证整条链路：
+现有五个作品用来验证整条链路：
 
 | 作品 | 说明 |
 | --- | --- |
 | `scenes/mist` | 官方内容包，摘要与 Rust 侧已知值一致，同时作为算法自检基准 |
 | `scenes/aurora-veil` | 自建静态场景，演示三层模糊色带与 `clip-path` 山脊 |
+| `scenes/three-scene` | 脚本场景，演示 `wallpaper.script` + `wallpaper.params` 的参数热更（Three.js 随包分发） |
 | `widgets/minimal-clock` | 只申请 `widget.ui` 的最小权限工具 |
 | `widgets/breathing` | 4-7-8 呼吸引导，演示 `requestAnimationFrame` 驱动的状态机 |
 
-正式运营时可以删除，但建议至少留一个静态场景与一个工具，方便新贡献者对照结构。
+正式运营时可以删除，但建议至少留一个静态场景、一个脚本场景与一个工具，方便新贡献者对照结构。
+
+## 脚本场景的额外要求
+
+`wallpaper.params` / `wallpaper.sync` 只能配 `wallpaper.script` 使用，校验会拦下单独声明的情况。
+脚本包还有两条约定：
+
+- 依赖必须打进入口脚本（如 `three-scene` 把 Three.js 打包进 `main.js`），**不要**引用 CDN；
+  运行时是 `sandbox="allow-scripts"` 的 opaque-origin iframe，CSP 会挡掉所有远程请求。
+- 第三方库的版权与许可写进包内的 `THIRD_PARTY_NOTICES.md`，包会被原样算进摘要、打成 zip。

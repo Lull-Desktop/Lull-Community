@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "slug": "three-scene",
+  "tags": ["Three.js", "WebGL", "脚本场景", "可调参数", "星尘"],
+  "featured": false,
+  "addedAt": "2026-10-25",
+  "preview": "preview.webp",
+  "authorUrl": "https://github.com/lull-desktop",
+  "note": "来自 Lull 上游示例 examples/content/three-scene，作为脚本场景（wallpaper.script + wallpaper.params）的参考实现收录；Three.js 已随包打包，作者与许可沿用上游清单。"
+}
