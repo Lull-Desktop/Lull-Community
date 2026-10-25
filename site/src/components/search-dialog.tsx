@@ -58,7 +58,7 @@ export function SearchDialog({ onClose }: { onClose: () => void }) {
         className="absolute inset-0 cursor-default bg-void/80 backdrop-blur-sm"
       />
 
-      <div className="card-glow relative w-full max-w-xl overflow-hidden">
+      <div className="relative w-full max-w-xl overflow-hidden rounded-2xl border border-line-2 bg-void-2/95 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)] backdrop-blur-xl">
         <div className="flex items-center gap-3 border-b border-line px-4 py-3">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.8" />
@@ -72,7 +72,7 @@ export function SearchDialog({ onClose }: { onClose: () => void }) {
               if (event.key === "Enter" && results[0]) open(results[0]);
             }}
             placeholder="搜作品名、作者或标签…"
-            className="h-8 flex-1 bg-transparent text-[14px] text-ink placeholder:text-muted focus:outline-none"
+            className="h-8 flex-1 bg-transparent text-[14px] text-ink placeholder:text-faint focus:outline-none"
           />
           <kbd className="rounded border border-line-2 px-1.5 py-0.5 font-mono text-[10px] text-muted">
             ESC

@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#05060d",
+  themeColor: "#060a09",
   colorScheme: "dark",
 };
 

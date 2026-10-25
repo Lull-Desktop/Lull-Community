@@ -72,11 +72,11 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="搜作品名、作者或标签…"
-              className="h-10 w-full rounded-full border border-line-2 bg-white/[0.03] pl-10 pr-4 text-[13px] text-ink placeholder:text-muted/80 transition-colors focus:border-violet/60 focus:outline-none"
+              className="h-10 w-full rounded-full border border-line bg-white/[0.02] pl-10 pr-4 text-[13px] text-ink placeholder:text-faint transition-colors focus:border-primary/60 focus:outline-none"
             />
           </label>
 
-          <div className="flex items-center gap-1 rounded-full border border-line-2 bg-white/[0.03] p-1">
+          <div className="flex items-center gap-1 rounded-lg border border-line p-1">
             {SORTS.map((option) => (
               <button
                 key={option.key}
@@ -85,7 +85,7 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
                 aria-pressed={sort === option.key}
                 className={`rounded-full px-3 py-1.5 text-[12px] transition-colors ${
                   sort === option.key
-                    ? "bg-violet/25 text-ink shadow-[inset_0_0_0_1px_rgba(139,92,246,0.5)]"
+                    ? "bg-primary/12 text-ink"
                     : "text-muted hover:text-ink"
                 }`}
               >
@@ -103,7 +103,7 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
               aria-pressed={tag === null}
               className={`rounded-full border px-3 py-1 text-[11.5px] transition-colors ${
                 tag === null
-                  ? "border-violet/60 bg-violet/15 text-ink"
+                  ? "border-primary/50 bg-primary/10 text-ink"
                   : "border-line text-muted hover:border-line-2 hover:text-ink"
               }`}
             >
@@ -117,7 +117,7 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
                 aria-pressed={tag === value}
                 className={`rounded-full border px-3 py-1 text-[11.5px] transition-colors ${
                   tag === value
-                    ? "border-violet/60 bg-violet/15 text-ink"
+                    ? "border-primary/50 bg-primary/10 text-ink"
                     : "border-line text-muted hover:border-line-2 hover:text-ink"
                 }`}
               >
@@ -147,13 +147,13 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
               setQuery("");
               setTag(null);
             }}
-            className="mt-5 rounded-full border border-line-2 px-4 py-1.5 text-[12px] text-ink-soft transition-colors hover:border-violet/60 hover:text-ink"
+            className="mt-5 rounded-full border border-line-2 px-4 py-1.5 text-[12px] text-ink-soft transition-colors hover:border-primary/50 hover:text-ink"
           >
             清除筛选
           </button>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-[18px] sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((item) => (
             <ItemCard key={`${item.kind}-${item.slug}`} item={item} />
           ))}

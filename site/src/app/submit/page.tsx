@@ -64,7 +64,7 @@ const RULES = [
 
 function CodeBlock({ children }: { children: string }) {
   return (
-    <pre className="mt-4 overflow-x-auto rounded-xl border border-line bg-void/70 p-4 font-mono text-[11.5px] leading-[1.75] text-[#cfd6f5]">
+    <pre className="mt-4 overflow-x-auto rounded-xl border border-line bg-white/[0.03] p-4 font-mono text-[11.5px] leading-[1.75] text-ink-soft">
       {children}
     </pre>
   );
@@ -75,21 +75,21 @@ export default function SubmitPage() {
     <div className="mx-auto max-w-3xl px-5 py-14 sm:px-8">
       <header>
         <p className="eyebrow">contribute</p>
-        <h1 className="mt-3 text-[clamp(1.8rem,3.6vw,2.4rem)] font-semibold tracking-[-0.03em]">
+        <h1 className="mt-3 text-[clamp(1.8rem,3.6vw,2.4rem)] font-normal tracking-[-0.02em]">
           提交你的<span className="text-aurora">作品</span>
         </h1>
         <p className="mt-4 text-[13.5px] leading-relaxed text-muted">
-          没有上传入口，也没有账号系统：作品就是仓库里的一个目录，通过 Pull Request 提交。
+          作品就是仓库里的一个目录，通过 Pull Request 提交。
           合并之后，网站会在一两分钟内自动更新。
         </p>
       </header>
 
       <section className="card-glow mt-10 p-6">
-        <h2 className="text-[14.5px] font-semibold tracking-tight text-ink">一次提交需要包含</h2>
+        <h2 className="text-[14.5px] font-medium tracking-tight text-ink">一次提交需要包含</h2>
         <ul className="mt-4 space-y-2.5 text-[12.5px] leading-relaxed text-ink-soft">
           {CHECKLIST.map((line) => (
             <li key={line} className="flex gap-3">
-              <span className="mt-[0.6em] h-1 w-1 shrink-0 rounded-full bg-violet" />
+              <span className="mt-[0.6em] h-1 w-1 shrink-0 rounded-full bg-primary" />
               <span>{line}</span>
             </li>
           ))}
@@ -97,14 +97,14 @@ export default function SubmitPage() {
       </section>
 
       <section className="mt-10">
-        <h2 className="text-[14.5px] font-semibold tracking-tight text-ink">壁纸场景</h2>
+        <h2 className="text-[14.5px] font-medium tracking-tight text-ink">壁纸场景</h2>
         <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
           纯静态包只允许 HTML 与 CSS；需要 JavaScript 时申请{" "}
-          <code className="rounded bg-violet/15 px-1.5 py-0.5 font-mono text-[11px] text-[#ddd6fe]">
+          <code className="rounded border border-line bg-primary/10 px-1.5 py-0.5 font-mono text-[11px] text-accent">
             wallpaper.script
           </code>
           ，通过{" "}
-          <code className="rounded bg-violet/15 px-1.5 py-0.5 font-mono text-[11px] text-[#ddd6fe]">
+          <code className="rounded border border-line bg-primary/10 px-1.5 py-0.5 font-mono text-[11px] text-accent">
             @lull/scene-sdk
           </code>{" "}
           读取参数与视口，不要试图访问宿主。
@@ -113,11 +113,11 @@ export default function SubmitPage() {
       </section>
 
       <section className="mt-10">
-        <h2 className="text-[14.5px] font-semibold tracking-tight text-ink">桌面工具</h2>
+        <h2 className="text-[14.5px] font-medium tracking-tight text-ink">桌面工具</h2>
         <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
           静态 Web 包 + 一份 widget.json。能力只能从宿主白名单里选，申请得越少越容易过审：
           不需要联网就别写{" "}
-          <code className="rounded bg-violet/15 px-1.5 py-0.5 font-mono text-[11px] text-[#ddd6fe]">
+          <code className="rounded border border-line bg-primary/10 px-1.5 py-0.5 font-mono text-[11px] text-accent">
             widget.network
           </code>
           。
@@ -126,7 +126,7 @@ export default function SubmitPage() {
       </section>
 
       <section className="mt-10 rounded-2xl border border-line bg-panel/50 p-6">
-        <h2 className="text-[14.5px] font-semibold tracking-tight text-ink">合并标准</h2>
+        <h2 className="text-[14.5px] font-medium tracking-tight text-ink">合并标准</h2>
         <dl className="mt-4 space-y-3 text-[12.5px]">
           {RULES.map((row) => (
             <div key={row.term} className="grid gap-1 sm:grid-cols-[7rem_1fr] sm:gap-4">
@@ -138,7 +138,7 @@ export default function SubmitPage() {
       </section>
 
       <section className="mt-10">
-        <h2 className="text-[14.5px] font-semibold tracking-tight text-ink">然后呢</h2>
+        <h2 className="text-[14.5px] font-medium tracking-tight text-ink">然后呢</h2>
         <ol className="mt-3 space-y-2.5 text-[12.5px] leading-relaxed text-ink-soft">
           <li>1. 开 Pull Request。校验工作流会跑一遍 content:check，失败会直接标红。</li>
           <li>2. 维护者审内容与许可。需要改的会在 PR 里指出，改完自动重跑。</li>

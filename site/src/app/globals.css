@@ -1,26 +1,29 @@
 @import "tailwindcss";
 
-/* 深色霓虹画廊：底色压到近黑，用紫→品红→青的渐变做唯一强调色。
-   视觉作品社区要让预览图发光，界面本身必须退到后面。 */
+/* 全站视觉对齐 Lull 主站（lull-desktop.github.io/Lull）：
+   近黑的墨绿底 + 苔绿强调 + 暖砂点缀，标题用 400 字重拉开呼吸感，
+   描边一律是半透明的绿——不用实心灰线，也不再用霓虹发光。 */
 @theme {
-  --color-void: #05060d;
-  --color-void-2: #0a0b16;
-  --color-panel: #0d0f1d;
-  --color-panel-2: #14162a;
-  --color-ink: #edefff;
-  --color-ink-soft: #c2c6e2;
-  --color-muted: #8b90b2;
-  --color-line: #1e2038;
-  --color-line-2: #2c3054;
-  --color-violet: #8b5cf6;
-  --color-fuchsia: #d946ef;
-  --color-teal: #3ddcbf;
-  --color-sand: #f5c97b;
+  --color-void: #060a09;
+  --color-void-2: #0a1110;
+  --color-panel: #0b1211;
+  --color-panel-2: #0e1614;
+  --color-ink: #e6eee4;
+  --color-ink-soft: #c6d3c9;
+  --color-muted: #83968e;
+  --color-faint: #5d6f68;
+  --color-line: #bed6ba22;
+  --color-line-2: #bed6ba3d;
+  --color-primary: #9fbf96;
+  --color-accent: #c8e0b6;
+  --color-aurora: #8fc0d2;
+  --color-dusk: #e0a878;
+  --color-on-accent: #08110c;
 
-  --font-sans: "Inter", "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui,
-    sans-serif;
-  --font-mono: "JetBrains Mono", "Cascadia Code", "SF Mono", ui-monospace,
-    monospace;
+  --font-sans: system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", "PingFang SC",
+    "Hiragino Sans GB", "Noto Sans SC", sans-serif;
+  --font-serif: ui-serif, Georgia, "Songti SC", "Source Han Serif SC", serif;
+  --font-mono: ui-monospace, "Cascadia Mono", SFMono-Regular, Consolas, monospace;
 }
 
 @layer base {
@@ -32,27 +35,43 @@
 
   body {
     background-color: var(--color-void);
-    color: var(--color-ink);
+    color: var(--color-ink-soft);
     font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.75;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    /* 两处极淡的环境光，让整页不像纯黑贴图 */
+    /* 顶部一抹苔绿晨雾，右上一点暖砂——和主站同一套环境光 */
     background-image:
-      radial-gradient(90rem 42rem at 12% -8%, rgba(139, 92, 246, 0.16), transparent 60%),
-      radial-gradient(70rem 38rem at 92% 8%, rgba(217, 70, 239, 0.1), transparent 62%);
+      radial-gradient(120% 60% at 50% -10%, rgba(35, 84, 66, 0.42) 0%, transparent 60%),
+      radial-gradient(60% 40% at 85% 10%, rgba(224, 168, 120, 0.08) 0%, transparent 70%);
     background-repeat: no-repeat;
     background-attachment: fixed;
   }
 
+  h1,
+  h2,
+  h3,
+  h4 {
+    color: var(--color-ink);
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    line-height: 1.28;
+  }
+
   ::selection {
-    background: rgba(139, 92, 246, 0.42);
+    background: rgba(159, 191, 150, 0.32);
     color: #fff;
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-violet);
+    outline: 2px solid var(--color-primary);
     outline-offset: 3px;
-    border-radius: 6px;
+    border-radius: 4px;
+  }
+
+  img {
+    max-width: 100%;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -69,80 +88,54 @@
 }
 
 @layer components {
-  /* 渐变文字：标题里那个"会动的东西" */
+  /* 渐变文字：青绿 → 苔绿 → 极光蓝，只在标题的最后一个短语上用 */
   .text-aurora {
-    background-image: linear-gradient(
-      100deg,
-      #c4b5fd 0%,
-      #e879f9 38%,
-      #7dd3fc 68%,
-      #3ddcbf 100%
-    );
+    background-image: linear-gradient(100deg, #c8e0b6 0%, #9fbf96 46%, #8fc0d2 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
   }
 
-  /* 发光描边卡片：1px 渐变边 + 内侧高光，替代实心描边 */
-  .card-glow {
-    position: relative;
-    border-radius: 18px;
-    background:
-      linear-gradient(180deg, rgba(20, 22, 42, 0.92), rgba(11, 12, 24, 0.94));
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.05),
-      0 24px 60px -34px rgba(0, 0, 0, 0.9);
-  }
-  .card-glow::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(
-      150deg,
-      rgba(160, 130, 255, 0.4),
-      rgba(255, 255, 255, 0.05) 38%,
-      rgba(61, 220, 191, 0.22)
-    );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
-    pointer-events: none;
-    transition: opacity 240ms ease;
+  /* 章节小标题：等宽大写 + 大字距，和主站的 .eyebrow 一致 */
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--color-primary);
   }
 
-  /* 主按钮：渐变底 + 外发光 */
+  /* 衬线字标：只在品牌与引用上用 */
+  .wordmark {
+    font-family: var(--font-serif);
+    letter-spacing: 0.36em;
+    text-transform: uppercase;
+    color: var(--color-ink);
+  }
+
+  /* 主按钮：亮苔绿实心 + 深墨字，悬停微抬 + 绿光，不用渐变 */
   .btn-primary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
     border-radius: 999px;
-    padding: 0.7rem 1.25rem;
+    padding: 0.62rem 1.25rem;
     font-size: 13.5px;
     font-weight: 600;
-    color: #fff;
-    background-image: linear-gradient(100deg, #7c3aed, #d946ef);
-    box-shadow:
-      0 10px 30px -12px rgba(168, 85, 247, 0.75),
-      inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    letter-spacing: 0.01em;
+    color: var(--color-on-accent);
+    background: var(--color-accent);
     transition:
-      transform 200ms ease,
-      box-shadow 200ms ease,
-      filter 200ms ease;
+      transform 180ms ease,
+      box-shadow 250ms ease,
+      background-color 200ms ease;
   }
   .btn-primary:hover {
     transform: translateY(-1px);
-    filter: brightness(1.06);
-    box-shadow:
-      0 16px 38px -14px rgba(217, 70, 239, 0.8),
-      inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    background: #d5ecc4;
+    box-shadow: 0 10px 30px -12px rgba(200, 224, 182, 0.5);
   }
 
   .btn-ghost {
@@ -151,35 +144,92 @@
     justify-content: center;
     gap: 0.5rem;
     border-radius: 999px;
-    padding: 0.7rem 1.15rem;
+    padding: 0.62rem 1.15rem;
     font-size: 13.5px;
-    color: var(--color-ink-soft);
+    font-weight: 500;
+    color: var(--color-ink);
     border: 1px solid var(--color-line-2);
-    background: rgba(255, 255, 255, 0.02);
+    background: transparent;
     transition:
       border-color 200ms ease,
       color 200ms ease,
       background 200ms ease;
   }
   .btn-ghost:hover {
+    border-color: var(--color-primary);
+    background: rgba(159, 191, 150, 0.08);
     color: #fff;
-    border-color: rgba(139, 92, 246, 0.6);
-    background: rgba(139, 92, 246, 0.1);
   }
 
-  /* 章节小标题 */
-  .eyebrow {
-    font-family: var(--font-mono);
-    font-size: 10.5px;
-    letter-spacing: 0.24em;
-    text-transform: uppercase;
-    color: var(--color-muted);
+  /* 页面容器：设计宽度 1440，内容区 1312（左右各 64）。
+     首页的英雄区是「文案 / 舞台 / 侧栏」三栏，需要这个宽度。 */
+  .shell {
+    width: 100%;
+    max-width: 1440px;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
+  @media (min-width: 768px) {
+    .shell {
+      padding-inline: 2rem;
+    }
+  }
+  @media (min-width: 1440px) {
+    .shell {
+      padding-inline: 4rem;
+    }
+  }
+
+  /* 主预览卡：细描边 + 大圆角 + 一层柔光，替代原来的紫色重发光 */
+  .stage-glow {
+    border: 1px solid var(--color-line-2);
+    box-shadow:
+      0 24px 60px -30px rgba(0, 0, 0, 0.9),
+      0 0 60px -20px rgba(159, 191, 150, 0.35);
+  }
+
+  /* 卡片：半透明绿描边 + 顶亮底暗的一层薄渐变 */
+  .card-glow {
+    position: relative;
+    border-radius: 16px;
+    border: 1px solid var(--color-line);
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.028),
+      rgba(255, 255, 255, 0)
+    );
+    transition:
+      border-color 250ms ease,
+      transform 250ms ease;
+  }
+  .card-glow:hover {
+    border-color: var(--color-line-2);
+  }
+
+  /* 侧栏小卡：比主面板再薄一层 */
+  .rail-card {
+    border-radius: 16px;
+    border: 1px solid var(--color-line);
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  /* 细横规：两端淡出，用来切区块（主站的 .rule） */
+  .rule {
+    height: 1px;
+    border: 0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      var(--color-line-2) 20%,
+      var(--color-line-2) 80%,
+      transparent
+    );
   }
 
   /* 正文排版：README 渲染结果 */
   .prose-lull {
     color: var(--color-ink-soft);
-    font-size: 14.5px;
+    font-size: 14px;
     line-height: 1.85;
   }
   .prose-lull > * + * {
@@ -189,7 +239,7 @@
   .prose-lull h2,
   .prose-lull h3 {
     color: var(--color-ink);
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: -0.01em;
     margin-top: 1.9em;
     line-height: 1.4;
@@ -204,17 +254,18 @@
     font-size: 0.98rem;
   }
   .prose-lull strong {
-    color: #fff;
+    color: var(--color-ink);
     font-weight: 600;
   }
   .prose-lull a {
-    color: #c4b5fd;
+    color: var(--color-accent);
     text-decoration: underline;
     text-underline-offset: 3px;
+    text-decoration-color: rgba(159, 191, 150, 0.4);
     text-decoration-thickness: 1px;
   }
   .prose-lull a:hover {
-    color: #e879f9;
+    color: #eaf6de;
   }
   .prose-lull ul,
   .prose-lull ol {
@@ -230,34 +281,36 @@
     margin-top: 0.35em;
   }
   .prose-lull li::marker {
-    color: var(--color-line-2);
+    color: var(--color-primary);
   }
   .prose-lull code {
     font-family: var(--font-mono);
-    font-size: 0.86em;
-    background: rgba(139, 92, 246, 0.14);
-    color: #ddd6fe;
+    font-size: 0.88em;
+    background: rgba(159, 191, 150, 0.1);
+    border: 1px solid var(--color-line);
+    color: var(--color-accent);
     border-radius: 5px;
-    padding: 0.12em 0.4em;
+    padding: 0.12em 0.42em;
   }
   .prose-lull pre {
-    background: #070812;
+    background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--color-line);
-    color: #cfd6f5;
+    color: var(--color-ink-soft);
     border-radius: 12px;
     padding: 1rem 1.1rem;
     overflow-x: auto;
-    font-size: 12.5px;
-    line-height: 1.7;
+    font-size: 12px;
+    line-height: 1.75;
   }
   .prose-lull pre code {
     background: transparent;
+    border: 0;
     padding: 0;
     color: inherit;
     font-size: inherit;
   }
   .prose-lull blockquote {
-    border-left: 2px solid rgba(139, 92, 246, 0.5);
+    border-left: 2px solid var(--color-primary);
     padding-left: 0.9em;
     color: var(--color-muted);
   }
@@ -274,9 +327,11 @@
     vertical-align: top;
   }
   .prose-lull th {
-    color: var(--color-ink);
-    font-weight: 600;
-    background: rgba(139, 92, 246, 0.08);
+    color: var(--color-muted);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    font-size: 11.5px;
   }
   .prose-lull hr {
     border: 0;
@@ -288,7 +343,7 @@
 }
 
 @layer utilities {
-  /* 卡片悬停时的外发光 */
+  /* 卡片悬停时的抬升（悬停发光改成墨绿投影，不再用紫光） */
   .glow-hover {
     transition:
       transform 260ms ease,
@@ -296,18 +351,16 @@
       border-color 260ms ease;
   }
   .glow-hover:hover {
-    transform: translateY(-3px);
-    box-shadow:
-      0 30px 70px -40px rgba(139, 92, 246, 0.9),
-      0 0 0 1px rgba(139, 92, 246, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.9);
   }
 
-  /* 网格底纹，给深色区一点结构感 */
+  /* 网格底纹：给深色区一点结构感，线用淡绿 */
   .grid-lines {
     background-image:
-      linear-gradient(to right, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.045) 1px, transparent 1px);
-    background-size: 64px 64px;
+      linear-gradient(to right, rgba(190, 214, 186, 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(190, 214, 186, 0.045) 1px, transparent 1px);
+    background-size: 72px 72px;
     mask-image: radial-gradient(80% 70% at 50% 0%, #000 20%, transparent 75%);
   }
 

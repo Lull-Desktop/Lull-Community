@@ -13,10 +13,10 @@ export default function ScenesPage() {
   const items = scenes();
 
   return (
-    <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
+    <div className="shell py-12">
       <header className="max-w-2xl">
         <p className="eyebrow">scenes</p>
-        <h1 className="mt-3 flex items-baseline gap-3 text-[clamp(1.7rem,3.4vw,2.3rem)] font-semibold tracking-[-0.02em]">
+        <h1 className="mt-3 flex items-baseline gap-3 text-[clamp(1.7rem,3.4vw,2.3rem)] font-normal tracking-[-0.01em]">
           壁纸场景
           <span className="font-mono text-[0.9rem] text-line-2">
             {String(items.length).padStart(2, "0")}

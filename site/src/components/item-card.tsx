@@ -2,16 +2,16 @@ import Link from "next/link";
 
 import { asset, formatBytes, itemHref, kindLabel, type CatalogItem } from "@/lib/catalog";
 
-/** 作品卡片：预览图占绝对主导，霓虹只在悬停时出现。 */
+/** 作品卡片：预览图占主导，描边与悬停用主站那套淡绿——不再有霓虹光。 */
 export function ItemCard({ item, priority = false }: { item: CatalogItem; priority?: boolean }) {
   return (
     <Link href={itemHref(item)} className="group card-glow glow-hover flex flex-col overflow-hidden">
-      <div className="relative aspect-[16/10] overflow-hidden bg-void">
+      <div className="relative aspect-[16/9] overflow-hidden bg-void">
         <img
           src={asset(item.preview)}
           alt={`${item.name} 的预览图`}
           width={1280}
-          height={800}
+          height={720}
           loading={priority ? "eager" : "lazy"}
           decoding="async"
           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
@@ -29,7 +29,7 @@ export function ItemCard({ item, priority = false }: { item: CatalogItem; priori
             {kindLabel(item.kind)}
           </span>
           {item.featured && (
-            <span className="rounded-md bg-gradient-to-r from-violet/85 to-fuchsia/85 px-2 py-0.5 text-[10.5px] font-medium text-white">
+            <span className="rounded-md border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10.5px] font-medium text-accent backdrop-blur-md">
               精选
             </span>
           )}
@@ -47,19 +47,23 @@ export function ItemCard({ item, priority = false }: { item: CatalogItem; priori
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 px-4 py-3.5">
+      <div className="flex flex-1 flex-col gap-1.5 px-3.5 py-3.5">
         <div className="flex items-baseline justify-between gap-3">
-          <h3 className="truncate text-[14.5px] font-semibold tracking-tight text-ink transition-colors group-hover:text-white">
+          <h3 className="truncate text-[13.5px] font-medium tracking-tight text-ink transition-colors group-hover:text-white">
             {item.name}
           </h3>
-          <span className="shrink-0 font-mono text-[10.5px] text-muted">v{item.version}</span>
+          <span className="shrink-0 font-mono text-[10px] text-faint">v{item.version}</span>
         </div>
 
-        <p className="line-clamp-2 text-[12.5px] leading-relaxed text-muted">{item.description}</p>
+        <p className="line-clamp-2 text-[12px] leading-[1.7] text-muted">{item.description}</p>
 
-        <div className="mt-auto flex items-center gap-2 pt-1 text-[11px] text-muted">
+        <div className="mt-auto flex items-center gap-2 pt-1 font-mono text-[10px] text-muted/85">
           <span className="truncate">{item.author}</span>
-          <span className="ml-auto shrink-0 font-mono">{item.license}</span>
+          <span className="ml-auto shrink-0">{item.license}</span>
+          <span className="shrink-0 text-line-2" aria-hidden="true">
+            ·
+          </span>
+          <span className="shrink-0">{formatBytes(item.downloadBytes)}</span>
         </div>
       </div>
     </Link>
