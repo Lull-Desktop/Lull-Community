@@ -2,6 +2,9 @@
 
 Lull 的第三方社区站：浏览、下载、提交**壁纸场景**与**桌面工具**。
 
+- 线上站点：<https://lull-desktop.github.io/Lull-Community/>
+- 仓库：<https://github.com/Lull-Desktop/Lull-Community>
+
 网站是静态的，内容就是仓库里的目录。开发者提 PR，维护者合并，GitHub Actions
 自动校验、打包、构建、发布到 GitHub Pages——没有数据库，没有后端 API，没有账号系统。
 
