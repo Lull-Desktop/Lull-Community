@@ -159,6 +159,99 @@ const EXAMPLES = [
   },
 ];
 
+const COMMIT_TYPES = [
+  { type: "feat", use: "新增作品，或站点新增能力" },
+  { type: "content", use: "更新已有作品：清单、参数、素材" },
+  { type: "fix", use: "修内容或站点的错误" },
+  { type: "docs", use: "文档、注释、README" },
+  { type: "style", use: "只动样式，不改行为" },
+  { type: "refactor", use: "重构，对外行为不变" },
+  { type: "perf", use: "性能" },
+  { type: "test", use: "测试与校验脚本" },
+  { type: "build", use: "依赖、打包、产物" },
+  { type: "ci", use: "工作流与钩子" },
+  { type: "chore", use: "其他杂务" },
+  { type: "revert", use: "回滚" },
+];
+
+const COMMIT_SCOPES = ["scene", "widget", "content", "site", "ci", "deps", "docs", "repo"];
+
+const COMMIT_EXAMPLES = `feat(scene): 新增「雾岚」静态场景
+content(widget): 呼吸节奏 1.1.0，呼气延长到 6 秒
+fix(site): 详情页长标题在窄屏溢出
+ci: PR 标题加提交信息校验
+feat(scene)!: 参数 key 改名，旧配置不再兼容`;
+
+const BRANCH_RULES = [
+  {
+    term: "分支命名",
+    body: "feat/<slug>、fix/<slug>、content/<scene|widget>-<slug>、docs/<topic>、chore/<topic>。从最新 main 拉出，活不过三天。",
+  },
+  {
+    term: "PR 粒度",
+    body: "一个 PR 只做一件事：一个作品、一次修，或一组同源重构。顺手改了别的目录，review 会先让你拆。",
+  },
+  {
+    term: "合并方式",
+    body: "只允许 squash。merge commit 与 rebase 合并在设置里关掉，main 始终是一条直线，回滚就是 revert 一个提交。",
+  },
+  {
+    term: "提交信息",
+    body: "squash 用 PR 标题当提交信息，所以标题就是正文。分支里的中间提交不校验，写「wip」也行，反正会被压掉。",
+  },
+  {
+    term: "清理与发布",
+    body: "合并后自动删源分支。main 一动就触发部署，没有 release 分支，也没有手工发布这一步。",
+  },
+];
+
+const CHECKS = [
+  {
+    term: "Validate content",
+    body: "每个 PR 都跑：content:check → 生成索引 → 站点构建（含类型检查）。不按路径过滤，否则只改文档的 PR 会一直等这个不会触发的检查。通过后把 zip 传成 7 天有效的 lull-packages 产物，reviewer 直接下载试装。",
+  },
+  {
+    term: "Commit messages",
+    body: "每个 PR 校验标题是否符合 type(scope): subject——type 与 scope 都在白名单里，subject 4–72 字、不以句号结尾。只校验标题，不管分支里的中间提交。",
+  },
+  {
+    term: "Deploy site",
+    body: "合并进 main 后重跑同一套校验，再构建并发布 Pages。发布不并发：正在部署时不会取消，避免站点停在半成品。",
+  },
+  {
+    term: "本地钩子（可选）",
+    body: "仓库里的 .githooks/commit-msg 调同一个脚本。git config core.hooksPath .githooks 挂上，提交时就能拦住；不装也不会漏，PR 那关照样拦。",
+  },
+];
+
+const GATES_HARD: ReactNode[] = [
+  <>
+    两个必需检查都为绿：<InlineCode>Validate content / content + site</InlineCode> 与{" "}
+    <InlineCode>Commit messages / 提交信息</InlineCode>。
+  </>,
+  "至少一位维护者 approve，且所有对话已标记解决。",
+  "分支已与 main 同步（Require branches to be up to date）。",
+  "更新已有作品：版本号递增、id 与 slug 不变，摘要已重算并出现在 diff 里。",
+  "体积在限内：512 个文件、单文件 8 MiB、整包 64 MiB；preview.webp 不超过 3 MiB。",
+  "能力最小化，每项在 PR 模板里写了理由；不加载远程脚本、不伪造能力声明。",
+  "素材来源与许可写清楚，目录内 LICENSE 与清单 license 字段一致。",
+];
+
+const GATES_SOFT = [
+  "README 太短、预览图偏糊——可以先合，之后单独开 PR 补。",
+  "标签、精选位没填——只影响展示，不影响安装。",
+  "提交粒度偏大——建议拆，但不拦；拆不动就在正文写清楚。",
+];
+
+const SPEC_HISTORY = [
+  {
+    version: "v1.0",
+    date: "2026-10-26",
+    change: "首次成文：提交信息、分支与合并、自动校验、合并门槛。",
+    files: "validate.yml · commit.yml · deploy.yml",
+  },
+];
+
 function InlineCode({ children }: { children: ReactNode }) {
   return (
     <code className="rounded border border-line bg-primary/10 px-1.5 py-0.5 font-mono text-[11px] text-accent">
@@ -317,10 +410,115 @@ export default function SubmitPage() {
         </dl>
       </section>
 
+      <section id="spec" className="mt-10 scroll-mt-24">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h2 className="text-[14.5px] font-medium tracking-tight text-ink">提交规范</h2>
+          <p className="font-mono text-[10px] tracking-[0.18em] text-faint">v1.0 · 2026-10-26</p>
+        </div>
+        <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
+          从写第一行提交信息到按下合并，四层：提交信息 → 分支与合并 → 自动校验 → 合并门槛。
+          前三层有 Actions 与钩子兜底，最后一层是人的判断。规则改了要升版本号，旧 PR 不追溯。
+        </p>
+
+        <h3 className="mt-6 text-[13px] font-medium tracking-tight text-ink">① 提交信息</h3>
+        <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted">
+          格式 <InlineCode>type(scope): subject</InlineCode>，冒号后一个半角空格；subject
+          4–72 字，不以句号结尾，细节放正文。scope 可省略，省略时连括号一起省。破坏性变更在
+          type 后加 <InlineCode>!</InlineCode>，或在正文单起一段写{" "}
+          <InlineCode>BREAKING CHANGE</InlineCode>。        </p>
+        <CodeBlock>{COMMIT_EXAMPLES}</CodeBlock>
+        <dl className="mt-4 grid gap-x-6 gap-y-2 text-[12px] sm:grid-cols-2">
+          {COMMIT_TYPES.map((row) => (
+            <div key={row.type} className="grid grid-cols-[4.5rem_1fr] gap-2">
+              <dt className="font-mono text-[11px] leading-relaxed text-accent">{row.type}</dt>
+              <dd className="leading-relaxed text-muted">{row.use}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="mt-3 text-[11.5px] leading-relaxed text-faint">
+          scope 只写模块：<span className="font-mono">{COMMIT_SCOPES.join(" / ")}</span>
+          。白名单外的一律报错——多一个自造 scope，就等于多一种没人认识的分类。
+        </p>
+
+        <h3 className="mt-6 text-[13px] font-medium tracking-tight text-ink">② 分支与合并</h3>
+        <dl className="mt-2 space-y-2.5 text-[12.5px]">
+          {BRANCH_RULES.map((row) => (
+            <div key={row.term} className="grid gap-1 sm:grid-cols-[7rem_1fr] sm:gap-4">
+              <dt className="font-medium text-ink">{row.term}</dt>
+              <dd className="leading-relaxed text-muted">{row.body}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <h3 className="mt-6 text-[13px] font-medium tracking-tight text-ink">③ 自动校验</h3>
+        <dl className="mt-2 space-y-2.5 text-[12.5px]">
+          {CHECKS.map((row) => (
+            <div key={row.term} className="grid gap-1 sm:grid-cols-[9rem_1fr] sm:gap-4">
+              <dt className="font-mono text-[11.5px] leading-relaxed text-accent">{row.term}</dt>
+              <dd className="leading-relaxed text-muted">{row.body}</dd>
+            </div>
+          ))}
+        </dl>
+
+        <h3 className="mt-6 text-[13px] font-medium tracking-tight text-ink">④ 合并门槛</h3>
+        <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted">
+          左边缺一不可，右边只记账不拦。硬性里的 approve、同步与「只允许 squash」是仓库
+          Settings → Branches 的开关，代码里看不到，所以写在这一页；改设置时记得同步改这里。
+        </p>
+        <div className="mt-3 grid gap-3 sm:grid-cols-[1.15fr_1fr]">
+          <div className="rounded-xl border border-line-2 bg-panel/60 p-4">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
+              hard · 缺一不可
+            </p>
+            <ul className="mt-3 space-y-2 text-[12px] leading-relaxed text-ink-soft">
+              {GATES_HARD.map((item, index) => (
+                <li key={index} className="flex gap-2.5">
+                  <span className="mt-[0.62em] h-1 w-1 shrink-0 rounded-full bg-primary" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="rounded-xl border border-line p-4">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-faint">
+              soft · 只记账
+            </p>
+            <ul className="mt-3 space-y-2 text-[12px] leading-relaxed text-muted">
+              {GATES_SOFT.map((item) => (
+                <li key={item} className="flex gap-2.5">
+                  <span className="mt-[0.62em] h-1 w-1 shrink-0 rounded-full bg-faint" />
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <h3 className="mt-6 text-[13px] font-medium tracking-tight text-ink">规范版本</h3>
+        <dl className="mt-2 space-y-2 text-[12px]">
+          {SPEC_HISTORY.map((row) => (
+            <div key={row.version} className="grid gap-1 sm:grid-cols-[6rem_6.5rem_1fr] sm:gap-4">
+              <dt className="font-mono text-[11.5px] leading-relaxed text-accent">{row.version}</dt>
+              <dd className="font-mono text-[11px] leading-relaxed text-faint">{row.date}</dd>
+              <dd className="leading-relaxed text-muted">
+                {row.change}
+                <span className="mt-0.5 block font-mono text-[10.5px] text-faint">{row.files}</span>
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <p className="mt-3 text-[11.5px] leading-relaxed text-faint">
+          改规范：先改工作流与本页，再在「规范版本」里加一行。凡是写成硬性条件的，都要能在工作流或仓库设置里落地——落不了地的，就不该写进规范。
+        </p>
+      </section>
+
       <section className="mt-10">
         <h2 className="text-[14.5px] font-medium tracking-tight text-ink">然后呢</h2>
         <ol className="mt-3 space-y-2.5 text-[12.5px] leading-relaxed text-ink-soft">
-          <li>1. 开 Pull Request。校验工作流会跑一遍 content:check，失败会直接标红。</li>
+          <li>
+            1. 开 Pull Request。校验与提交信息两个工作流会先跑一遍，失败直接标红，
+            检查项在 PR 页面底部能逐条看到。
+          </li>
           <li>2. 维护者审内容与许可。需要改的会在 PR 里指出，改完自动重跑。</li>
           <li>3. 合并进 main。部署工作流重新生成索引、构建静态站、发布 Pages。</li>
         </ol>

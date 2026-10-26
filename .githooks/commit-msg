@@ -1,0 +1,11 @@
+#!/bin/sh
+# 提交信息钩子：与 PR 工作流共用 scripts/check-commit.mjs。
+#
+# 这是可选的本地兜底，不装也能合并（PR 工作流会拦），装法：
+#   git config core.hooksPath .githooks
+#   chmod +x .githooks/commit-msg   # macOS / Linux 需要；Windows 不用
+# 取消：
+#   git config --unset core.hooksPath
+set -e
+
+node scripts/check-commit.mjs --file "$1"

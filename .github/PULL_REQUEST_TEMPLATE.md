@@ -2,6 +2,9 @@
 
 <!-- 勾选适用的项，并补一句说明 -->
 
+> 标题就是合并后的提交信息（本仓库只做 squash），格式 `type(scope): subject`。
+> 完整规范：<https://lull-desktop.github.io/Lull-Community/submit#spec>
+
 - [ ] 新增壁纸场景（`content/scenes/<slug>/`）
 - [ ] 新增桌面工具（`content/widgets/<slug>/`）
 - [ ] 更新已有作品（版本号已递增）
@@ -13,6 +16,7 @@
 
 ## 提交前自检
 
+- [ ] 分支从最新 `main` 拉出，一个 PR 只做一件事
 - [ ] `pnpm content:hash` 已跑过（摘要写回清单或 `.lull-integrity.json`）
 - [ ] `pnpm content:check` 本地通过
 - [ ] 用 `pnpm content:pack` 打出的 zip 真的拖进 Lull 装过，能正常显示/运行

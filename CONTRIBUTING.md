@@ -123,6 +123,17 @@ pnpm content:pack     # 产物在 artifacts/，拖进 Lull 真装一次
 PR 模板里有清单，逐项勾选。`validate.yml` 会跑校验、试构建，并把打好的 zip
 上传成构建产物——reviewer 可以直接下载试装。
 
+标题按 `type(scope): subject` 写，例如 `feat(scene): 新增「雾岚」静态场景`。
+本仓库只做 squash 合并，**标题就是 main 上的那条提交信息**，`commit.yml` 会校验它；
+类型与 scope 的白名单见站点投稿页的《提交规范》v1.0
+（<https://lull-desktop.github.io/Lull-Community/submit#spec>）。
+分支名用 `feat/<slug>`、`fix/<slug>`、`content/<kind>-<slug>`、`docs/<topic>`，
+合并后自动删除。想让本地就先拦住，可挂上仓库里的钩子：
+
+```bash
+git config core.hooksPath .githooks
+```
+
 ## 二、审查标准
 
 维护者合并前会看四件事：

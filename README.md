@@ -33,14 +33,17 @@ Lull-Community/
 ├── schemas/                     Lull 的 JSON Schema（逐字复制，不自创）
 ├── scripts/
 │   ├── validate-content.mjs     校验 + 摘要写回（--fix）
+│   ├── check-commit.mjs         提交信息校验（钩子与 PR 工作流共用）
 │   ├── build-catalog.mjs        索引 / 预览图 / zip
 │   ├── package-content.mjs      只打包到 artifacts/，供手工试装
 │   ├── new-item.mjs             生成作品骨架
 │   └── lib/{digest,zip}.mjs     摘要算法与 zip 写入（与安装器逐字节对齐）
 ├── site/                        Next.js 16 静态站（Tailwind v4）
 │   └── src/app/{page,scenes,widgets,submit}
+├── .githooks/commit-msg         可选的本地提交信息钩子
 └── .github/workflows/
     ├── validate.yml             PR：校验 + 试构建，只读权限
+    ├── commit.yml               PR：标题即提交信息，校验格式
     └── deploy.yml               main：校验 → 构建 → 部署 Pages
 ```
 

@@ -1,17 +1,12 @@
 name: Validate content
 
 # PR 只做校验与试构建，永远不发布。权限也只给读。
+#
+# 不按路径过滤：这个 job 是 main 的必需检查，一旦被 paths 跳过，
+# 只改文档的 PR 会永远停在 "Expected — Waiting for status to be reported"。
 on:
   pull_request:
-    paths:
-      - "content/**"
-      - "scripts/**"
-      - "schemas/**"
-      - "site/**"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - "pnpm-workspace.yaml"
-      - ".github/workflows/**"
+    branches: [main]
   workflow_dispatch:
 
 permissions:

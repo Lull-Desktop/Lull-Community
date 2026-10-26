@@ -12,6 +12,7 @@
     "content:check": "node scripts/validate-content.mjs",
     "content:hash": "node scripts/validate-content.mjs --fix",
     "content:pack": "node scripts/package-content.mjs",
+    "commit:check": "node scripts/check-commit.mjs --range origin/main..HEAD",
     "build:catalog": "node scripts/build-catalog.mjs",
     "build:site": "pnpm --dir site build",
     "build": "pnpm content:check && pnpm build:catalog && pnpm build:site",
