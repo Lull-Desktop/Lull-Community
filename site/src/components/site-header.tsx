@@ -7,11 +7,15 @@ import { useEffect, useState } from "react";
 import { SearchDialog } from "@/components/search-dialog";
 import { catalog } from "@/lib/catalog";
 
-const NAV = [
+/** Lull 客户端主站（社区入口），站外链接。 */
+const LULL_SITE_URL = "https://lull-desktop.github.io/Lull/";
+
+const NAV: { href: string; label: string; external?: boolean }[] = [
   { href: "/", label: "首页" },
   { href: "/scenes", label: "壁纸" },
   { href: "/widgets", label: "工具" },
   { href: "/submit", label: "提交作品" },
+  { href: LULL_SITE_URL, label: "Lull App", external: true },
 ];
 
 function Mark() {
@@ -66,20 +70,48 @@ export function SiteHeader() {
           </Link>
 
           <nav className="hidden items-center gap-1 lg:flex">
-            {NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={isActive(item.href) ? "page" : undefined}
-                className={`rounded-lg px-3 py-2 text-[13.5px] transition-colors ${
-                  isActive(item.href)
-                    ? "bg-primary/10 text-ink"
-                    : "text-muted hover:bg-primary/[0.06] hover:text-ink"
-                }`}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {NAV.map((item) =>
+              item.external ? (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="group inline-flex items-center gap-1 rounded-lg px-3 py-2 text-[13.5px] text-muted transition-colors hover:bg-primary/[0.06] hover:text-ink"
+                >
+                  {item.label}
+                  <svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    aria-hidden="true"
+                    className="mt-px text-faint transition-colors group-hover:text-ink-soft"
+                  >
+                    <path
+                      d="M3.5 8.5 8.5 3.5M4.2 3.5h4.3v4.3"
+                      stroke="currentColor"
+                      strokeWidth="1.4"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </a>
+              ) : (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={isActive(item.href) ? "page" : undefined}
+                  className={`rounded-lg px-3 py-2 text-[13.5px] transition-colors ${
+                    isActive(item.href)
+                      ? "bg-primary/10 text-ink"
+                      : "text-muted hover:bg-primary/[0.06] hover:text-ink"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ),
+            )}
           </nav>
 
           <div className="ml-auto flex items-center gap-2.5">
@@ -116,17 +148,38 @@ export function SiteHeader() {
 
         {/* 窄屏：横向可滚动的胶囊导航（桌面稿不展示，保留以不丢入口） */}
         <div className="no-scrollbar flex gap-1 overflow-x-auto border-t border-line/60 px-[1.25rem] py-2 lg:hidden">
-          {NAV.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`shrink-0 rounded-lg px-3 py-1 text-[12.5px] ${
-                isActive(item.href) ? "bg-primary/10 text-ink" : "text-muted"
-              }`}
-            >
-              {item.label}
-            </Link>
-          ))}
+          {NAV.map((item) =>
+            item.external ? (
+              <a
+                key={item.href}
+                href={item.href}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="inline-flex shrink-0 items-center gap-1 rounded-lg px-3 py-1 text-[12.5px] text-muted"
+              >
+                {item.label}
+                <svg width="9" height="9" viewBox="0 0 12 12" fill="none" aria-hidden="true" className="text-faint">
+                  <path
+                    d="M3.5 8.5 8.5 3.5M4.2 3.5h4.3v4.3"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </a>
+            ) : (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`shrink-0 rounded-lg px-3 py-1 text-[12.5px] ${
+                  isActive(item.href) ? "bg-primary/10 text-ink" : "text-muted"
+                }`}
+              >
+                {item.label}
+              </Link>
+            ),
+          )}
         </div>
       </header>
 

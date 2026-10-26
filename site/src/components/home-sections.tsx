@@ -96,18 +96,15 @@ export function Hero({ hero, items }: { hero: CatalogItem; items: CatalogItem[] 
           </p>
 
           <div className="flex flex-wrap items-center gap-3">
-            <Link href="/scenes" className="btn-primary !px-[18px] !py-3">
-              浏览壁纸
+            <Link href="https://lull-desktop.github.io/Lull/download/" className="btn-primary !px-[18px] !py-3">
+              下载Lull
               <span aria-hidden="true">→</span>
-            </Link>
-            <Link href="/widgets" className="btn-ghost !px-4 !py-3">
-              桌面工具
             </Link>
             <Link
               href="/submit"
               className="text-[12.5px] text-primary transition-colors hover:text-accent"
             >
-              提交作品 →
+              分享作品
             </Link>
           </div>
 
