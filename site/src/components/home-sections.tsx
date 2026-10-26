@@ -97,7 +97,7 @@ export function Hero({ hero, items }: { hero: CatalogItem; items: CatalogItem[] 
 
           <div className="flex flex-wrap items-center gap-3">
             <Link href="https://lull-desktop.github.io/Lull/download/" className="btn-primary !px-[18px] !py-3">
-              下载Lull
+              下载Lull-App
               <span aria-hidden="true">→</span>
             </Link>
             <Link
