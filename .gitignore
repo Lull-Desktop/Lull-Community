@@ -9,6 +9,7 @@ site/public/downloads/
 site/out/
 site/.next/
 site/next-env.d.ts
+site/*.tsbuildinfo
 
 # 本地打包产物
 artifacts/

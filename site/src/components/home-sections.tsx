@@ -1,5 +1,10 @@
 import Link from "next/link";
 
+import AnimatedContent from "@/components/react-bits/AnimatedContent";
+import ShinyText from "@/components/react-bits/ShinyText";
+import SplitText from "@/components/react-bits/SplitText";
+import { buttonVariants } from "@/components/ui/button";
+import { panelVariants } from "@/components/ui/panel";
 import {
   asset,
   catalog,
@@ -8,6 +13,7 @@ import {
   kindLabel,
   type CatalogItem,
 } from "@/lib/catalog";
+import { cn } from "@/lib/utils";
 
 /* ── 英雄区 ───────────────────────────────────────────── */
 
@@ -25,7 +31,7 @@ const FEATURES = [
       />
     ),
   },
- 
+
   {
     title: "内容即仓库",
     body: "PR 合并后自动校验、打包、发布",
@@ -48,6 +54,9 @@ function kindFullLabel(item: CatalogItem): string {
  * 三栏英雄区：左文案 / 中主预览（含作品缩略图条） / 右侧信息栏。
  * 参考稿是"舞台 + 侧栏实时信息"的视觉社区结构，这里把原来压在
  * 网格右侧的「最近收录」面板提上来，右侧信息栏与主图等高。
+ *
+ * 标题交给 React Bits 的 SplitText：按词/字拆开后逐段上升淡入，
+ * 加载即播放（首屏不该等滚动）。
  */
 export function Hero({ hero, items }: { hero: CatalogItem; items: CatalogItem[] }) {
   const filmstrip = items.slice(0, 4);
@@ -72,22 +81,45 @@ export function Hero({ hero, items }: { hero: CatalogItem; items: CatalogItem[] 
         <div className="grid-lines absolute inset-0 opacity-40" />
       </div>
 
-      <div className="shell grid items-stretch gap-7 pb-20 pt-14 lg:grid-cols-[380px_minmax(0,1fr)] xl:grid-cols-[396px_minmax(0,1fr)_340px]">
+      <div className="shell grid items-stretch gap-7 pt-14 pb-20 lg:grid-cols-[380px_minmax(0,1fr)] xl:grid-cols-[396px_minmax(0,1fr)_340px]">
         {/* 左：文案 + 能力点 + 统计（统计贴到栏底，和右侧信息栏齐平） */}
         <div className="flex flex-col gap-4">
-          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-line-2/80 bg-panel/70 py-1.5 pl-2.5 pr-3 text-[11.5px] text-ink-soft">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_8px_2px_rgba(159,191,150,0.7)]" />
+          <span className="inline-flex w-fit items-center gap-2 rounded-full border border-line-2/80 bg-panel/70 py-1.5 pr-3 pl-2.5 text-[11.5px] text-ink-soft">
+            <span className="size-1.5 rounded-full bg-primary shadow-[0_0_8px_2px_rgba(159,191,150,0.7)]" />
             社区作品持续收录中
             <span className="font-mono text-[10px] text-muted">
               {catalog.generatedAt.slice(5, 10).replace("-", " / ")}
             </span>
           </span>
 
-          <h1 className="text-[clamp(2.1rem,3.4vw,3.1rem)] font-normal leading-[1.22] tracking-[-0.02em]">
-            为安静的桌面，
-            <br />
-            添一点
-            <span className="text-aurora">会动的东西</span>
+          <h1 className="text-[clamp(2.1rem,3.4vw,3.1rem)] leading-[1.22] font-normal tracking-[-0.02em]">
+            <span className="block">
+              <SplitText
+                text="为安静的桌面，"
+                tag="span"
+                splitType="words"
+                effect="rise"
+                textAlign="left"
+                delay={0.1}
+                duration={0.75}
+                trigger="load"
+              />
+            </span>
+            <span className="block">
+              添一点
+              {/* 重点短语用 ShinyText：底色苔绿、一道极光蓝反光缓慢扫过。
+                  这里不能给 SplitText 套 `text-gradient`——拆字后的每个 char
+                  都有自己的层，父级的 background-clip:text 剪不到它们。 */}
+              <ShinyText
+                text="会动的东西"
+                color="#c8e0b6"
+                shineColor="#8fc0d2"
+                speed={4}
+                shineWidth={45}
+                trigger="view"
+                yoyo
+              />
+            </span>
           </h1>
 
           <p className="max-w-[372px] text-[14.5px] leading-[1.85] text-ink-soft">
@@ -96,7 +128,10 @@ export function Hero({ hero, items }: { hero: CatalogItem; items: CatalogItem[] 
           </p>
 
           <div className="flex flex-wrap items-center gap-3">
-            <Link href="https://lull-desktop.github.io/Lull/download/" className="btn-primary !px-[18px] !py-3">
+            <Link
+              href="https://lull-desktop.github.io/Lull/download/"
+              className={buttonVariants({ size: "lg" })}
+            >
               下载Lull-App
               <span aria-hidden="true">→</span>
             </Link>
@@ -111,7 +146,7 @@ export function Hero({ hero, items }: { hero: CatalogItem; items: CatalogItem[] 
           <ul className="mt-1 flex flex-col gap-2.5">
             {FEATURES.map((feature) => (
               <li key={feature.title} className="flex items-center gap-3">
-                <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-lg bg-primary/[0.07] text-primary ring-1 ring-inset ring-line">
+                <span className="flex size-[30px] shrink-0 items-center justify-center rounded-lg bg-primary/[0.07] text-primary ring-1 ring-line ring-inset">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                     {feature.icon}
                   </svg>
@@ -130,7 +165,7 @@ export function Hero({ hero, items }: { hero: CatalogItem; items: CatalogItem[] 
             {stats.map((stat, index) => (
               <div
                 key={stat.label}
-                className={`flex-1 ${index > 0 ? "border-l border-line pl-5" : ""}`}
+                className={cn("flex-1", index > 0 && "border-l border-line pl-5")}
               >
                 <dd className="font-mono text-[22px] leading-none text-ink">
                   {String(stat.value).padStart(2, "0")}
@@ -145,7 +180,7 @@ export function Hero({ hero, items }: { hero: CatalogItem; items: CatalogItem[] 
         <div className="flex flex-col gap-3.5">
           <Link
             href={itemHref(hero)}
-            className="stage-glow group relative block overflow-hidden rounded-3xl"
+            className={cn(panelVariants({ variant: "stage" }), "group relative block")}
           >
             <img
               src={asset(hero.preview)}
@@ -155,10 +190,10 @@ export function Hero({ hero, items }: { hero: CatalogItem; items: CatalogItem[] 
             <div className="absolute inset-0 bg-gradient-to-t from-void/95 via-void/20 to-transparent" />
 
             <div className="absolute inset-x-3.5 top-3.5 flex items-start justify-between">
-              <span className="rounded-full bg-void/70 px-2.5 py-1 text-[11px] text-ink backdrop-blur-md ring-1 ring-white/15">
+              <span className="rounded-full bg-void/70 px-2.5 py-1 text-[11px] text-ink ring-1 ring-white/15 backdrop-blur-md">
                 {kindFullLabel(hero)}
               </span>
-              <span className="rounded-full bg-void/70 px-2.5 py-1 font-mono text-[10px] text-ink backdrop-blur-md ring-1 ring-white/15">
+              <span className="rounded-full bg-void/70 px-2.5 py-1 font-mono text-[10px] text-ink ring-1 ring-white/15 backdrop-blur-md">
                 v{hero.version}
               </span>
             </div>
@@ -170,7 +205,7 @@ export function Hero({ hero, items }: { hero: CatalogItem; items: CatalogItem[] 
                   {hero.author} · {hero.license} · {formatBytes(hero.downloadBytes)}
                 </p>
               </div>
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/15 text-white ring-1 ring-white/25 backdrop-blur-md transition-transform duration-300 group-hover:translate-x-0.5">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white/15 text-white ring-1 ring-white/25 backdrop-blur-md transition-transform duration-300 group-hover:translate-x-0.5">
                 →
               </span>
             </div>
@@ -189,9 +224,10 @@ export function Hero({ hero, items }: { hero: CatalogItem; items: CatalogItem[] 
                   key={`${item.kind}-${item.slug}`}
                   href={itemHref(item)}
                   aria-label={item.name}
-                  className={`overflow-hidden rounded-lg ring-1 transition-colors ${
-                    index === 0 ? "ring-primary/80" : "ring-line hover:ring-primary/60"
-                  }`}
+                  className={cn(
+                    "overflow-hidden rounded-lg ring-1 transition-colors",
+                    index === 0 ? "ring-primary/80" : "ring-line hover:ring-primary/60",
+                  )}
                 >
                   <img
                     src={asset(item.preview)}
@@ -212,7 +248,6 @@ export function Hero({ hero, items }: { hero: CatalogItem; items: CatalogItem[] 
         {/* 右：信息栏 */}
         <aside className="flex flex-col gap-3.5 lg:col-span-2 xl:col-span-1">
           <LatestFeed items={items.slice(0, 4)} />
-          {/* <NoBackendCard /> */}
           <PackageSpecCard />
         </aside>
       </div>
@@ -224,7 +259,7 @@ export function Hero({ hero, items }: { hero: CatalogItem; items: CatalogItem[] 
 
 export function LatestFeed({ items }: { items: CatalogItem[] }) {
   return (
-    <div className="rail-card overflow-hidden">
+    <div className={cn(panelVariants({ variant: "rail" }), "overflow-hidden")}>
       <div className="flex items-center justify-between border-b border-line px-4 py-3">
         <p className="text-[12.5px] font-medium text-ink">最近收录</p>
         <Link href="/scenes" className="text-[11px] text-primary transition-colors hover:text-accent">
@@ -262,29 +297,6 @@ export function LatestFeed({ items }: { items: CatalogItem[] }) {
   );
 }
 
-/* ── 右栏：无后台说明 ──────────────────────────────────── */
-
-function NoBackendCard() {
-  return (
-    <div className="rail-card px-4 py-4">
-      <p className="text-[12.5px] font-medium text-ink">没有账号，也没有后台</p>
-      <p className="mt-1.5 text-[11.5px] leading-[1.75] text-muted">
-        作品是仓库里的目录，索引在构建时生成。点开任意作品都能追到它的源码与清单。
-      </p>
-      <div className="mt-3 flex flex-wrap gap-1.5">
-        {["git", "manifest", "sha256", "pages"].map((tag) => (
-          <span
-            key={tag}
-            className="rounded-full border border-line bg-panel-2/70 px-2 py-0.5 font-mono text-[9.5px] text-muted"
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 /* ── 右栏：打包规范（数值与 scripts/validate-content.mjs 的 LIMITS 一致）─ */
 
 const SPECS = [
@@ -296,16 +308,17 @@ const SPECS = [
 
 function PackageSpecCard() {
   return (
-    <div className="rail-card px-4 py-4">
+    <div className={cn(panelVariants({ variant: "rail" }), "px-4 py-4")}>
       <p className="text-[12.5px] font-medium text-ink">打包规范</p>
       <dl className="mt-3 flex flex-col gap-2.5">
         {SPECS.map((spec, index) => (
           <div key={spec.label} className="flex items-center justify-between">
             <dt className="text-[11px] text-muted">{spec.label}</dt>
             <dd
-              className={`font-mono text-[10px] ${
-                index === SPECS.length - 1 ? "text-primary" : "text-ink-soft"
-              }`}
+              className={cn(
+                "font-mono text-[10px]",
+                index === SPECS.length - 1 ? "text-primary" : "text-ink-soft",
+              )}
             >
               {spec.value}
             </dd>
@@ -345,9 +358,17 @@ export function HowItWorks() {
       <div className="grid gap-12 lg:grid-cols-[392px_minmax(0,1fr)]">
         <div>
           <p className="eyebrow">how it works</p>
-          <h2 className="mt-3 text-[clamp(1.6rem,2.4vw,2rem)] font-normal leading-[1.3] tracking-[-0.01em]">
-            自动化社区作品管理
-          </h2>
+          <div className="mt-3">
+            <SplitText
+              text="自动化社区作品管理"
+              tag="h2"
+              className="text-[clamp(1.6rem,2.4vw,2rem)] leading-[1.3] font-normal tracking-[-0.01em]"
+              splitType="chars"
+              effect="rise"
+              textAlign="left"
+              duration={0.6}
+            />
+          </div>
           <p className="mt-4 max-w-sm text-[12.5px] leading-[1.85] text-muted">
             完全开发式管理，开发者提交作品，维护者审合并。
           </p>
@@ -361,21 +382,27 @@ export function HowItWorks() {
         </div>
 
         <ol className="flex flex-col gap-2.5">
-          {STEPS.map((step) => (
-            <li
-              key={step.index}
-              className="group flex gap-4 rounded-2xl border border-line bg-white/[0.02] px-5 py-4 transition-colors hover:border-line-2"
-            >
-              <span className="font-mono text-[11px] leading-5 text-primary/80 transition-colors group-hover:text-primary">
-                {step.index}
-              </span>
-              <div className="min-w-0">
-                <p className="text-[13.5px] font-medium tracking-tight text-ink">{step.title}</p>
-                <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted">{step.body}</p>
-                <code className="mt-2.5 inline-block rounded-md border border-line bg-primary/10 px-2 py-1 font-mono text-[10.5px] text-accent">
-                  {step.code}
-                </code>
-              </div>
+          {STEPS.map((step, index) => (
+            // 滚动到视口时依次上浮；React Bits 的 AnimatedContent 负责这一层
+            <li key={step.index}>
+              <AnimatedContent
+                distance={40}
+                duration={0.6}
+                delay={index * 0.08}
+                threshold={0.15}
+                className="group flex gap-4 rounded-2xl border border-line bg-white/[0.02] px-5 py-4 transition-colors hover:border-line-2"
+              >
+                <span className="font-mono text-[11px] leading-5 text-primary/80 transition-colors group-hover:text-primary">
+                  {step.index}
+                </span>
+                <div className="min-w-0">
+                  <p className="text-[13.5px] font-medium tracking-tight text-ink">{step.title}</p>
+                  <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted">{step.body}</p>
+                  <code className="mt-2.5 inline-block rounded-md border border-line bg-primary/10 px-2 py-1 font-mono text-[10.5px] text-accent">
+                    {step.code}
+                  </code>
+                </div>
+              </AnimatedContent>
             </li>
           ))}
         </ol>
@@ -405,7 +432,10 @@ export function CatalogTeaser({
           <Link
             key={group.href}
             href={group.href}
-            className="rail-card group flex items-center justify-between gap-6 px-5 py-4 transition-colors hover:border-line-2"
+            className={cn(
+              panelVariants({ variant: "rail" }),
+              "group flex items-center justify-between gap-6 px-5 py-4 transition-colors hover:border-line-2",
+            )}
           >
             <div className="min-w-0">
               <p className="text-[14px] font-medium tracking-tight text-ink">{group.label}</p>

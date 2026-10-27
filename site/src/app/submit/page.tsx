@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
+import { buttonVariants } from "@/components/ui/button";
+import { panelVariants } from "@/components/ui/panel";
 import { catalog } from "@/lib/catalog";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "提交作品",
@@ -274,7 +277,7 @@ export default function SubmitPage() {
       <header>
         <p className="eyebrow">contribute</p>
         <h1 className="mt-3 text-[clamp(1.8rem,3.6vw,2.4rem)] font-normal tracking-[-0.02em]">
-          提交你的<span className="text-aurora">作品</span>
+          提交你的<span className="text-gradient">作品</span>
         </h1>
         <p className="mt-4 text-[13.5px] leading-relaxed text-muted">
           作品就是仓库里的一个目录，通过 Pull Request 提交。
@@ -282,7 +285,7 @@ export default function SubmitPage() {
         </p>
       </header>
 
-      <section className="card-glow mt-10 p-6">
+      <section className={cn(panelVariants(), "mt-10 p-6")}>
         <h2 className="text-[14.5px] font-medium tracking-tight text-ink">一次提交需要包含</h2>
         <ul className="mt-4 space-y-2.5 text-[12.5px] leading-relaxed text-ink-soft">
           {CHECKLIST.map((line) => (
@@ -297,15 +300,8 @@ export default function SubmitPage() {
       <section className="mt-10">
         <h2 className="text-[14.5px] font-medium tracking-tight text-ink">壁纸场景</h2>
         <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
-          纯静态包只允许 HTML 与 CSS；需要 JavaScript 时申请{" "}
-          <code className="rounded border border-line bg-primary/10 px-1.5 py-0.5 font-mono text-[11px] text-accent">
-            wallpaper.script
-          </code>
-          ，通过{" "}
-          <code className="rounded border border-line bg-primary/10 px-1.5 py-0.5 font-mono text-[11px] text-accent">
-            @lull/scene-sdk
-          </code>{" "}
-          读取参数与视口，不要试图访问宿主。
+          纯静态包只允许 HTML 与 CSS；需要 JavaScript 时申请 <InlineCode>wallpaper.script</InlineCode>
+          ，通过 <InlineCode>@lull/scene-sdk</InlineCode> 读取参数与视口，不要试图访问宿主。
         </p>
         <CodeBlock>{SCENE_STEPS}</CodeBlock>
       </section>
@@ -314,11 +310,7 @@ export default function SubmitPage() {
         <h2 className="text-[14.5px] font-medium tracking-tight text-ink">桌面工具</h2>
         <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
           静态 Web 包 + 一份 widget.json。能力只能从宿主白名单里选，申请得越少越容易过审：
-          不需要联网就别写{" "}
-          <code className="rounded border border-line bg-primary/10 px-1.5 py-0.5 font-mono text-[11px] text-accent">
-            widget.network
-          </code>
-          。
+          不需要联网就别写 <InlineCode>widget.network</InlineCode>。
         </p>
         <CodeBlock>{WIDGET_STEPS}</CodeBlock>
       </section>
@@ -334,7 +326,7 @@ export default function SubmitPage() {
 
         <div className="mt-5 grid gap-3 sm:grid-cols-2">
           {SDKS.map((sdk) => (
-            <article key={sdk.name} className="card-glow flex flex-col p-5">
+            <article key={sdk.name} className={cn(panelVariants(), "flex flex-col p-5")}>
               <p className="font-mono text-[10.5px] uppercase tracking-[0.14em] text-primary">
                 {sdk.tag}
               </p>
@@ -528,7 +520,7 @@ export default function SubmitPage() {
             href={`${catalog.repo.url}/compare`}
             target="_blank"
             rel="noreferrer noopener"
-            className="btn-primary"
+            className={buttonVariants()}
           >
             在 GitHub 上开 PR
           </a>
@@ -536,7 +528,7 @@ export default function SubmitPage() {
             href={`${catalog.repo.url}/blob/${catalog.repo.branch}/CONTRIBUTING.md`}
             target="_blank"
             rel="noreferrer noopener"
-            className="btn-ghost"
+            className={buttonVariants({ variant: "ghost" })}
           >
             完整贡献指南
           </a>

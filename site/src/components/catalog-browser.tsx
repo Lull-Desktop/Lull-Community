@@ -3,7 +3,9 @@
 import { useMemo, useState } from "react";
 
 import { ItemCard } from "@/components/item-card";
+import { Button } from "@/components/ui/button";
 import type { CatalogItem } from "@/lib/catalog";
+import { cn } from "@/lib/utils";
 
 type SortKey = "latest" | "name" | "size";
 
@@ -83,11 +85,10 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
                 type="button"
                 onClick={() => setSort(option.key)}
                 aria-pressed={sort === option.key}
-                className={`rounded-full px-3 py-1.5 text-[12px] transition-colors ${
-                  sort === option.key
-                    ? "bg-primary/12 text-ink"
-                    : "text-muted hover:text-ink"
-                }`}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-[12px] transition-colors",
+                  sort === option.key ? "bg-primary/12 text-ink" : "text-muted hover:text-ink",
+                )}
               >
                 {option.label}
               </button>
@@ -101,11 +102,12 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
               type="button"
               onClick={() => setTag(null)}
               aria-pressed={tag === null}
-              className={`rounded-full border px-3 py-1 text-[11.5px] transition-colors ${
+              className={cn(
+                "rounded-full border px-3 py-1 text-[11.5px] transition-colors",
                 tag === null
                   ? "border-primary/50 bg-primary/10 text-ink"
-                  : "border-line text-muted hover:border-line-2 hover:text-ink"
-              }`}
+                  : "border-line text-muted hover:border-line-2 hover:text-ink",
+              )}
             >
               全部
             </button>
@@ -115,11 +117,12 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
                 type="button"
                 onClick={() => setTag(tag === value ? null : value)}
                 aria-pressed={tag === value}
-                className={`rounded-full border px-3 py-1 text-[11.5px] transition-colors ${
+                className={cn(
+                  "rounded-full border px-3 py-1 text-[11.5px] transition-colors",
                   tag === value
                     ? "border-primary/50 bg-primary/10 text-ink"
-                    : "border-line text-muted hover:border-line-2 hover:text-ink"
-                }`}
+                    : "border-line text-muted hover:border-line-2 hover:text-ink",
+                )}
               >
                 {value}
                 <span className="ml-1.5 text-[10px] opacity-60">{count}</span>
@@ -141,16 +144,17 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
           <p className="mt-1.5 text-[12.5px] text-muted">
             换个关键词，或者清掉筛选条件看看全部。
           </p>
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => {
               setQuery("");
               setTag(null);
             }}
-            className="mt-5 rounded-full border border-line-2 px-4 py-1.5 text-[12px] text-ink-soft transition-colors hover:border-primary/50 hover:text-ink"
+            className="mt-5 text-ink-soft"
           >
             清除筛选
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="grid gap-[18px] sm:grid-cols-2 lg:grid-cols-3">

@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { buttonVariants } from "@/components/ui/button";
+import { panelVariants } from "@/components/ui/panel";
 import { capabilityInfo, LEVEL_STYLE } from "@/lib/capabilities";
 import {
   asset,
@@ -12,6 +14,7 @@ import {
   type CatalogItem,
 } from "@/lib/catalog";
 import { renderMarkdown } from "@/lib/markdown";
+import { cn } from "@/lib/utils";
 
 function Masthead({ item }: { item: CatalogItem }) {
   const categoryHref = item.kind === "scene" ? "/scenes" : "/widgets";
@@ -92,7 +95,7 @@ function Masthead({ item }: { item: CatalogItem }) {
 
 function InstallCard({ item }: { item: CatalogItem }) {
   return (
-    <div className="card-glow p-5">
+    <div className={cn(panelVariants(), "p-5")}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-[13px] font-medium text-ink">下载内容包</p>
@@ -100,7 +103,11 @@ function InstallCard({ item }: { item: CatalogItem }) {
             {formatBytes(item.downloadBytes)} · {item.fileCount} 个文件
           </p>
         </div>
-        <a href={itemDownloadUrl(item)} download className="btn-primary !px-4 !py-2 !text-[12.5px]">
+        <a
+          href={itemDownloadUrl(item)}
+          download
+          className={buttonVariants({ size: "sm" })}
+        >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path
               d="M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5M4 20h16"

@@ -1,8 +1,18 @@
 @import "tailwindcss";
 
-/* 全站视觉对齐 Lull 主站（lull-desktop.github.io/Lull）：
-   近黑的墨绿底 + 苔绿强调 + 暖砂点缀，标题用 400 字重拉开呼吸感，
-   描边一律是半透明的绿——不用实心灰线，也不再用霓虹发光。 */
+/* ──────────────────────────────────────────────────────────────
+   设计令牌 + 基础层 + 少量语义工具类。
+   站点样式统一由 Tailwind 管理：
+   · 颜色 / 字体 → `@theme`（Tailwind v4 的主题入口）
+   · 组件外观 → `src/components/ui/*` 里的 CVA 变体表
+   · 全局基线 → `@layer base`
+   · 反复出现的原子组合 → `@utility`
+   唯一手写 CSS 是 `.prose-lull`：README 的 HTML 由 markdown-it 生成，
+   拿不到类名，只能按标签作用域写。
+   ────────────────────────────────────────────────────────────── */
+
+/* 视觉对齐 Lull 主站：近黑的墨绿底 + 苔绿强调 + 暖砂点缀。
+   标题用 400 字重拉开呼吸感，描边一律是半透明的绿。 */
 @theme {
   --color-void: #060a09;
   --color-void-2: #0a1110;
@@ -34,28 +44,17 @@
   }
 
   body {
-    background-color: var(--color-void);
-    color: var(--color-ink-soft);
-    font-family: var(--font-sans);
-    font-size: 15px;
-    line-height: 1.75;
-    -webkit-font-smoothing: antialiased;
+    @apply bg-void font-sans text-[15px] leading-[1.75] text-ink-soft antialiased;
     text-rendering: optimizeLegibility;
     /* 顶部一抹苔绿晨雾，右上一点暖砂——和主站同一套环境光 */
-    background-image:
-      radial-gradient(120% 60% at 50% -10%, rgba(35, 84, 66, 0.42) 0%, transparent 60%),
-      radial-gradient(60% 40% at 85% 10%, rgba(224, 168, 120, 0.08) 0%, transparent 70%);
-    background-repeat: no-repeat;
-    background-attachment: fixed;
+    @apply bg-[radial-gradient(120%_60%_at_50%_-10%,rgba(35,84,66,0.42)_0%,transparent_60%),radial-gradient(60%_40%_at_85%_10%,rgba(224,168,120,0.08)_0%,transparent_70%)] bg-fixed bg-no-repeat;
   }
 
   h1,
   h2,
   h3,
   h4 {
-    color: var(--color-ink);
-    font-weight: 400;
-    letter-spacing: -0.01em;
+    @apply font-normal tracking-[-0.01em] text-ink;
     line-height: 1.28;
   }
 
@@ -65,8 +64,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 3px;
+    @apply outline-2 outline-offset-[3px] outline-primary;
     border-radius: 4px;
   }
 
@@ -87,146 +85,37 @@
   }
 }
 
+/* 页面容器：设计宽度 1440，内容区 1312（左右各 64）。 */
+@utility shell {
+  @apply mx-auto w-full max-w-[1440px] px-5 md:px-8 xl:px-16;
+}
+
+/* 章节小标题：等宽大写 + 大字距，和主站的 .eyebrow 一致 */
+@utility eyebrow {
+  @apply font-mono text-[11px] font-medium tracking-[0.3em] text-primary uppercase;
+}
+
+/* 渐变文字：青绿 → 苔绿 → 极光蓝，只用在标题的最后一个短语上。
+   注意别叫 `text-aurora`——`--color-aurora` 令牌会自动生成同名文字色工具类。 */
+@utility text-gradient {
+  @apply bg-[linear-gradient(100deg,#c8e0b6_0%,#9fbf96_46%,#8fc0d2_100%)] bg-clip-text text-transparent;
+}
+
+/* 网格底纹：给深色区一点结构感，线用淡绿 */
+@utility grid-lines {
+  @apply bg-[linear-gradient(to_right,rgba(190,214,186,0.045)_1px,transparent_1px),linear-gradient(to_bottom,rgba(190,214,186,0.045)_1px,transparent_1px)] [background-size:72px_72px] [mask-image:radial-gradient(80%_70%_at_50%_0%,#000_20%,transparent_75%)];
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* README 渲染结果的排版作用域。唯一保留的标签级 CSS：
+   markdown-it 产出的 HTML 没有类名，无法用工具类接管。 */
 @layer components {
-  /* 渐变文字：青绿 → 苔绿 → 极光蓝，只在标题的最后一个短语上用 */
-  .text-aurora {
-    background-image: linear-gradient(100deg, #c8e0b6 0%, #9fbf96 46%, #8fc0d2 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-
-  /* 章节小标题：等宽大写 + 大字距，和主站的 .eyebrow 一致 */
-  .eyebrow {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    font-weight: 500;
-    color: var(--color-primary);
-  }
-
-  /* 衬线字标：只在品牌与引用上用 */
-  .wordmark {
-    font-family: var(--font-serif);
-    letter-spacing: 0.36em;
-    text-transform: uppercase;
-    color: var(--color-ink);
-  }
-
-  /* 主按钮：亮苔绿实心 + 深墨字，悬停微抬 + 绿光，不用渐变 */
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    border-radius: 999px;
-    padding: 0.62rem 1.25rem;
-    font-size: 13.5px;
-    font-weight: 600;
-    letter-spacing: 0.01em;
-    color: var(--color-on-accent);
-    background: var(--color-accent);
-    transition:
-      transform 180ms ease,
-      box-shadow 250ms ease,
-      background-color 200ms ease;
-  }
-  .btn-primary:hover {
-    transform: translateY(-1px);
-    background: #d5ecc4;
-    box-shadow: 0 10px 30px -12px rgba(200, 224, 182, 0.5);
-  }
-
-  .btn-ghost {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    border-radius: 999px;
-    padding: 0.62rem 1.15rem;
-    font-size: 13.5px;
-    font-weight: 500;
-    color: var(--color-ink);
-    border: 1px solid var(--color-line-2);
-    background: transparent;
-    transition:
-      border-color 200ms ease,
-      color 200ms ease,
-      background 200ms ease;
-  }
-  .btn-ghost:hover {
-    border-color: var(--color-primary);
-    background: rgba(159, 191, 150, 0.08);
-    color: #fff;
-  }
-
-  /* 页面容器：设计宽度 1440，内容区 1312（左右各 64）。
-     首页的英雄区是「文案 / 舞台 / 侧栏」三栏，需要这个宽度。 */
-  .shell {
-    width: 100%;
-    max-width: 1440px;
-    margin-inline: auto;
-    padding-inline: 1.25rem;
-  }
-  @media (min-width: 768px) {
-    .shell {
-      padding-inline: 2rem;
-    }
-  }
-  @media (min-width: 1440px) {
-    .shell {
-      padding-inline: 4rem;
-    }
-  }
-
-  /* 主预览卡：细描边 + 大圆角 + 一层柔光，替代原来的紫色重发光 */
-  .stage-glow {
-    border: 1px solid var(--color-line-2);
-    box-shadow:
-      0 24px 60px -30px rgba(0, 0, 0, 0.9),
-      0 0 60px -20px rgba(159, 191, 150, 0.35);
-  }
-
-  /* 卡片：半透明绿描边 + 顶亮底暗的一层薄渐变 */
-  .card-glow {
-    position: relative;
-    border-radius: 16px;
-    border: 1px solid var(--color-line);
-    background: linear-gradient(
-      180deg,
-      rgba(255, 255, 255, 0.028),
-      rgba(255, 255, 255, 0)
-    );
-    transition:
-      border-color 250ms ease,
-      transform 250ms ease;
-  }
-  .card-glow:hover {
-    border-color: var(--color-line-2);
-  }
-
-  /* 侧栏小卡：比主面板再薄一层 */
-  .rail-card {
-    border-radius: 16px;
-    border: 1px solid var(--color-line);
-    background: rgba(255, 255, 255, 0.02);
-  }
-
-  /* 细横规：两端淡出，用来切区块（主站的 .rule） */
-  .rule {
-    height: 1px;
-    border: 0;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      var(--color-line-2) 20%,
-      var(--color-line-2) 80%,
-      transparent
-    );
-  }
-
-  /* 正文排版：README 渲染结果 */
   .prose-lull {
     color: var(--color-ink-soft);
     font-size: 14px;
@@ -339,35 +228,5 @@
   }
   .prose-lull img {
     border-radius: 12px;
-  }
-}
-
-@layer utilities {
-  /* 卡片悬停时的抬升（悬停发光改成墨绿投影，不再用紫光） */
-  .glow-hover {
-    transition:
-      transform 260ms ease,
-      box-shadow 260ms ease,
-      border-color 260ms ease;
-  }
-  .glow-hover:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.9);
-  }
-
-  /* 网格底纹：给深色区一点结构感，线用淡绿 */
-  .grid-lines {
-    background-image:
-      linear-gradient(to right, rgba(190, 214, 186, 0.045) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(190, 214, 186, 0.045) 1px, transparent 1px);
-    background-size: 72px 72px;
-    mask-image: radial-gradient(80% 70% at 50% 0%, #000 20%, transparent 75%);
-  }
-
-  .no-scrollbar::-webkit-scrollbar {
-    display: none;
-  }
-  .no-scrollbar {
-    scrollbar-width: none;
   }
 }

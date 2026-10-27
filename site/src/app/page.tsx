@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import { ItemCard } from "@/components/item-card";
 import { CatalogTeaser, Hero, HowItWorks } from "@/components/home-sections";
+import GlareHover from "@/components/react-bits/GlareHover";
+import { buttonVariants } from "@/components/ui/button";
 import { catalog, scenes, widgets } from "@/lib/catalog";
 
 export default function HomePage() {
@@ -67,34 +69,47 @@ export default function HomePage() {
         <HowItWorks />
       </div>
 
-      {/* 征集：主站的 .cta —— 左文案、右操作的两栏卡 */}
+      {/* 征集：主站的 .cta —— 左文案、右操作的两栏卡。
+          表面材质换成 React Bits 的 GlareHover：悬停时一道苔绿反光扫过。 */}
       <section className="shell pt-20">
-        <div className="relative grid items-center gap-7 overflow-hidden rounded-3xl border border-line-2 bg-[radial-gradient(90%_120%_at_12%_0%,rgba(159,191,150,0.14),transparent_60%),radial-gradient(70%_120%_at_95%_100%,rgba(224,168,120,0.12),transparent_60%)] bg-void-2 px-6 py-10 sm:px-10 sm:py-12 lg:grid-cols-[minmax(0,1.4fr)_auto]">
-          <div>
-            <p className="eyebrow">contribute</p>
-            <h2 className="mt-3 text-[clamp(1.5rem,2.4vw,1.9rem)] font-normal leading-[1.3] tracking-[-0.01em]">
-              做了一张壁纸，或者一个小工具？
-            </h2>
-            <p className="mt-3 max-w-[52ch] text-[13px] leading-[1.85] text-muted">
-              按规范放进一个目录，开一个 PR。合并之后，它会自动出现在这里，
-              并且可以被任何人下载安装。
-            </p>
+        <GlareHover
+          width="100%"
+          borderRadius="24px"
+          borderColor="var(--color-line-2)"
+          background="radial-gradient(90% 120% at 12% 0%, rgba(159,191,150,0.14), transparent 60%), radial-gradient(70% 120% at 95% 100%, rgba(224,168,120,0.12), transparent 60%), var(--color-void-2)"
+          glareColor="#c8e0b6"
+          glareOpacity={0.18}
+          variant="sheen"
+          mode="hover"
+          transitionDuration={700}
+        >
+          <div className="grid w-full items-center gap-7 px-6 py-10 sm:px-10 sm:py-12 lg:grid-cols-[minmax(0,1.4fr)_auto]">
+            <div>
+              <p className="eyebrow">contribute</p>
+              <h2 className="mt-3 text-[clamp(1.5rem,2.4vw,1.9rem)] leading-[1.3] font-normal tracking-[-0.01em]">
+                做了一张壁纸，或者一个小工具？
+              </h2>
+              <p className="mt-3 max-w-[52ch] text-[13px] leading-[1.85] text-muted">
+                按规范放进一个目录，开一个 PR。合并之后，它会自动出现在这里，
+                并且可以被任何人下载安装。
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 lg:justify-end">
+              <Link href="/submit" className={buttonVariants()}>
+                开始提交
+                <span aria-hidden="true">→</span>
+              </Link>
+              <a
+                href={`${catalog.repo.url}/blob/${catalog.repo.branch}/CONTRIBUTING.md`}
+                target="_blank"
+                rel="noreferrer noopener"
+                className={buttonVariants({ variant: "ghost" })}
+              >
+                贡献指南
+              </a>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-3 lg:justify-end">
-            <Link href="/submit" className="btn-primary">
-              开始提交
-              <span aria-hidden="true">→</span>
-            </Link>
-            <a
-              href={`${catalog.repo.url}/blob/${catalog.repo.branch}/CONTRIBUTING.md`}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="btn-ghost"
-            >
-              贡献指南
-            </a>
-          </div>
-        </div>
+        </GlareHover>
       </section>
     </>
   );

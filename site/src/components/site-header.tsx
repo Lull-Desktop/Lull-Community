@@ -4,8 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import ShinyText from "@/components/react-bits/ShinyText";
 import { SearchDialog } from "@/components/search-dialog";
-import { catalog } from "@/lib/catalog";
+import { buttonVariants } from "@/components/ui/button";
+import { asset, catalog } from "@/lib/catalog";
 
 /** Lull 客户端主站（社区入口），站外链接。 */
 const LULL_SITE_URL = "https://lull-desktop.github.io/Lull/";
@@ -18,24 +20,21 @@ const NAV: { href: string; label: string; external?: boolean }[] = [
   { href: LULL_SITE_URL, label: "Lull App", external: true },
 ];
 
+/**
+ * 月亮字标：直接复用站点图标 `public/favicon.svg`，不再内联一份 SVG。
+ * 走 `asset()` 拼 basePath——GitHub Pages 是项目站点，资源在 `/<repo>/` 下。
+ */
 function Mark() {
   return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <defs>
-        <linearGradient id="lull-mark" x1="3" y1="20" x2="21" y2="4">
-          <stop stopColor="#9fbf96" />
-          <stop offset="0.55" stopColor="#c8e0b6" />
-          <stop offset="1" stopColor="#8fc0d2" />
-        </linearGradient>
-      </defs>
-      <path
-        d="M20 14.5A8.5 8.5 0 0 1 9.5 4a7 7 0 1 0 10.5 10.5Z"
-        stroke="url(#lull-mark)"
-        strokeWidth="1.9"
-        strokeLinejoin="round"
-      />
-      <circle cx="17.5" cy="6.5" r="1.5" fill="#c8e0b6" />
-    </svg>
+    <img
+      src={asset("/favicon.svg")}
+      alt=""
+      aria-hidden="true"
+      width={24}
+      height={24}
+      decoding="async"
+      className="block size-6 shrink-0"
+    />
   );
 }
 
@@ -65,8 +64,17 @@ export function SiteHeader() {
             <span className="self-center">
               <Mark />
             </span>
-            <span className="text-[16px] font-medium tracking-[-0.01em] text-ink">Lull</span>
-            <span className="text-[10.5px] uppercase tracking-[0.18em] text-faint">Community</span>
+            {/* 悬浮时一道苔绿反光扫过，用 React Bits 的 ShinyText */}
+            <ShinyText
+              text="Lull"
+              color="#e6eee4"
+              shineColor="#c8e0b6"
+              speed={2.2}
+              shineWidth={55}
+              trigger="hover"
+              className="font-serif text-[0.9rem] uppercase tracking-[0.42em] text-mist max-[380px]:hidden"
+            />
+            <span className="text-[10.5px] tracking-[0.18em] text-faint uppercase">Community</span>
           </Link>
 
           <nav className="hidden items-center gap-1 lg:flex">
@@ -140,7 +148,10 @@ export function SiteHeader() {
               </svg>
             </a>
 
-            <Link href="/submit" className="btn-primary hidden !px-4 !py-2 sm:inline-flex">
+            <Link
+              href="/submit"
+              className={`${buttonVariants({ size: "sm" })} hidden sm:inline-flex`}
+            >
               提交作品
             </Link>
           </div>

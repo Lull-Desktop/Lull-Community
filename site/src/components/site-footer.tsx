@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import ShinyText from "@/components/react-bits/ShinyText";
 import { catalog } from "@/lib/catalog";
 
 const COLUMNS = [
@@ -65,7 +66,20 @@ export function SiteFooter() {
 
         <div className="grid gap-8 pb-10 pt-12 md:grid-cols-[1.6fr_repeat(3,minmax(0,1fr))]">
           <div>
-            <p className="wordmark text-[13px]">Lull Community</p>
+            {/* 衬线字标：滚动进视口后反光缓慢循环 */}
+            <p>
+              <ShinyText
+                text="Lull Community"
+                color="#e6eee4"
+                shineColor="#c8e0b6"
+                speed={6}
+                shineWidth={40}
+                glow={0}
+                trigger="view"
+                yoyo
+                className="font-serif text-[13px] tracking-[0.36em] uppercase"
+              />
+            </p>
             <p className="mt-3 max-w-[340px] text-[12.5px] leading-[1.75] text-muted">
               为安静的桌面，添一点会动的东西。壁纸场景与桌面工具全部来自社区，
               内容放在 GitHub 仓库里，合并后自动校验、构建、发布。
