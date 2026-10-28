@@ -6,7 +6,8 @@
 <https://lull-desktop.github.io/Lull-Community/submit#spec>。
 
 签名要解决的事只有一件：让用户能确认「这批下载字节是 community 发的，且没被替换」。
-它**不**授予权限、**不**放宽限制、**不**参与「能不能装」或「能不能跑」的判断。
+它**不**授予权限、**不**放宽限制；宿主会用它做来源标注，并对
+`invalid` / `mismatch` / `revoked` 阻断安装/加载，其余策略由客户端决定。
 
 ---
 
@@ -55,7 +56,7 @@ node scripts/keygen.mjs --out ~/lull-release-keys
 会得到 `publisher.pem`（私钥，600 权限）与 `publisher.pub.pem`，并打印一条公钥清单条目。
 把那条 JSON 加进 `keys/publisher-keys.json` 的 `keys` 数组，开 PR 合并。
 
-条目里的 `name`（发布主体）与 `label`（密钥期次，如 `folium-2026-1`）是给人看的：
+条目里的 `name`（发布主体，`Lull Community`）与 `label`（密钥期次，如 `lull-community-2026-1`）是给人看的：
 作品详情页的「签名与校验」按 `keyId` 找到这条公钥，把两者拼起来显示。
 不填也能验签，但页面上只能显示一串 keyId。
 
@@ -100,13 +101,14 @@ pnpm verify:release
 脚本内部顺序（顺序错了签名就白签）：
 
 1. 拒绝 CI 环境、拒绝仓库内的私钥路径；
-2. 读 `site/src/generated/catalog.json` 与 `site/public/downloads/*`，逐项算 zip 的 sha256；
+2. 从 `content/` 重新读内容、重算 digest（不信任可能过期的 catalog.json）；
 3. `releaseSeq` = 上一版 +1；
-4. 为每个条目生成逐包签名 `release/signatures/<kind>/<slug>-<version>.lull-signature.json`；
-5. 把每个 sidecar 的 `path` / `sha256` 写回清单 item；
-6. **手写**规范化 JSON 文本（键序、缩进、换行写死，不靠 `JSON.stringify`）；
-7. 对这段字节做 Ed25519，写 `release/release.json.sig`（单行 base64）；
-8. 立刻用公钥自验一次：清单签名 + 每个包的逐包签名——签坏了当场知道。
+4. 为每个条目生成 v2 签名 `release/signatures/<kind>/<slug>-<version>.lull-signature.json`；
+5. 用「内容 + 包内签名」重建 zip，算**最终** zip 的 sha256/bytes；
+6. 把 `zip` 与 `signature.path/sha256` 写回清单 item；
+7. **手写**规范化 JSON 文本（键序、缩进、换行写死，不靠 `JSON.stringify`）；
+8. 对这段字节做 Ed25519，写 `release/release.json.sig`（单行 base64）；
+9. 立刻用公钥自验一次：清单签名 + 每个包的逐包签名——签坏了当场知道。
 
 提交 `release/release.json`、`release/release.json.sig` **以及整个 `release/signatures/`**。
 **建议开 PR**：签名也值得被第二个人核对一眼。
@@ -114,13 +116,15 @@ pnpm verify:release
 ### 逐包签名（v2）是什么
 
 批次签名回答「这一批清单是不是 community 发的」；逐包签名回答「这一个包是不是 community 发的」。
-后者让单个 zip 可以脱离 `release.json` 被离线/镜像场景核对，不需要先找到整批清单。
 
-每个 sidecar 是一个 JSON envelope：
+**v2 起签名随包走**：每个 zip 的根部带一个 `.lull-signature.json`，用户只下载一个 zip，
+宿主解压后就能验签；`release/signatures/` 下保留同一份签名的审计副本，供 CI/站点核对。
+
+每个 envelope 形如：
 
 ```json
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "algorithm": "ed25519",
   "keyId": "279aff591d2627ed",
   "payload": "<base64 的规范包声明>",
@@ -128,15 +132,18 @@ pnpm verify:release
 }
 ```
 
-`payload` 解码后的声明包含 `kind/slug/id/version/digest/zip/signedBy/releaseSeq/signedAt`。
-签名对象是 **payload 的原始字节**，不是 zip 文件本身——内容摘要才是包的身份，
-重新压缩/换打包器不应该让签名失效；zip 的 sha256 仍写在声明里，作为传输校验。
+`payload` 解码后的声明包含 `kind/slug/id/version/digest/signedBy/releaseSeq/signedAt`，
+**不再包含 zip 字段**：签名文件在包内，zip 自身的哈希会在放进签名后改变，所以
+zip 的传输完整性由批次 `release.json` 的 `zip.sha256` 负责。
 
-> 逐包签名**不进 zip**，放在 `release/signatures/`。进包会改摘要、扩大下发面，
-> 而且会把「发布侧的事」塞进用户机器；这条约束没有变。
+签名文件不参与内容摘要：
 
-`pnpm release` 会在签完后再跑一次 `build:catalog`，把 `release/signatures/` 与
-`release/keys.json` 复制到 `site/public/release/`；不要手工改站点下的副本。
+- widget 摘要排除点号路径，`.lull-signature.json` 天然不在摘要内；
+- scene 摘要只覆盖 entry 所在目录，包根的签名文件也在摘要之外。
+
+`sign-release` 会先用「内容 + 包内签名」重新打 zip，再算最终 zip 哈希写进 `release.json`；
+`build-catalog` 刷新时会从 `release/signatures/` 注入同一份签名，保证两次构建字节一致。
+不要手工改 `release/signatures/` 或包内签名。
 
 > `pnpm release` 会在签完之后再生成一次索引，这样本地 `catalog.json` 的 `release` 字段、
 > 每项的 `signed` / `signatureVerified` 标记就是最新状态；只跑 `sign:release` 时它们会停留在
@@ -197,6 +204,7 @@ pnpm verify:release
 
 - 不要手工编辑 `release/release.json`：签名会对不上，而且下次签名会整段重写。
 - 不要手工编辑 `release/signatures/`：清单里记了每个 sidecar 的 sha256，改一个字符 V8 就拦。
-- 不要把签名文件放进 `package/`：会改摘要（自己签自己），还会下发到用户机器。逐包签名放 `release/signatures/`。
+- 不要把 `.lull-signature.json` 放进 scene 的 `package/scenes/<slug>/`：那会进摘要；签名固定在包根，和 `catalog.json`/`widget.json` 同级。
+- 不要手工改包内 `.lull-signature.json` 或 `release/signatures/`：清单里记了 sidecar 的 sha256，改一个字符 V8 就拦。
 - 不要把私钥贴进 issue、聊天、CI secret 或任何云端。
 - 不要在文档里把发布签名说成「作者认证」或「官方认证」：它只代表 community 发布了这批字节。

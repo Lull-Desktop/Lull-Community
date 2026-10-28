@@ -15,7 +15,7 @@
 | 下载到的 zip = 仓库里的内容 | 构建时从 `content/` 现打 zip，时间戳固定，可复现 | 传输损坏会被摘要拦下 |
 | 装到机器上的字节没被改 | 包内摘要（scene 写 `catalog.json` 的 `integrity`，widget 写 `.lull-integrity.json`），安装器每次复算 | 摘要值就写在包里，**改了内容再重算就能对上** |
 | 这批字节由 community 发布 | `release/release.json` + Ed25519 签名，公钥在 `keys/publisher-keys.json` | 只到「community」这一层，不到「某位作者」 |
-| 这个包本身由 community 发布 | `release/signatures/` 下的逐包 Ed25519 签名（v2 起），对包声明里的 `digest` 再签一次 | 签名文件与公钥可达，但宿主端验签尚未实现；不代表作者身份或内容安全 |
+| 这个包本身由 community 发布 | 包根 `.lull-signature.json`（v2）的逐包 Ed25519 签名，对包声明里的 `digest` 再签一次；`release/signatures/` 保留审计副本 | Lull 宿主内置公钥并验签；默认只警告，`invalid`/`mismatch`/`revoked` 阻断，开启严格模式后未验签也阻断 |
 | 扩展跑在隔离环境里 | 由 Lull 客户端负责：静态壁纸 `sandbox=""`；脚本壁纸与插件 `allow-scripts` 不透明源 + nonce CSP；权限取「清单声明 ∩ 用户授予」 | 本项目只是分发方，**不具备**运行时强制力 |
 
 ## 我们不保证
@@ -42,21 +42,25 @@ pnpm verify:release                 # 验签 + 比对每个 zip 的 sha256
 
 站点上也能直接下载清单、签名、逐包签名与公钥清单：`/release/release.json`、
 `/release/release.json.sig`、`/release/signatures/…`、`/release/keys.json`，
-公钥原始清单见仓库 `keys/publisher-keys.json`。签名是 detached 的 Ed25519（PureEdDSA，
+公钥原始清单见仓库 `keys/publisher-keys.json`。签名是 Ed25519（PureEdDSA，
 对清单/包声明的**原始字节**），不是 minisign/OpenSSH 格式，用本仓库脚本验最省事。
+宿主验签不需要 `release.json`：它读包内 `.lull-signature.json`，用内置公钥验签，
+再用与安装器相同的算法重算包摘要。
 
-## 签名不参与准入
+## 签名在什么情况下阻止安装/加载
 
-这一点必须说清楚，否则容易被当成「装了才安全」：
+默认策略是「未验签只警告」，但以下三档在宿主里**始终阻断**：
 
-- 验签失败**不会**阻止安装，也**不会**阻止运行。
-- 逐包签名（`release/signatures/`）同样只做来源标记：它让单个包可以脱离批次清单被核对，
-  但本仓库不提供宿主端验签，也不改变安装器的准入条件。
-- 站点与（将来的）客户端只改变一个徽章：`verified` / `unverified` / `mismatch`。
-- `mismatch`（签名有效但字节不符）是最值得警惕的一档，当前也只标注、不拦截；
-  是否升级为拒绝加载是客户端的产品决策。
+- `invalid`：签名格式坏、签名错、声明与包不符；
+- `mismatch`：签名有效，但包内容摘要被改；
+- `revoked`：内置信任包把该密钥标为撤销。
 
-换言之：**签名是来源标记，不是安全开关**。
+`unsigned`（包里没有签名）与 `unknown-key`（宿主不认识的 keyId）默认只警告；
+设置页开启「仅允许已验签的扩展」后，这两档也会阻断安装与启用。
+`mismatch` 不再只是徽章——它是签名唯一真正能抓住的篡改，宿主会拒绝加载。
+
+撤销的实时性仍然有限：宿主信任包随版本发布，撤销密钥/新增密钥都要等下一次
+宿主更新；本仓库的撤销只对 CI 与站点立即生效。
 
 ## 报告问题
 

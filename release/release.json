@@ -1,14 +1,14 @@
 {
   "schemaVersion": 2,
-  "releaseSeq": 3,
-  "generatedAt": "2026-10-28T07:30:19Z",
+  "releaseSeq": 4,
+  "generatedAt": "2026-10-28T09:20:30Z",
   "signedBy": {
     "keyId": "279aff591d2627ed",
     "algorithm": "ed25519"
   },
   "repo": {
     "url": "https://github.com/lull-desktop/Lull-Community",
-    "builtFrom": "e2d4b8ec59fd6af443145a1541f97b451c596624"
+    "builtFrom": "5919d87d9dcddaf04d2a9545bb8ea967f99b1b11"
   },
   "counts": {
     "scenes": 3,
@@ -23,12 +23,12 @@
       "digest": "2fffe53b91b5b0cf4900929fdeeb7c3335ddfe76e1e2beafcec3ffca1277b650",
       "zip": {
         "path": "/downloads/community.aurora-veil-1.0.0.zip",
-        "sha256": "61a589a7e563a64a74a979a2edbfea3352e950f6bfdda2e4bf59818e731fd1ab",
-        "bytes": 3007
+        "sha256": "6d3e0a442c636c92c34fa8058eb53276247bedf5030bb8580acff421ab991d91",
+        "bytes": 3644
       },
       "signature": {
         "path": "/release/signatures/scene/aurora-veil-1.0.0.lull-signature.json",
-        "sha256": "da588fa5747c2aaf95b7c981eff999c4e6e0ee47fc137a9b70190c78b1b92e8c"
+        "sha256": "a13507eba964e57906662b18b4d1b058e39e168f5b21093bef74b8bfe87d0fa6"
       }
     },
     {
@@ -39,12 +39,12 @@
       "digest": "f6b86e63434d810099e293bfa74c556542a02fbe96fc7ce97390e0938a608ecb",
       "zip": {
         "path": "/downloads/community.mist-1.0.0.zip",
-        "sha256": "e2d29e9b115d7f888fa086392083defd8c7e6099ea2291c4ceb5d8f19d328187",
-        "bytes": 2167
+        "sha256": "33f75454e01d3736e07550718b93dc72287c48271be82c6055bac8f2b2d99e25",
+        "bytes": 2806
       },
       "signature": {
         "path": "/release/signatures/scene/mist-1.0.0.lull-signature.json",
-        "sha256": "8908c96b9055ef1d4b6afc05e9ebe4958e097a2eaab97d3a9ddf954665355802"
+        "sha256": "87e3bae24349663264155f8904ec0bbaf92a39d8dddb3fac91f6b2310a702fef"
       }
     },
     {
@@ -55,12 +55,12 @@
       "digest": "fbad259bf8bbdc3f822aa53533d4325b4d6a82d7f5e75147118cc975827496e8",
       "zip": {
         "path": "/downloads/demo.three-scene-1.0.0.zip",
-        "sha256": "ab627e85308ffb8c48bf9cf5eda575733587b5434bf11061d286c9f289696b03",
-        "bytes": 139917
+        "sha256": "6c09447399f8980a51640d875d430f1782039d5c3f99b9727c7c08623e624d32",
+        "bytes": 140566
       },
       "signature": {
         "path": "/release/signatures/scene/three-scene-1.0.0.lull-signature.json",
-        "sha256": "0df991ddd613be7647aea05decf82b451e41d23b10b055567a6c23e0aea8e33c"
+        "sha256": "3f928c885ce25d3c48d1abb1fc42bcb3a08e91c047e33d6eeb98d1b730da0835"
       }
     },
     {
@@ -71,12 +71,12 @@
       "digest": "ee418f0328502cb00c2b5cf9155ee886b611eaf9076cb01b5b56db30d0176567",
       "zip": {
         "path": "/downloads/community-breath-1.0.0.lull-widget.zip",
-        "sha256": "6d6349b53863946d9f216b34a71df73808ea48506070ce7c27303d28c0238bc6",
-        "bytes": 3792
+        "sha256": "67d31fc10c52f3f233f64d6b6fe612e5415d1af8d56771e1fc9761c65615031c",
+        "bytes": 4437
       },
       "signature": {
         "path": "/release/signatures/widget/breathing-1.0.0.lull-signature.json",
-        "sha256": "adf664bf38415902b0eb61c69d137fc38f877c0295784225e2ef3bc1b223e058"
+        "sha256": "61d848b59aee8737a7b7665f5d5a7b51a807629449dece63fae834ae082bf058"
       }
     },
     {
@@ -87,12 +87,12 @@
       "digest": "220454129937b67fd2f8aaa0c40b75ba59fdf74091a1c090903d1a6f50d5e899",
       "zip": {
         "path": "/downloads/community-clock-1.0.0.lull-widget.zip",
-        "sha256": "3eec917948d2aeeb0918f5de8d67701a8e66cb907f5761f2fc83f179ebb0f75e",
-        "bytes": 3138
+        "sha256": "4b88a15b65cb229f78a7f3af5541cb2beb8f6d7de6fcf2dd32c5dccd73233064",
+        "bytes": 3777
       },
       "signature": {
         "path": "/release/signatures/widget/minimal-clock-1.0.0.lull-signature.json",
-        "sha256": "4000c3dd83dbdc5d00bbcc0e26d37d5c6941cda519f79edbd7a9a7a57eb4fe6d"
+        "sha256": "84e455340c30ca3e63dcb8425e9a5ccba19150bb8275d5e150a1f1ce56d0e0ba"
       }
     }
   ]

@@ -2,19 +2,19 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://lull-community.invalid/schemas/package-signature.schema.json",
   "title": "Lull Community Package Signature",
-  "description": "release/signatures/ 下的逐包签名 envelope。payload 是 base64 的规范声明字节；signature 是对解码后 payload 的 Ed25519 签名（64 字节，base64）。验签方必须先验 payload 原始字节，再解析 JSON，不要重新序列化。",
+  "description": "包根 .lull-signature.json（同时在 release/signatures/ 保留审计副本）的逐包签名 envelope。payload 是 base64 的规范声明字节；signature 是对解码后 payload 的 Ed25519 签名（64 字节，base64）。验签方必须先验 payload 原始字节，再解析 JSON，不要重新序列化。v2 声明不再包含 zip 字段：签名随包走，zip 哈希由批次清单负责。",
   "type": "object",
   "additionalProperties": false,
   "required": ["schemaVersion", "algorithm", "keyId", "payload", "signature"],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "const": 2 },
     "algorithm": { "const": "ed25519" },
     "keyId": { "type": "string", "pattern": "^[0-9a-f]{16}$" },
     "payload": {
       "type": "string",
       "minLength": 1,
       "contentEncoding": "base64",
-      "description": "规范声明字节的 base64。声明字段：statementVersion / kind / slug / id / version / digest / zip / signedBy / releaseSeq / signedAt。"
+      "description": "规范声明字节的 base64。声明字段：statementVersion / kind / slug / id / version / digest / signedBy / releaseSeq / signedAt；v2 不含 zip。"
     },
     "signature": {
       "type": "string",

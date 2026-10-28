@@ -1,12 +1,14 @@
 /**
  * `scripts/lib/package-signature.mjs`
  *
- * 逐包签名：把「一个包的身份 + 内容摘要 + zip 字节摘要」写成一份声明，
- * 用与批次清单相同的 Ed25519 私钥签一次，放在 `release/signatures/`。
+ * 逐包签名：把「一个包的身份 + 内容摘要」写成一份声明，用与批次清单相同的
+ * Ed25519 私钥签一次，**签名文件随包放在包根 `.lull-signature.json`**，
+ * 同时在 `release/signatures/` 保留一份供 CI/站点审计的副本。
  *
  * 为什么不是直接签 zip 字节：
  * - 内容 `digest` 才是安装器认的包身份，重新压缩/换打包器不应该让签名失效；
- * - zip 的 sha256 仍然写进声明，作为传输层的完整性校验，但它不是签名主对象。
+ * - 签名文件在包内，zip 自身的哈希会因「把签名放进去」而改变，所以声明里
+ *   不再写 zip 哈希；zip 传输完整性由批次 `release.json` 的 `zip.sha256` 负责。
  *
  * 为什么 envelope 里放 base64 的 payload：
  * - 签的是签名方生成的**原始字节**，验签方不需要重新序列化 JSON；
@@ -28,8 +30,11 @@ import {
   verifyBytes,
 } from "./signing.mjs";
 
-export const PACKAGE_SIGNATURE_SCHEMA_VERSION = 1;
-export const PACKAGE_STATEMENT_VERSION = 1;
+export const PACKAGE_SIGNATURE_SCHEMA_VERSION = 2;
+export const PACKAGE_STATEMENT_VERSION = 2;
+/** 旧版：签名在包外、声明里带 zip 哈希；仍可验，但不再生成。 */
+export const LEGACY_PACKAGE_SIGNATURE_SCHEMA_VERSION = 1;
+export const LEGACY_PACKAGE_STATEMENT_VERSION = 1;
 export const PACKAGE_SIGNATURE_SUFFIX = ".lull-signature.json";
 
 const SHA256_HEX = /^[0-9a-f]{64}$/;
@@ -101,11 +106,6 @@ export const packageStatementFor = (release, item) => ({
     scope: "package",
     value: item.digest,
   },
-  zip: {
-    path: item.zip.path,
-    sha256: item.zip.sha256,
-    bytes: item.zip.bytes,
-  },
   signedBy: {
     keyId: release.signedBy.keyId,
     algorithm: release.signedBy.algorithm ?? PUBLISHED_SIGNATURE_ALGORITHM,
@@ -132,11 +132,6 @@ export const canonicalPackageStatement = (statement) => {
     `    "algorithm": ${JSON.stringify(statement.digest?.algorithm ?? "sha256")},`,
     `    "scope": ${JSON.stringify(statement.digest?.scope ?? "package")},`,
     `    "value": ${JSON.stringify(statement.digest?.value)}`,
-    "  },",
-    '  "zip": {',
-    `    "path": ${JSON.stringify(statement.zip?.path)},`,
-    `    "sha256": ${JSON.stringify(statement.zip?.sha256)},`,
-    `    "bytes": ${Number(statement.zip?.bytes)}`,
     "  },",
     '  "signedBy": {',
     `    "keyId": ${JSON.stringify(statement.signedBy?.keyId)},`,
@@ -217,7 +212,10 @@ export const readPackageSignature = (file) => {
   if (!envelope || typeof envelope !== "object" || Array.isArray(envelope)) {
     throw new Error("签名文件必须是 JSON 对象");
   }
-  if (envelope.schemaVersion !== PACKAGE_SIGNATURE_SCHEMA_VERSION) {
+  if (
+    envelope.schemaVersion !== PACKAGE_SIGNATURE_SCHEMA_VERSION &&
+    envelope.schemaVersion !== LEGACY_PACKAGE_SIGNATURE_SCHEMA_VERSION
+  ) {
     throw new Error(`不支持的签名 schemaVersion：${String(envelope.schemaVersion)}`);
   }
   if (envelope.algorithm !== PUBLISHED_SIGNATURE_ALGORITHM) {
@@ -232,7 +230,7 @@ export const readPackageSignature = (file) => {
   return { bytes, envelope, payloadBytes, signatureBytes };
 };
 
-const parseStatement = (payloadBytes) => {
+const parseStatement = (payloadBytes, schemaVersion = PACKAGE_SIGNATURE_SCHEMA_VERSION) => {
   let statement;
   try {
     statement = JSON.parse(payloadBytes.toString("utf8"));
@@ -242,8 +240,14 @@ const parseStatement = (payloadBytes) => {
   if (!statement || typeof statement !== "object" || Array.isArray(statement)) {
     throw new Error("签名声明必须是 JSON 对象");
   }
-  if (statement.statementVersion !== PACKAGE_STATEMENT_VERSION) {
-    throw new Error(`不支持的声明版本：${String(statement.statementVersion)}`);
+  const expectedStatementVersion =
+    schemaVersion === LEGACY_PACKAGE_SIGNATURE_SCHEMA_VERSION
+      ? LEGACY_PACKAGE_STATEMENT_VERSION
+      : PACKAGE_STATEMENT_VERSION;
+  if (statement.statementVersion !== expectedStatementVersion) {
+    throw new Error(
+      `不支持的声明版本：${String(statement.statementVersion)}（envelope v${schemaVersion} 期望 v${expectedStatementVersion}）`,
+    );
   }
   for (const field of ["kind", "slug", "id", "version", "signedAt"]) {
     if (typeof statement[field] !== "string" || statement[field] === "") {
@@ -262,15 +266,21 @@ const parseStatement = (payloadBytes) => {
   ) {
     throw new Error("签名声明的 digest 必须是 { algorithm: sha256, scope: package, value: 64 位 hex }");
   }
-  if (
-    !statement.zip ||
-    typeof statement.zip.path !== "string" ||
-    typeof statement.zip.sha256 !== "string" ||
-    !SHA256_HEX.test(statement.zip.sha256) ||
-    !Number.isInteger(statement.zip.bytes) ||
-    statement.zip.bytes < 0
-  ) {
-    throw new Error("签名声明的 zip 必须是 { path, sha256: 64 位 hex, bytes: ≥0 整数 }");
+  if (schemaVersion === LEGACY_PACKAGE_SIGNATURE_SCHEMA_VERSION) {
+    if (
+      !statement.zip ||
+      typeof statement.zip.path !== "string" ||
+      typeof statement.zip.sha256 !== "string" ||
+      !SHA256_HEX.test(statement.zip.sha256) ||
+      !Number.isInteger(statement.zip.bytes) ||
+      statement.zip.bytes < 0
+    ) {
+      throw new Error("签名声明的 zip 必须是 { path, sha256: 64 位 hex, bytes: ≥0 整数 }");
+    }
+  } else if (statement.zip !== undefined) {
+    // v2 的签名随包走，zip 自身哈希由批次清单负责；声明里再放 zip 会
+    // 变成「把自己装进 zip 再签自己的哈希」，语义上不成立。
+    throw new Error("v2 签名声明不应包含 zip 字段：包内签名只签内容摘要");
   }
   if (
     !statement.signedBy ||
@@ -289,7 +299,7 @@ const parseStatement = (payloadBytes) => {
   return statement;
 };
 
-const compareStatement = (statement, release, item) => {
+const compareStatement = (statement, release, item, schemaVersion) => {
   const problems = [];
   const expect = (condition, message) => {
     if (!condition) problems.push(message);
@@ -299,9 +309,11 @@ const compareStatement = (statement, release, item) => {
   expect(statement.id === item.id, `id 不一致：声明 ${statement.id}，清单 ${item.id}`);
   expect(statement.version === item.version, `version 不一致：声明 ${statement.version}，清单 ${item.version}`);
   expect(statement.digest.value === item.digest, "digest 与清单不一致");
-  expect(statement.zip.path === item.zip.path, "zip.path 与清单不一致");
-  expect(statement.zip.sha256 === item.zip.sha256, "zip.sha256 与清单不一致");
-  expect(statement.zip.bytes === item.zip.bytes, "zip.bytes 与清单不一致");
+  if (schemaVersion === LEGACY_PACKAGE_SIGNATURE_SCHEMA_VERSION) {
+    expect(statement.zip?.path === item.zip.path, "zip.path 与清单不一致");
+    expect(statement.zip?.sha256 === item.zip.sha256, "zip.sha256 与清单不一致");
+    expect(statement.zip?.bytes === item.zip.bytes, "zip.bytes 与清单不一致");
+  }
   expect(statement.signedBy.keyId === release.signedBy.keyId, "signedBy.keyId 与清单不一致");
   expect(
     statement.signedBy.algorithm === (release.signedBy.algorithm ?? PUBLISHED_SIGNATURE_ALGORITHM),
@@ -356,15 +368,19 @@ export const verifyPackageSignatureForItem = ({ root, release, item, key }) => {
 
   let statement;
   try {
-    statement = parseStatement(parsed.payloadBytes);
+    statement = parseStatement(parsed.payloadBytes, parsed.envelope.schemaVersion);
   } catch (error) {
     return { statement: null, errors: [...errors, error.message], warnings };
   }
-  const payloadText = parsed.payloadBytes.toString("utf8");
-  if (payloadText !== canonicalPackageStatement(statement)) {
-    warnings.push("签名声明不是规范化输出：签名有效，但下次签名会整段重写");
+  if (parsed.envelope.schemaVersion === LEGACY_PACKAGE_SIGNATURE_SCHEMA_VERSION) {
+    warnings.push("逐包签名是旧版 v1（签名在包外、声明带 zip 哈希）：重新运行 pnpm release 生成包内 v2");
+  } else {
+    const payloadText = parsed.payloadBytes.toString("utf8");
+    if (payloadText !== canonicalPackageStatement(statement)) {
+      warnings.push("签名声明不是规范化输出：签名有效，但下次签名会整段重写");
+    }
   }
-  errors.push(...compareStatement(statement, release, item));
+  errors.push(...compareStatement(statement, release, item, parsed.envelope.schemaVersion));
   return { statement, errors, warnings };
 };
 

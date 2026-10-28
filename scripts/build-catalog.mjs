@@ -16,7 +16,6 @@ import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } fr
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { listPackageFiles, readFiles } from "./lib/digest.mjs";
 import { getEntry, readRegistry } from "./lib/registry.mjs";
 import {
   RELEASE_FILE,
@@ -27,7 +26,14 @@ import {
   sha256Hex,
   verifyRelease,
 } from "./lib/signing.mjs";
-import { verifyPackageSignatures, PACKAGE_SIGNATURE_SCHEMA_VERSION, PACKAGE_STATEMENT_VERSION } from "./lib/package-signature.mjs";
+import {
+  PACKAGE_SIGNATURE_SCHEMA_VERSION,
+  PACKAGE_SIGNATURE_SUFFIX,
+  PACKAGE_STATEMENT_VERSION,
+  readPackageSignature,
+  verifyPackageSignatures,
+} from "./lib/package-signature.mjs";
+import { ZIP_TIMESTAMP, packageZipEntries, packageZipName } from "./lib/package-zip.mjs";
 import { writeZip } from "./lib/zip.mjs";
 import { loadContent, printReport } from "./validate-content.mjs";
 
@@ -39,12 +45,6 @@ const DOWNLOADS = join(SITE, "public", "downloads");
 /** 发布清单与签名对外公布的副本（站点根 /release/）。 */
 const RELEASE_PUBLIC = join(SITE, "public", "release");
 
-/**
- * 固定 zip 内时间戳，让同一份内容在不同机器、不同时间打出相同字节。
- * 只影响 zip 头的 DOS 时间，不影响内容摘要。
- */
-const ZIP_TIMESTAMP = new Date(Date.UTC(2024, 0, 1, 0, 0, 0));
-
 const repoSlug = process.env.GITHUB_REPOSITORY ?? "lull-desktop/Lull-Community";
 const repoUrl = `https://github.com/${repoSlug}`;
 const branch = process.env.GITHUB_REF_NAME ?? "main";
@@ -54,37 +54,28 @@ function fail(message) {
   process.exit(1);
 }
 
-/** 场景包：catalog.json + entry 所在目录，与 upstream content:pack 一致。 */
-function sceneZipEntries(item) {
-  const catalogPath = join(item.dir, "package", "catalog.json");
-  const files = readFiles(listPackageFiles(item.packageDir));
-  return [
-    { name: "catalog.json", data: readFileSync(catalogPath) },
-    ...files.map((file) => ({ name: `${item.manifest.entry.split("/").slice(0, -1).join("/")}/${file.name}`, data: file.data })),
-  ];
-}
-
-/** Widget 包：包根全部非点号文件 + 旁路摘要锁。 */
-function widgetZipEntries(item) {
-  const files = readFiles(listPackageFiles(item.packageDir, { includeDot: false }));
-  const lockPath = join(item.packageDir, ".lull-integrity.json");
-  const lock = existsSync(lockPath)
-    ? readFileSync(lockPath)
-    : Buffer.from(
-        `${JSON.stringify(
-          {
-            schemaVersion: 1,
-            algorithm: "sha256",
-            scope: "package",
-            digest: item.digest,
-            source: "computed",
-          },
-          null,
-          2,
-        )}\n`,
-        "utf8",
-      );
-  return [...files.map((file) => ({ name: file.name, data: file.data })), { name: ".lull-integrity.json", data: lock }];
+/**
+ * 读取外部 sidecar，只有 v2（包内签名格式）才注入 zip。
+ * v1 是「签名在包外、声明带 zip 哈希」的旧格式，注入后会自相矛盾；
+ * 这里只提示重签，不阻断裂发布。
+ */
+function signatureBytesFor(item) {
+  const path = join(
+    ROOT,
+    RELEASE_SIGNATURES_DIR,
+    item.kind,
+    `${item.slug}-${item.manifest.version}${PACKAGE_SIGNATURE_SUFFIX}`,
+  );
+  if (!existsSync(path)) return null;
+  const parsed = readPackageSignature(path);
+  if (parsed.envelope.schemaVersion !== PACKAGE_SIGNATURE_SCHEMA_VERSION) {
+    console.warn(
+      `[build:catalog] ${item.kind} \`${item.slug}\` 的逐包签名还是旧版 v${String(parsed.envelope.schemaVersion)}：` +
+        "重新运行 pnpm release 生成包内 v2，当前 zip 不注入签名。",
+    );
+    return null;
+  }
+  return readFileSync(path);
 }
 
 function main() {
@@ -148,11 +139,11 @@ function main() {
         cpSync(join(item.dir, shot), join(assetDir, shot));
       }
 
-      const entries = item.kind === "scene" ? sceneZipEntries(item) : widgetZipEntries(item);
-      const zipName =
-        item.kind === "scene"
-          ? `${item.manifest.id}-${item.manifest.version}.zip`
-          : `${item.manifest.id}-${item.manifest.version}.lull-widget.zip`;
+      // 签名随包：把外部 sidecar（v2）注入 zip 根部的 `.lull-signature.json`。
+      // 这样用户只下载一个 zip，宿主就能在解压后直接验签。
+      const signatureBytes = signatureBytesFor(item);
+      const entries = packageZipEntries(item, signatureBytes);
+      const zipName = packageZipName(item);
       const zipPath = join(DOWNLOADS, zipName);
       const zipBytes = writeZip(zipPath, entries, ZIP_TIMESTAMP);
 

@@ -122,6 +122,8 @@ test("包声明字节稳定，envelope 结构完整", () => {
   assert.equal(statement.digest.value, item.digest);
   assert.equal(statement.signedBy.keyId, pairs.keyId);
   assert.equal(statement.signedAt, release.generatedAt);
+  // v2 签名随包走：声明里不再有 zip 字段，避免「把签名装进 zip 再签 zip 哈希」
+  assert.equal(statement.zip, undefined);
 
   const first = signPackageStatement({ release, item, privateKeyPem: pairs.privatePem });
   const second = signPackageStatement({ release, item, privateKeyPem: pairs.privatePem });
@@ -133,7 +135,7 @@ test("包声明字节稳定，envelope 结构完整", () => {
   );
 
   const envelope = JSON.parse(first.bytes.toString("utf8"));
-  assert.equal(envelope.schemaVersion, 1);
+  assert.equal(envelope.schemaVersion, 2);
   assert.equal(envelope.algorithm, "ed25519");
   assert.equal(envelope.keyId, pairs.keyId);
   assert.equal(envelope.signature.length, 88);

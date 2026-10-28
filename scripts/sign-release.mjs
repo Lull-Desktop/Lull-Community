@@ -21,6 +21,10 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { ZIP_TIMESTAMP, packageZipEntries, packageZipName } from "./lib/package-zip.mjs";
+import { loadContent } from "./validate-content.mjs";
+import { writeZip } from "./lib/zip.mjs";
+
 import {
   RELEASE_DIR,
   RELEASE_FILE,
@@ -88,21 +92,19 @@ if (usable.error) {
 }
 
 const catalog = JSON.parse(readFileSync(CATALOG, "utf8"));
-const items = (catalog.items ?? []).map((item) => {
-  const local = join(PUBLIC, item.download);
-  if (!existsSync(local)) {
-    bail(`找不到 ${item.download} 的产物（${item.slug}）：先跑 pnpm build:catalog`);
+
+// 从内容目录重新读一遍：签名必须覆盖「当前内容」的摘要，不能信任可能已经
+// 过期的 catalog.json。zip 也在这里用共享的 package-zip 入口重新生成，
+// 保证 build-catalog 刷新时能打出完全相同的字节。
+const content = loadContent({ root: ROOT, fix: false });
+if (content.errors > 0) {
+  for (const problem of content.problems) {
+    if (problem.level === "error") {
+      console.error(`  · ${problem.where}: ${problem.message}`);
+    }
   }
-  const bytes = readFileSync(local);
-  return {
-    kind: item.kind,
-    slug: item.slug,
-    id: item.id,
-    version: item.version,
-    digest: item.integrity,
-    zip: { path: item.download, sha256: sha256Hex(bytes), bytes: bytes.length },
-  };
-});
+  bail("内容校验未通过：先修 content:check 再签名。");
+}
 
 const previous = readRelease(ROOT);
 const previousSeq = previous.exists && Number.isInteger(previous.data?.releaseSeq) ? previous.data.releaseSeq : 0;
@@ -124,16 +126,43 @@ const release = {
   generatedAt: new Date().toISOString().replace(/\.\d{3}Z$/, "Z"),
   signedBy: { keyId, algorithm: "ed25519" },
   repo: { url: catalog.repo?.url ?? "https://github.com/Lull-Desktop/Lull-Community", builtFrom },
-  items,
+  items: [],
 };
 
-// 先逐包签，再签清单：清单里的 signature.sha256 必须指向已经落盘的 sidecar。
-// 每次重建目录，避免上一批的孤立签名被带进这一批。
+// 先逐包签，再用「内容 + 包内签名」重新打 zip：
+// - 签名放在包根 `.lull-signature.json`，宿主下载一个 zip 就能验；
+// - zip 的 sha256 在签名之后才算，写进 release.json 的批次清单；
+// - 每次重建目录，避免上一批的孤立签名被带进这一批。
 rmSync(join(ROOT, RELEASE_SIGNATURES_DIR), { recursive: true, force: true });
-for (const item of items) {
+const downloads = join(PUBLIC, "downloads");
+rmSync(downloads, { recursive: true, force: true });
+mkdirSync(downloads, { recursive: true });
+
+const items = [];
+for (const contentItem of content.items) {
+  const item = {
+    kind: contentItem.kind,
+    slug: contentItem.slug,
+    id: contentItem.manifest.id,
+    version: contentItem.manifest.version,
+    digest: contentItem.digest,
+  };
   const signed = writePackageSignature({ root: ROOT, release, item, privateKeyPem });
+  const entries = packageZipEntries(contentItem, signed.bytes);
+  const zipName = packageZipName(contentItem);
+  const zipPath = join(downloads, zipName);
+  writeZip(zipPath, entries, ZIP_TIMESTAMP);
+  const zipBytes = readFileSync(zipPath);
+
+  item.zip = {
+    path: `/downloads/${zipName}`,
+    sha256: sha256Hex(zipBytes),
+    bytes: zipBytes.length,
+  };
   item.signature = { path: signed.path, sha256: signed.sha256 };
+  items.push(item);
 }
+release.items = items;
 
 const text = canonicalReleaseJson(release);
 const signature = signBytes(Buffer.from(text, "utf8"), privateKeyPem);
