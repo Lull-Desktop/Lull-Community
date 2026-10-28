@@ -21,6 +21,7 @@ import { getEntry, readRegistry } from "../../lib/registry.mjs";
 import { loadContent } from "../../validate-content.mjs";
 import { WRITE_PERMISSIONS } from "./github.mjs";
 import {
+  FORM_FIELDS,
   checkIssueTitle,
   compareVersions,
   issueTarget,
@@ -177,6 +178,20 @@ export const evaluateIssue = async (github, { issue, baseDir, fetchUrlFor = (url
   } catch (error) {
     result.errors.push(error.message);
     return result;
+  }
+
+  // 「作品目录」留空的含义是「就在仓库根」。但绝大多数投稿按推荐结构放在
+  // content/<group>/<slug>/ 下，留空只会得到「根目录里没有作品」这种没法自救的报错。
+  // 这里先探一眼，把该填什么直接告诉作者。
+  if (!itemPath) {
+    const guess = `content/${GROUP[target.kind]}/${slug}`;
+    if (!fs.existsSync(path.join(checkout, "package")) && fs.existsSync(path.join(checkout, guess, "package"))) {
+      result.errors.push(
+        `仓库根目录没有 \`package/\`；看起来作品在 \`${guess}\`——请把「${FORM_FIELDS.path}」填成 \`${guess}\``,
+      );
+      fs.rmSync(checkout, { recursive: true, force: true });
+      return result;
+    }
   }
 
   const stagingRoot = fs.mkdtempSync(path.join(os.tmpdir(), "lull-stage-"));

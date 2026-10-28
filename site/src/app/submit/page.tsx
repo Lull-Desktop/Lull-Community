@@ -295,6 +295,17 @@ function CodeBlock({ children }: { children: string }) {
   );
 }
 
+/** 四个 issue 表单的模板文件名。改名前先看 `.github/ISSUE_TEMPLATE/` 里的实际文件。 */
+const ISSUE_TEMPLATES = {
+  sceneSubmit: "scene-submission.yml",
+  widgetSubmit: "widget-submission.yml",
+  sceneUpdate: "scene-update.yml",
+  widgetUpdate: "widget-update.yml",
+} as const;
+
+/** 直接打开某个模板的新建 issue 页（GitHub 会按模板渲染表单）。 */
+const issueUrl = (template: string) => `${catalog.repo.url}/issues/new?template=${template}`;
+
 export default function SubmitPage() {
   return (
     <div className="mx-auto max-w-3xl px-5 py-14 sm:px-8">
@@ -307,6 +318,34 @@ export default function SubmitPage() {
           两种方式二选一：开 Pull Request（能改文件、一次带多个作品），或者在自己的仓库里放好作品、
           填一张 issue 表单（不 fork、不装 Node）。合并之后，网站会在一两分钟内自动更新。
         </p>
+
+        <div className="mt-6 flex flex-wrap items-center gap-3">
+          <a
+            href={issueUrl(ISSUE_TEMPLATES.sceneSubmit)}
+            target="_blank"
+            rel="noreferrer noopener"
+            className={buttonVariants({ size: "lg" })}
+          >
+            提交壁纸
+            <span aria-hidden="true" className="text-[11px]">
+              ↗
+            </span>
+          </a>
+          <a
+            href={issueUrl(ISSUE_TEMPLATES.widgetSubmit)}
+            target="_blank"
+            rel="noreferrer noopener"
+            className={buttonVariants({ size: "lg" })}
+          >
+            提交插件
+            <span aria-hidden="true" className="text-[11px]">
+              ↗
+            </span>
+          </a>
+          <p className="text-[11.5px] leading-relaxed text-faint">
+            在 GitHub 上填表，不需要 fork
+          </p>
+        </div>
       </header>
 
       <section className={cn(panelVariants(), "mt-10 p-6")}>
@@ -440,7 +479,8 @@ export default function SubmitPage() {
           <li className="flex gap-3">
             <span className="font-mono text-[11px] text-line-2">01</span>
             <span>
-              在自己的仓库里放一个作品目录，结构与本站 <InlineCode>content/&lt;scenes|widgets&gt;/&lt;slug&gt;/</InlineCode> 相同：
+              在自己的仓库里放一个作品目录，<span className="text-ink-soft">路径与结构都和本站一致</span>：{" "}
+              <InlineCode>content/&lt;scenes|widgets&gt;/&lt;slug&gt;/</InlineCode>，里面放{" "}
               <InlineCode>package/</InlineCode>、<InlineCode>item.json</InlineCode>、
               <InlineCode>preview.webp</InlineCode>、<InlineCode>README.md</InlineCode>、<InlineCode>LICENSE</InlineCode>。
               打一个 tag。
@@ -449,14 +489,14 @@ export default function SubmitPage() {
           <li className="flex gap-3">
             <span className="font-mono text-[11px] text-line-2">02</span>
             <span>
-              开「壁纸提交」或「插件提交」issue，填表，并把一张运行截图拖进截图框
-              （外链不算，截图只留在 issue 里，不会进仓库）。
+              开「壁纸提交」或「插件提交」issue，填表（「作品目录」一栏照抄上面那个路径），
+              并把一张运行截图拖进截图框（外链不算，截图只留在 issue 里，不会进仓库）。
             </span>
           </li>
           <li className="flex gap-3">
             <span className="font-mono text-[11px] text-line-2">03</span>
             <span>
-              CI 回帖告诉你差什么。改完直接**编辑原 issue**，会自动重新检查；同一个作品只保留一条提交 issue。
+              CI 回帖告诉你差什么。改完直接<span className="text-ink-soft">编辑原 issue</span>，会自动重新检查；同一个作品只保留一条提交 issue。
             </span>
           </li>
           <li className="flex gap-3">
@@ -475,9 +515,9 @@ export default function SubmitPage() {
         <div className="mt-4 rounded-xl border border-line bg-void/40 p-4">
           <p className="text-[12px] font-medium text-ink">关于「发布签名」</p>
           <p className="mt-1.5 text-[11.5px] leading-relaxed text-muted">
-            收录后的版本会由 community 用离线密钥签一份发布清单，站点上显示「已签署发布」。
-            它只说明**这批文件由 community 发布**，不证明作者身份，也不授予任何权限：
-            验签不改变安装与运行的条件。细则见{" "}
+            收录后的版本会由 compound 用离线密钥签一份发布清单，站点上显示「已签署发布」。
+            它只说明<span className="text-ink-soft">这批文件由 compound 发布</span>，不证明作者身份，
+            也不授予任何权限：验签不改变安装与运行的条件。细则见{" "}
             <a
               href={`${catalog.repo.url}/blob/${catalog.repo.branch}/SECURITY.md`}
               target="_blank"
@@ -490,16 +530,15 @@ export default function SubmitPage() {
           </p>
         </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="text-[11.5px] text-faint">更新已收录的作品：</span>
           {[
-            { label: "壁纸提交", template: "scene-submission.yml" },
-            { label: "插件提交", template: "widget-submission.yml" },
-            { label: "壁纸更新", template: "scene-update.yml" },
-            { label: "插件更新", template: "widget-update.yml" },
+            { label: "壁纸更新", template: ISSUE_TEMPLATES.sceneUpdate },
+            { label: "插件更新", template: ISSUE_TEMPLATES.widgetUpdate },
           ].map((entry) => (
             <a
               key={entry.template}
-              href={`${catalog.repo.url}/issues/new?template=${entry.template}`}
+              href={issueUrl(entry.template)}
               target="_blank"
               rel="noreferrer noopener"
               className={buttonVariants({ variant: "ghost", size: "sm" })}

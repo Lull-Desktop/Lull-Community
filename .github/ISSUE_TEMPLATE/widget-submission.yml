@@ -10,10 +10,11 @@ body:
       value: |
         不需要 fork 本仓库。流程：
 
-        1. 在你的公开仓库里放一个**作品目录**，结构与本站的 `content/widgets/<slug>/` 相同：
+        1. 在你的公开仓库里放一个**作品目录**。推荐直接沿用本站的路径：
+           `content/widgets/<id>/`（目录名就是插件 id，不要另起一个），里面放
            `package/widget.json`、包内入口页、`item.json`、`preview.webp`（16:9，1600×900，< 3 MiB）、
-           `README.md`、`LICENSE`。打一个 tag（推荐）或记下完整 commit。
-           目录名默认等于插件 id，不要另起一个。
+           `README.md`、`LICENSE`。这样「作品目录」一栏照抄 `content/widgets/<id>` 就能通过，
+           合并时也是同名同构地落到本站同一位置。打一个 tag（推荐）或记下完整 commit。
         2. 在标题「[插件提交]」后面写上插件名字，填完本表单，并附一张插件在 Lull 里
            正常运行的截图。CI 会取回那个提交、检查格式，并在下面回复结果。
         3. 通过后等维护者审查；审查通过后维护者合并，插件进入站点与下载包。
@@ -27,7 +28,7 @@ body:
     id: item-id
     attributes:
       label: 作品 id / Item id
-      description: 与 widget.json 的 id 完全相同；小写字母开头，2–32 位，收录后不可改
+      description: 与 widget.json 的 id 完全相同；小写字母开头，2–32 位，收录后不可改。目录名 `content/widgets/<id>/` 与它相同
       placeholder: breathing
     validations:
       required: true
@@ -54,8 +55,8 @@ body:
     id: path
     attributes:
       label: 作品目录 / Item directory
-      description: 仓库里那个作品目录（含 package/ 与 item.json）的相对路径；在仓库根目录就留空
-      placeholder: lull/breathing
+      description: 作品目录在你仓库里的相对路径（含 package/ 与 item.json）。按上面的推荐结构时填 `content/widgets/<id>`；作品就在仓库根目录时留空
+      placeholder: content/widgets/breathing
     validations:
       required: false
 

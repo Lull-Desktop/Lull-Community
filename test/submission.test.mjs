@@ -37,7 +37,7 @@ const DEFAULTS = {
   slug: "aurora",
   repository: "https://github.com/alice/lull-wallpapers",
   ref: "v1.0.0",
-  path: "lull/aurora",
+  path: "content/scenes/aurora",
   description: "一张安静的极光壁纸，Canvas 绘制。",
   capabilities: "wallpaper.viewport：铺满屏幕；wallpaper.canvas：用 Canvas 画光带",
   license: "CC-BY-4.0",
@@ -72,12 +72,12 @@ const issueFor = (key, body, author = "alice", number = 1) => ({
 });
 
 test("正常提交能读出全部字段", () => {
-  const submission = parse("scene-submission", { repository: "https://github.com/dev/cool.git/", path: "./lull/aurora/" });
+  const submission = parse("scene-submission", { repository: "https://github.com/dev/cool.git/", path: "./content/scenes/aurora/" });
   assert.deepEqual(submission.errors, []);
   assert.equal(submission.fields.itemId, "alice.aurora");
   assert.equal(submission.fields.slug, "aurora");
   assert.equal(submission.fields.repository, "https://github.com/dev/cool");
-  assert.equal(submission.fields.path, "lull/aurora");
+  assert.equal(submission.fields.path, "content/scenes/aurora");
   assert.equal(submission.fields.license, "CC-BY-4.0");
 
   // 根目录：空与 _No response_ 都归一到 ''
@@ -270,7 +270,7 @@ test("来源字段的归一化与校验", () => {
   assert.equal(normalizeRepositoryUrl("https://github.com/a"), null);
 
   assert.equal(normalizeItemPath(""), "");
-  assert.equal(normalizeItemPath("./lull/aurora/"), "lull/aurora");
+  assert.equal(normalizeItemPath("./content/scenes/aurora/"), "content/scenes/aurora");
   assert.equal(normalizeItemPath("../escape"), null);
   assert.equal(normalizeItemPath("/abs"), null);
   assert.equal(normalizeItemPath("lull\\aurora"), null);
@@ -305,7 +305,7 @@ test("检查通过的评论包含文件清单与 /merge 命令", () => {
       digest: "deadbeef",
       files: ["package/catalog.json", "item.json"],
       manifest: { id: "alice.aurora", version: "1.0.0", capabilities: ["wallpaper.canvas"] },
-      source: { repository: "https://github.com/alice/x", path: "lull/aurora", commit: "a".repeat(40) },
+      source: { repository: "https://github.com/alice/x", path: "content/scenes/aurora", commit: "a".repeat(40) },
       links: { tree: "https://github.com/alice/x/tree/aaa", compare: null },
     },
     checkedAt: "2026-11-01T00:00:00.000Z",

@@ -47,10 +47,10 @@ const SCENE_CATALOG = (id, version = "1.0.0") => ({
   ],
 });
 
-/** 造一个「作者仓库」：lull/aurora/ 下是完整的作品目录，打上 v1.0.0。 */
+/** 造一个「作者仓库」：按推荐结构放在 content/scenes/aurora/，打上 v1.0.0。 */
 const makeAuthorRepo = ({ id = "alice.aurora", version = "1.0.0" } = {}) => {
   const dir = mkdtempSync(join(tmpdir(), "lull-author-"));
-  const item = join(dir, "lull", "aurora");
+  const item = join(dir, "content", "scenes", "aurora");
   mkdirSync(join(item, "package", "scenes", "aurora"), { recursive: true });
 
   writeFileSync(join(item, "package", "catalog.json"), `${JSON.stringify(SCENE_CATALOG(id, version), null, 2)}\n`);
@@ -76,7 +76,7 @@ const bodyOf = (key, overrides = {}) => {
     slug: "aurora",
     repository: "https://github.com/alice/lull-wallpapers",
     ref: "v1.0.0",
-    path: "lull/aurora",
+    path: "content/scenes/aurora",
     description: "一张安静的极光壁纸。",
     capabilities: "wallpaper.viewport：铺满屏；wallpaper.canvas：Canvas 绘制",
     license: "CC-BY-4.0",
@@ -201,4 +201,23 @@ test("更新未登记的作品时提示去用提交表单", async () => {
   });
   assert.match(result.errors.join("\n"), /不是已收录的壁纸/);
   result.cleanup();
+});
+
+test("按推荐结构放好但「作品目录」留空时，直接告诉作者该填什么", async () => {
+  const dir = makeAuthorRepo();
+  try {
+    const result = await evaluateIssue(null, {
+      issue: issueOf("scene-submission", { path: "" }),
+      baseDir: ROOT,
+      fetchUrlFor: localRepo(dir),
+      allowLocal: true,
+    });
+    const text = result.errors.join("\n");
+    assert.match(text, /仓库根目录没有 `package\/`/);
+    assert.match(text, /content\/scenes\/aurora/);
+    assert.match(text, /「作品目录 \/ Item directory」填成/);
+    result.cleanup();
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

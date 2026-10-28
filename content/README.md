@@ -30,6 +30,20 @@ content/
 **`package/` 是分界线**：里面的东西会被原样校验、摘要、打 zip；外面的
 `item.json`、`preview.webp`、`README.md` 只用于网站展示，永远不会进包。
 
+## 外部投稿用同一套路径
+
+通过 issue 表单投稿的作者，在自己的仓库里也用 `content/<scenes|widgets>/<slug>/` 这个路径，
+目录结构与下面完全一致。表单里的「作品目录 / Item directory」照抄这个路径即可，
+合并时机器人会把整个目录原样落到本站的同一位置——来源与目标同名同构，出问题时容易对账。
+
+```text
+<author-repo>/content/scenes/aurora-night/   ← 与本站 content/scenes/aurora-night/ 同构
+```
+
+想放别的子目录也合法（表单填那个路径），作品目录就是仓库根时留空。
+登记信息（谁提的、来自哪个仓库、审查到哪个 commit）记在仓库根的 `community.json`，
+不在内容目录里——内容目录会被打进 zip 下发。
+
 这样做的原因：预览图和说明文字如果混进包内，会一起被算进摘要、一起被塞进 zip，
 用户装到的是一个「带截图和文档」的包。Lull 只认清单和入口，其余都是体积。
 

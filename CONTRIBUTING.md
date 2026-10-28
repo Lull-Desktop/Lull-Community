@@ -138,22 +138,48 @@ git config core.hooksPath .githooks
 
 ### 方式 B：issue 表单（不 fork、不装 Node）
 
-作品放在**你自己的公开仓库**里，结构与本仓库 `content/<scenes|widgets>/<slug>/` 逐字相同：
+作品放在**你自己的公开仓库**里，路径与本站**完全一致**——本站怎么放，你就怎么放：
 
 ```text
-<your-repo>/lull/aurora-night/
-├── package/                 ★ 与本仓库同构的包
-├── item.json
-├── preview.webp
-├── README.md
-└── LICENSE
+<your-repo>/
+└── content/
+    ├── scenes/<slug>/        ← 壁纸：目录名 = slug
+    │   ├── package/          ★ 与本仓库同构的包（会被装进 Lull）
+    │   ├── item.json         站点展示元数据（不进包）
+    │   ├── preview.webp      16:9 预览图（不进包）
+    │   ├── README.md         作品说明（不进包）
+    │   └── LICENSE           作品许可原文（不进包）
+    └── widgets/<id>/         ← 插件：目录名 = 插件 id
+        └── …同构
 ```
+
+这样组织的好处是「作品目录」一栏**照抄就能用**：壁纸填 `content/scenes/<slug>`，
+插件填 `content/widgets/<id>`；合并时运维把整个目录原样落到本站的同一路径，
+来源与目标同名同构，对不上时一眼能看出来。
+
+如果你不想在仓库里建 `content/`，也可以把作品目录放在任意子目录（表单里填那个路径即可）；
+作品目录本身就是仓库根时，「作品目录」留空。
 
 1. 打一个 tag（推荐），或记下完整 commit；
 2. 开「壁纸提交」或「插件提交」issue，填表：作品 id、slug、仓库地址、版本、目录、能力说明、许可证，
    并把一张**运行截图**拖进截图框（外链不算）；
 3. `submission-check` 会取回那个提交检查格式，回帖告诉你差什么。改完**编辑原 issue** 即自动重查；
 4. 维护者审查后评论 `/merge <commit>`，机器人把目录写进 `content/` 并登记到 `community.json`。
+
+#### 各目录的用途与归属
+
+| 路径 | 谁写 | 进不进包 | 用途 |
+| --- | --- | --- | --- |
+| `content/<scenes\|widgets>/<slug>/package/` | 作者 | **进** | Lull 真正安装的内容；改这里必须重算摘要 |
+| `…/<slug>/item.json` | 作者 | 不进 | 站点展示：标签、预览图文件名；`addedAt`/`featured` 由导入覆盖 |
+| `…/<slug>/preview.webp`、`screenshots` | 作者 | 不进 | 卡片与详情页头图 |
+| `…/<slug>/README.md`、`LICENSE` | 作者 | 不进 | 详情页正文、许可原文 |
+| `community.json` | 机器人 | 不进 | 登记表：提交人、来源仓库、审查 commit、版本 |
+| `release/`、`keys/` | compound | 不进 | 发布清单与签名、公钥；与作品目录无关 |
+| `site/public/{downloads,content-assets,release}/` | 构建生成 | — | 站点产物，从不入库 |
+
+**`package/` 是唯一会被安装的边界**：外面的东西（预览图、说明、许可）永远不会进包，
+所以别把截图塞进 `package/`，也别指望 `package/` 里的文件被网站展示。
 
 几个必须知道的点：
 

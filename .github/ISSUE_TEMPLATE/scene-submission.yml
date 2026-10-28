@@ -10,9 +10,11 @@ body:
       value: |
         不需要 fork 本仓库。流程：
 
-        1. 在你的公开仓库里放一个**作品目录**，结构与本站的 `content/scenes/<slug>/` 相同：
+        1. 在你的公开仓库里放一个**作品目录**。推荐直接沿用本站的路径：
+           `content/scenes/<slug>/`（把 `<slug>` 换成你的目录名），里面放
            `package/catalog.json`、`package/scenes/<slug>/index.html`、`item.json`、
            `preview.webp`（16:9，1600×900，< 3 MiB）、`README.md`、`LICENSE`。
+           这样「作品目录」一栏照抄 `content/scenes/<slug>` 就能通过，合并时也是同名同构地落到本站同一位置。
            打一个 tag（推荐）或记下完整 commit。
         2. 在标题「[壁纸提交]」后面写上壁纸名字，填完本表单，并附一张壁纸在 Lull 里
            正常运行的截图。CI 会取回那个提交、检查格式，并在下面回复结果。
@@ -36,7 +38,7 @@ body:
     id: slug
     attributes:
       label: 目录名 slug / Slug
-      description: 小写字母、数字、连字符，2–32 位；同时是站点 URL 段，收录后不可改。建议与 id 末段相同
+      description: 小写字母、数字、连字符，2–32 位。它就是目录名 `content/scenes/<slug>/` 与站点 URL 段，收录后不可改；建议与 id 末段相同
       placeholder: aurora-night
     validations:
       required: true
@@ -63,8 +65,8 @@ body:
     id: path
     attributes:
       label: 作品目录 / Item directory
-      description: 仓库里那个作品目录（含 package/ 与 item.json）的相对路径；在仓库根目录就留空
-      placeholder: lull/aurora-night
+      description: 作品目录在你仓库里的相对路径（含 package/ 与 item.json）。按上面的推荐结构时填 `content/scenes/<slug>`；作品就在仓库根目录时留空
+      placeholder: content/scenes/aurora-night
     validations:
       required: false
 
