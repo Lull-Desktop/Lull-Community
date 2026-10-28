@@ -21,7 +21,7 @@
  * 把 V5–V7 做成错误，就会变成「每次合并都要立刻离线重签」，自动部署链直接断。
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { fileURLToPath } from "node:url";
@@ -59,6 +59,16 @@ export const checkRelease = (root, { strict = false, now = Date.now(), checkHist
       const local = join(PUBLIC, relative);
       if (!relative || !existsSync(local)) {
         warn("V5", `清单里的 \`${item?.slug}\` 已没有对应产物（被新版本取代或已下架），需要重新签名`);
+        continue;
+      }
+      // 先比长度：不符就不必算哈希，报错也更直观（差了几个字节 / 差了几个数量级）
+      const size = statSync(local).size;
+      if (Number.isInteger(item.zip.bytes) && size !== item.zip.bytes) {
+        error(
+          "V4",
+          `\`${item.slug}\` 的 zip 大小与清单不符：清单 ${item.zip.bytes} 字节，实际 ${size} 字节。` +
+            "已签名的字节被改过——要么还原，要么重新签名",
+        );
         continue;
       }
       const digest = sha256Hex(readFileSync(local));
