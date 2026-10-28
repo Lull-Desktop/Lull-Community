@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "提交作品",
-  description: "把壁纸场景或桌面工具提交到 Lull Community：一份清单、一张预览图、一次 Pull Request。",
+  description: "把壁纸场景或桌面工具提交到 Lull Community：一份清单、一张预览图、一张 issue 表单，无需 fork。",
 };
 
 const SCENE_STEPS = `# 1. 生成骨架（slug 用小写字母和连字符）
@@ -315,10 +315,9 @@ export default function SubmitPage() {
           提交你的<span className="text-gradient">作品</span>
         </h1>
         <p className="mt-4 text-[13.5px] leading-relaxed text-muted">
-          两种方式二选一：开 Pull Request（能改文件、一次带多个作品），或者在自己的仓库里放好作品、
-          填一张 issue 表单（不 fork、不装 Node）。合并之后，网站会在一两分钟内自动更新。
+          点击下方提交按钮，根据 issue 表单操作提交（无需 fork），管理员会审核并合并更新。
         </p>
-
+ 
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <a
             href={issueUrl(ISSUE_TEMPLATES.sceneSubmit)}
@@ -342,9 +341,26 @@ export default function SubmitPage() {
               ↗
             </span>
           </a>
-          <p className="text-[11.5px] leading-relaxed text-faint">
-            在 GitHub 上填表，不需要 fork
-          </p>
+                 <p>
+          如何使用SDK开发组件？查看{" "}
+          <a
+            href="https://lull-desktop.github.io/Lull/docs/scene-sdk/"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="font-semibold underline underline-offset-2 transition-colors hover:text-accent"
+          >
+            Scene SDK
+          </a>和 
+           <a
+            href="https://lull-desktop.github.io/Lull/docs/widget-sdk/"
+            target="_blank"
+            rel="noreferrer noopener"
+            className="font-semibold underline underline-offset-2 transition-colors hover:text-accent"
+          >
+            Widget SDK
+          </a>
+          。
+        </p>
         </div>
       </header>
 
@@ -467,8 +483,8 @@ export default function SubmitPage() {
 
       <section id="issues" className="mt-10 scroll-mt-24 rounded-2xl border border-line bg-panel/50 p-6">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <h2 className="text-[14.5px] font-medium tracking-tight text-ink">不想 fork？用 issue 表单</h2>
-          <p className="font-mono text-[10px] tracking-[0.18em] text-faint">no fork</p>
+          <h2 className="text-[14.5px] font-medium tracking-tight text-ink">免 fork 提交</h2>
+          <p className="font-mono text-[10px] tracking-[0.18em] text-faint">issue form</p>
         </div>
         <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
           内容放在你自己的公开仓库里，用一张表单告诉我们「仓库 + tag + 目录」。
@@ -655,28 +671,20 @@ export default function SubmitPage() {
         <h2 className="text-[14.5px] font-medium tracking-tight text-ink">然后呢</h2>
         <ol className="mt-3 space-y-2.5 text-[12.5px] leading-relaxed text-ink-soft">
           <li>
-            1. 开 Pull Request，或者填 issue 表单。两条路都会先跑一遍校验：PR 走{" "}
-            <InlineCode>Validate content</InlineCode>，表单走 <InlineCode>submission-check</InlineCode>，
-            失败原因会直接写出来。
+            1. 填 issue 表单（无需 fork）。提交后 CI 会跑一遍{" "}
+            <InlineCode>submission-check</InlineCode>，失败原因会直接回在 issue 里。
           </li>
-          <li>2. 维护者审内容与许可。需要改的会在 PR / issue 里指出，改完自动重跑。</li>
+          <li>2. 维护者审内容与许可。需要改的直接编辑原 issue，改完自动重跑。</li>
           <li>3. 合并进 main。部署工作流重新生成索引、构建静态站、发布 Pages。</li>
         </ol>
 
         <div className="mt-6 flex flex-wrap gap-3">
-          <a
-            href={`${catalog.repo.url}/compare`}
-            target="_blank"
-            rel="noreferrer noopener"
-            className={buttonVariants()}
-          >
-            在 GitHub 上开 PR
-          </a>
+         
           <a
             href={`${catalog.repo.url}/blob/${catalog.repo.branch}/CONTRIBUTING.md`}
             target="_blank"
             rel="noreferrer noopener"
-            className={buttonVariants({ variant: "ghost" })}
+            className={buttonVariants({ size: "md" })}
           >
             完整贡献指南
           </a>

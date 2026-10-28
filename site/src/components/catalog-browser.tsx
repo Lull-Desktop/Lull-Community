@@ -12,9 +12,9 @@ type SortKey = "latest" | "name" | "size";
 type TypeFilter = "all" | ItemKind;
 
 const SORTS: { key: SortKey; label: string }[] = [
-  { key: "latest", label: "最新" },
-  { key: "name", label: "名称" },
-  { key: "size", label: "体积" },
+  { key: "latest", label: "按日期" },
+  { key: "name", label: "按名称" },
+  { key: "size", label: "按体积" },
 ];
 
 const TYPE_FILTERS: { value: TypeFilter; label: string }[] = [

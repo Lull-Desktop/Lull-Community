@@ -66,8 +66,8 @@ export function SiteFooter() {
               />
             </p>
             <p className="mt-3 max-w-[340px] text-[12.5px] leading-[1.75] text-muted">
-              为安静的桌面，添一点会动的东西。场景与组件全部来自社区，
-              内容放在 GitHub 仓库里，合并后自动校验、构建、发布。
+              这里是 Lull 的官方拓展组件与社区模组市场，目前市场通过 GitHub 仓库管理，通过社区审核认证后并分享在市场中。
+              若你是开发者，欢迎提交分享你的作品！
             </p>
           </div>
 
