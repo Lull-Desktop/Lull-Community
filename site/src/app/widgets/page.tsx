@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 
 import { CatalogBrowser } from "@/components/catalog-browser";
 import { widgets } from "@/lib/catalog";
+import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
 
 export const metadata: Metadata = {
   title: "桌面工具",
@@ -11,9 +13,23 @@ export const metadata: Metadata = {
 
 export default function WidgetsPage() {
   const items = widgets();
-
+  const filters = [
+    { href: "/scenes", label: "下载壁纸", },
+    { href: "/widgets", label: "下载工具", },
+  ];
   return (
-    <div className="shell py-12">
+    <div className="shell ">
+        <div className="mt-8 flex flex-wrap items-center gap-2">
+            {filters.map((filter) => (
+              <Link
+                key={filter.href}
+                href={filter.href}
+                className={buttonVariants({ size: "lg" })}
+              >
+                {filter.label}
+              </Link>
+            ))}
+        </div>
       <header className="max-w-2xl">
         <p className="eyebrow">widgets</p>
         <h1 className="mt-3 flex items-baseline gap-3 text-[clamp(1.7rem,3.4vw,2.3rem)] font-normal tracking-[-0.01em]">
