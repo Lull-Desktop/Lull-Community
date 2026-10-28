@@ -3,6 +3,8 @@
   "keys": [
     {
       "keyId": "279aff591d2627ed",
+      "name": "Folium official",
+      "label": "folium-2026-1",
       "algorithm": "ed25519",
       "publicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAuXEeCgcI7Tn16mfAA8X7JXtCsSUSsuWRjOcNEvPlCZs=\n-----END PUBLIC KEY-----\n",
       "notBefore": "2026-10-28",

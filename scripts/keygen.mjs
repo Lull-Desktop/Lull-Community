@@ -4,7 +4,10 @@
  *
  * 生成 community 的发布密钥对（Ed25519）。**只在离线机器上跑**。
  *
- *   node scripts/keygen.mjs --out ~/lull-release-keys
+ *   node scripts/keygen.mjs --out ~/lull-release-keys --name "Folium official" --label folium-2026-1
+ *
+ * `--name` / `--label` 只影响展示：站点按 keyId 找到这条公钥，把两者拼成
+ * 「Folium official folium-2026-1」。不填也能验签，页面上就只剩 keyId。
  *
  * 产出：
  *   <out>/publisher.pem        私钥（PKCS#8）。这是发布权，不入库、不进 CI、不外传。
@@ -67,6 +70,9 @@ writeFileSync(publicPath, publicPem);
 
 const entry = {
   keyId,
+  // 人可读的名字：站点详情页的「签名密钥」显示 name + label，按 keyId 关联
+  name: argValue("--name", null),
+  label: argValue("--label", null),
   algorithm: "ed25519",
   publicKey: publicPem,
   notBefore: new Date().toISOString().slice(0, 10),

@@ -55,6 +55,10 @@ node scripts/keygen.mjs --out ~/lull-release-keys
 会得到 `publisher.pem`（私钥，600 权限）与 `publisher.pub.pem`，并打印一条公钥清单条目。
 把那条 JSON 加进 `keys/publisher-keys.json` 的 `keys` 数组，开 PR 合并。
 
+条目里的 `name`（发布主体）与 `label`（密钥期次，如 `folium-2026-1`）是给人看的：
+作品详情页的「签名与校验」按 `keyId` 找到这条公钥，把两者拼起来显示。
+不填也能验签，但页面上只能显示一串 keyId。
+
 > 公钥清单一旦合并，这个 keyId 就成了「验收标准」。之后凡是它签的东西，
 > 用户都能验；反过来，私钥丢了就只能换密钥（§3），旧密钥签过的清单要保留旧公钥才验得过，
 > 所以**退役的密钥不要从清单里删**。

@@ -283,6 +283,96 @@ function SpecsSection({ item }: { item: CatalogItem }) {
   );
 }
 
+/**
+ * 签名时间只按 UTC 显示：静态导出在构建机上跑，用本地时区会让同一份内容
+ * 在不同机器上渲出不同文字。
+ */
+function formatUtcMinute(iso: string): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(iso);
+  return match ? `${match[1]}.${match[2]}.${match[3]} ${match[4]}:${match[5]} UTC` : iso;
+}
+
+/**
+ * 签名与校验：四行机器可核对的事实。
+ * 措辞只到「这批字节是不是发布者发的」为止——不写成安全背书，也不暗示作者身份。
+ */
+function SignatureSection({ item }: { item: CatalogItem }) {
+  const release = catalog.release;
+  const keyName = release
+    ? [release.keyName, release.keyLabel].filter(Boolean).join(" ") || release.keyId
+    : null;
+
+  const rows: { label: string; value: string; note?: string }[] = [
+    {
+      label: "签名密钥",
+      value: item.signed ? (keyName ?? "—") : "—",
+      note: item.signed && release?.keyId ? `keyId ${release.keyId}` : undefined,
+    },
+    {
+      label: "签名时间",
+      value: item.signed && release?.signedAt ? formatUtcMinute(release.signedAt) : "—",
+    },
+    {
+      label: "签名摘要",
+      value: item.signed && release?.manifestSha256 ? release.manifestSha256 : "—",
+    },
+    // 这一行不依赖签名：任何一次构建都能给出这份 zip 的字节摘要
+    { label: "文件 SHA-256", value: item.zipSha256 },
+  ];
+
+  return (
+    <section>
+      <h2 className="text-[14.5px] font-medium tracking-tight text-ink">签名与校验</h2>
+      <dl className="mt-3 overflow-hidden rounded-xl border border-line">
+        {rows.map((row, index) => (
+          <div
+            key={row.label}
+            className={`grid grid-cols-[7rem_1fr] gap-3 px-4 py-2.5 text-[12px] ${
+              index % 2 === 0 ? "bg-panel/60" : "bg-panel/25"
+            }`}
+          >
+            <dt className="text-muted">{row.label}</dt>
+            <dd className="min-w-0">
+              <span
+                className={cn(
+                  "break-all font-mono text-[11px]",
+                  row.value === "—" ? "text-faint" : "text-ink-soft",
+                )}
+              >
+                {row.value}
+              </span>
+              {row.note && <span className="mt-0.5 block font-mono text-[10px] text-faint">{row.note}</span>}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      {item.signed ? (
+        <p className="mt-2.5 text-[11px] leading-relaxed text-muted">
+          签名覆盖{" "}
+          <a
+            href={asset(release?.url ?? "/release/release.json")}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="font-mono text-accent hover:underline"
+          >
+            release/release.json
+          </a>
+          {release?.releaseSeq ? `（第 ${release.releaseSeq} 批）` : ""}
+          ，摘要即这份清单原始字节的 SHA-256。它只说明这批文件由发布者发出，
+          <span className="text-ink-soft">不证明作者是谁</span>
+          ，也不参与安装与运行的判断；摘要一致只说明文件没被改过。
+        </p>
+      ) : (
+        <p className="mt-2.5 text-[11px] leading-relaxed text-muted">
+          这个版本不在签名清单里，所以签名时间与签名摘要为空。
+          文件 SHA-256 是构建时算的，下载后仍可复算，用来确认文件没在传输中被改过。
+        </p>
+      )}
+    </section>
+  );
+}
+
 function ParamsSection({ item }: { item: CatalogItem }) {
   if (!item.params || item.params.length === 0) return null;
 
@@ -381,6 +471,7 @@ export function ItemDetail({ item }: { item: CatalogItem }) {
               </div>
               <CapabilitySection item={item} />
               <SpecsSection item={item} />
+              <SignatureSection item={item} />
               <ParamsSection item={item} />
 
               {item.readme && (

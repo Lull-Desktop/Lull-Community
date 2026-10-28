@@ -17,7 +17,7 @@ import { fileURLToPath } from "node:url";
 
 import { listPackageFiles, readFiles } from "./lib/digest.mjs";
 import { getEntry, readRegistry } from "./lib/registry.mjs";
-import { RELEASE_FILE, SIGNATURE_FILE, readRelease } from "./lib/signing.mjs";
+import { RELEASE_FILE, SIGNATURE_FILE, loadPublicKeys, readRelease, sha256Hex } from "./lib/signing.mjs";
 import { writeZip } from "./lib/zip.mjs";
 import { loadContent, printReport } from "./validate-content.mjs";
 
@@ -117,7 +117,8 @@ function main() {
         item.kind === "scene"
           ? `${item.manifest.id}-${item.manifest.version}.zip`
           : `${item.manifest.id}-${item.manifest.version}.lull-widget.zip`;
-      const zipBytes = writeZip(join(DOWNLOADS, zipName), entries, ZIP_TIMESTAMP);
+      const zipPath = join(DOWNLOADS, zipName);
+      const zipBytes = writeZip(zipPath, entries, ZIP_TIMESTAMP);
 
       const packageBytes = entries.reduce((sum, entry) => sum + entry.data.length, 0);
       const registered = registry?.exists ? getEntry(registry, item.kind, item.manifest.id) : null;
@@ -141,6 +142,8 @@ function main() {
         ),
         download: `/downloads/${zipName}`,
         downloadBytes: zipBytes,
+        // 站点上这份 zip 的字节摘要：页面「文件 SHA-256」直接用它，用户能对着自己的下载复算
+        zipSha256: sha256Hex(readFileSync(zipPath)),
         packageBytes,
         fileCount: entries.length,
         integrity: item.digest,
@@ -176,26 +179,46 @@ function main() {
   // 没有清单（还没签过）时目录保持为空——「未签名」是一个要能表达出来的状态。
   const release = readRelease(ROOT);
   let releaseInfo = null;
+  /** 签名清单里「同 kind + id + 版本 + 摘要」的条目，用来标注 signed 与 zip 摘要。 */
+  const signedEntries = new Map();
   if (release.exists && release.data) {
     mkdirSync(RELEASE_PUBLIC, { recursive: true });
     cpSync(join(ROOT, RELEASE_FILE), join(RELEASE_PUBLIC, "release.json"));
     if (release.signatureExists) cpSync(join(ROOT, SIGNATURE_FILE), join(RELEASE_PUBLIC, "release.json.sig"));
+    const keyId = release.data.signedBy?.keyId ?? null;
+    // 密钥的人可读名字只存在公钥清单里，清单本身只有 keyId；对不上就老实显示 keyId
+    const key = keyId ? (loadPublicKeys(ROOT).find((entry) => entry.keyId === keyId) ?? null) : null;
     releaseInfo = {
-      keyId: release.data.signedBy?.keyId ?? null,
+      keyId,
+      keyName: key?.name ?? null,
+      keyLabel: key?.label ?? null,
+      algorithm: release.data.signedBy?.algorithm ?? null,
       releaseSeq: release.data.releaseSeq ?? null,
       signedAt: release.data.generatedAt ?? null,
+      // 签名覆盖的是清单的原始字节，它的 sha256 就是「这次到底签了什么」
+      manifestSha256: release.bytes ? sha256Hex(release.bytes) : null,
       url: "/release/release.json",
       signatureUrl: release.signatureExists ? "/release/release.json.sig" : null,
     };
+    for (const entry of release.data.items ?? []) {
+      signedEntries.set(`${entry.kind}:${entry.id}:${entry.version}:${entry.digest}`, entry);
+    }
   }
 
   // 逐项标注是否被签名覆盖：签名清单里有同 id、同版本、同摘要的条目才算。
   // 只比对 id 会把「签完之后又更新了版本」的旧条目算成已签名，那是错的。
-  const signedKeys = new Set(
-    (release.data?.items ?? []).map((entry) => `${entry.kind}:${entry.id}:${entry.version}:${entry.digest}`),
-  );
   for (const item of items) {
-    item.signed = signedKeys.has(`${item.kind}:${item.id}:${item.version}:${item.integrity}`);
+    const entry = signedEntries.get(`${item.kind}:${item.id}:${item.version}:${item.integrity}`);
+    item.signed = Boolean(entry);
+    // 清单里记的 zip 摘要必须与站上这份 zip 的字节一致，否则「签名覆盖」就是句空话
+    const listedSha = entry?.zip?.sha256 ?? null;
+    if (listedSha && listedSha !== item.zipSha256) {
+      console.warn(
+        `[build:catalog] ${item.id} v${item.version}：签名清单里的 zip 摘要与当前构建的 zip 不一致，` +
+          "页面会按未覆盖处理。重新签一次再发布。",
+      );
+      item.signed = false;
+    }
   }
 
   const catalog = {
@@ -225,7 +248,8 @@ function main() {
   }
   console.log(
     releaseInfo
-      ? `[build:catalog] 发布签名：keyId ${releaseInfo.keyId} · seq ${releaseInfo.releaseSeq}`
+      ? `[build:catalog] 发布签名：${[releaseInfo.keyName, releaseInfo.keyLabel].filter(Boolean).join(" ") || "未登记名称"}` +
+          `（keyId ${releaseInfo.keyId}）· seq ${releaseInfo.releaseSeq}`
       : "[build:catalog] 发布签名：尚未签名（站点上所有作品都会标为「来源未验证」）",
   );
 }

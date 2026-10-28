@@ -31,6 +31,8 @@ export type CatalogItem = {
   screenshots: string[];
   download: string;
   downloadBytes: number;
+  /** 站点上这份 zip 的 sha256：用户下载后可以自己复算核对。 */
+  zipSha256: string;
   packageBytes: number;
   fileCount: number;
   integrity: string;
@@ -66,8 +68,15 @@ export type CatalogItem = {
 
 export type ReleaseInfo = {
   keyId: string | null;
+  /** 公钥清单里登记的人可读名字（如「Folium official」），未登记时 null。 */
+  keyName: string | null;
+  /** 密钥期次（如「folium-2026-1」），未登记时 null。 */
+  keyLabel: string | null;
+  algorithm: string | null;
   releaseSeq: number | null;
   signedAt: string | null;
+  /** 被签名清单（release/release.json）原始字节的 sha256，即「签名摘要」。 */
+  manifestSha256: string | null;
   url: string;
   signatureUrl: string | null;
 };
