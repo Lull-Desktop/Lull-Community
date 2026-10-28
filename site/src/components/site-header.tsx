@@ -13,9 +13,7 @@ import { asset, catalog } from "@/lib/catalog";
 const LULL_SITE_URL = "https://lull-desktop.github.io/Lull/";
 
 const NAV: { href: string; label: string; external?: boolean }[] = [
-  { href: "/", label: "首页" },
-  { href: "/scenes", label: "壁纸" },
-  { href: "/widgets", label: "工具" },
+  { href: "/", label: "组件市场" },
   { href: "/submit", label: "提交作品" },
   { href: LULL_SITE_URL, label: "Lull App", external: true },
 ];
@@ -54,7 +52,11 @@ export function SiteHeader() {
   }, []);
 
   const isActive = (href: string) =>
-    href === "/" ? pathname === "/" : pathname.startsWith(href);
+    href === "/"
+      ? pathname === "/" ||
+        pathname.startsWith("/scenes") ||
+        pathname.startsWith("/widgets")
+      : pathname === href || pathname.startsWith(`${href}/`);
 
   return (
     <>
@@ -126,14 +128,15 @@ export function SiteHeader() {
             <button
               type="button"
               onClick={() => setSearchOpen(true)}
-              className="flex h-9 w-[228px] items-center gap-2 rounded-full border border-line px-3.5 text-[12.5px] text-muted transition-colors hover:border-line-2 hover:text-ink-soft"
+              aria-label="搜索作品"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-line-2 hover:text-ink-soft sm:w-[228px] sm:justify-start sm:gap-2 sm:px-3.5"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.9" />
                 <path d="m16 16 4 4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
               </svg>
-              <span>搜索场景与工具…</span>
-              <kbd className="ml-auto font-mono text-[10px] text-faint">⌘K</kbd>
+              <span className="hidden sm:inline">搜索场景与组件…</span>
+              <kbd className="ml-auto hidden font-mono text-[10px] text-faint sm:inline">⌘K</kbd>
             </button>
 
             <a
@@ -148,12 +151,11 @@ export function SiteHeader() {
               </svg>
             </a>
 
-            <Link
-              href="/submit"
-              className={`${buttonVariants({ size: "sm" })} hidden sm:inline-flex`}
-            >
-              提交作品
-            </Link>
+            <span className="hidden sm:inline-flex">
+              <Link href="/submit" className={buttonVariants({ size: "sm" })}>
+                提交作品
+              </Link>
+            </span>
           </div>
         </div>
 

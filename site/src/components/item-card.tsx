@@ -73,10 +73,12 @@ export function ItemCard({ item, priority = false }: { item: CatalogItem; priori
 
         <div className="flex flex-1 flex-col gap-1.5 px-3.5 py-3.5">
           <div className="flex items-baseline justify-between gap-3">
-            <h3 className="truncate text-[13.5px] font-medium tracking-tight text-ink transition-colors group-hover:text-white">
+            <h3 className="truncate text-[25px] font-semibold tracking-tight text-ink transition-colors group-hover:text-white">
               {item.name}
             </h3>
-            <span className="shrink-0 font-mono text-[10px] text-faint">v{item.version}</span>
+            <span className="shrink-0 rounded-md bg-primary/[0.1] px-1.5 py-0.5 font-mono text-[10px] text-faint ring-1 ring-white/10 transition-colors group-hover:text-ink-soft group-hover:ring-primary/30">
+              v{item.version}
+            </span>
           </div>
 
           <p className="line-clamp-2 text-[12px] leading-[1.7] text-muted">{item.description}</p>

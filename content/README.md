@@ -63,7 +63,7 @@ content/
 ## 校验与摘要
 
 ```bash
-pnpm content:check   # 校验全部作品（PR 与部署前都跑）
+pnpm content:check   # 校验组件市场（PR 与部署前都跑）
 pnpm content:hash    # 内容改了之后重算摘要并写回
 pnpm content:pack    # 只打包，不建站
 ```

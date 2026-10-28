@@ -10,6 +10,7 @@ import {
   formatDate,
   itemDownloadUrl,
   itemSourceUrl,
+  kindFilterHref,
   kindLabel,
   type AuthorizationStatus,
   type CatalogItem,
@@ -44,14 +45,14 @@ const AUTHORIZATION_META: Record<
 };
 
 function Masthead({ item }: { item: CatalogItem }) {
-  const categoryHref = item.kind === "scene" ? "/scenes" : "/widgets";
+  const categoryHref = kindFilterHref(item.kind);
   const authorization = AUTHORIZATION_META[item.authorization] ?? AUTHORIZATION_META.unsigned;
 
   return (
     <div>
       <nav className="flex items-center gap-2 text-[11.5px] text-muted" aria-label="位置">
         <Link href="/" className="transition-colors hover:text-ink">
-          首页
+          组件市场
         </Link>
         <span aria-hidden="true">/</span>
         <Link href={categoryHref} className="transition-colors hover:text-ink">

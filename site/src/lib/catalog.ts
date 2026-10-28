@@ -138,6 +138,11 @@ export function itemHref(item: Pick<CatalogItem, "kind" | "slug">): string {
   return `/${item.kind === "scene" ? "scenes" : "widgets"}/${item.slug}`;
 }
 
+/** 合并后的作品列表页；类型只作为查询参数，不改变列表页路由。 */
+export function kindFilterHref(kind: ItemKind): string {
+  return `/?type=${kind}`;
+}
+
 export function itemSourceUrl(item: CatalogItem): string {
   return `${catalog.repo.url}/tree/${catalog.repo.branch}/${item.sourcePath}`;
 }
@@ -159,7 +164,7 @@ export function findItem(kind: ItemKind, slug: string): CatalogItem | undefined 
 }
 
 export function kindLabel(kind: ItemKind): string {
-  return kind === "scene" ? "壁纸" : "工具";
+  return kind === "scene" ? "场景" : "组件";
 }
 
 export function formatBytes(bytes: number): string {

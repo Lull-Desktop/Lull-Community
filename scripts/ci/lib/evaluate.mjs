@@ -36,7 +36,7 @@ const GROUP = { scene: "scenes", widget: "widgets" };
 const kindLabel = (kind) => (kind === "scene" ? "壁纸" : "插件");
 
 /**
- * 仓库里现有的全部作品，按 `kind:id` 索引。
+ * 仓库里现有的组件市场，按 `kind:id` 索引。
  * 顺带拿到 slug（目录名）与版本，供「id 是否已占用」「版本是否递增」使用。
  */
 export const loadExisting = (baseDir) => {

@@ -1,14 +1,15 @@
 import Link from "next/link";
 
 import ShinyText from "@/components/react-bits/ShinyText";
-import { catalog } from "@/lib/catalog";
+import { catalog, kindFilterHref, kindLabel } from "@/lib/catalog";
 
 const COLUMNS = [
   {
     title: "浏览",
     links: [
-      { href: "/scenes", label: "壁纸场景", external: false },
-      { href: "/widgets", label: "桌面工具", external: false },
+      { href: "/", label: "组件市场", external: false },
+      { href: kindFilterHref("scene"), label: kindLabel("scene"), external: false },
+      { href: kindFilterHref("widget"), label: kindLabel("widget"), external: false },
       { href: "/submit", label: "提交作品", external: false },
     ],
   },
@@ -48,22 +49,6 @@ export function SiteFooter() {
   return (
     <footer className="mt-[clamp(40px,6vw,80px)] border-t border-line text-[.86rem] text-faint">
       <div className="shell">
-        {tags.length > 0 && (
-          <div className="no-scrollbar flex items-center gap-2 overflow-x-auto border-b border-line py-3.5">
-            <span className="shrink-0 font-mono text-[10px] uppercase tracking-[0.16em] text-faint">
-              tags
-            </span>
-            {tags.map((tag) => (
-              <span
-                key={tag}
-                className="shrink-0 rounded-full border border-line px-2.5 py-1 text-[11px] text-muted"
-              >
-                #{tag}
-              </span>
-            ))}
-          </div>
-        )}
-
         <div className="grid gap-8 pb-10 pt-12 md:grid-cols-[1.6fr_repeat(3,minmax(0,1fr))]">
           <div>
             {/* 衬线字标：滚动进视口后反光缓慢循环 */}
@@ -81,11 +66,8 @@ export function SiteFooter() {
               />
             </p>
             <p className="mt-3 max-w-[340px] text-[12.5px] leading-[1.75] text-muted">
-              为安静的桌面，添一点会动的东西。壁纸场景与桌面工具全部来自社区，
+              为安静的桌面，添一点会动的东西。场景与组件全部来自社区，
               内容放在 GitHub 仓库里，合并后自动校验、构建、发布。
-            </p>
-            <p className="mt-4 font-mono text-[11px] text-faint/80">
-              {catalog.counts.scenes} 壁纸 · {catalog.counts.widgets} 工具 · 无数据库
             </p>
           </div>
 
@@ -125,9 +107,9 @@ export function SiteFooter() {
 
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line py-5 font-mono text-[11px] text-faint">
           <p>
-            © {catalog.generatedAt.slice(0, 4)} Lull Community · 代码 MIT · 内容 CC BY 4.0
+            © {catalog.generatedAt.slice(0, 4)} Lull Community
           </p>
-          <p>索引 {catalog.generatedAt.slice(0, 10)}</p>
+ 
         </div>
       </div>
     </footer>

@@ -1,52 +1,17 @@
 import type { Metadata } from "next";
 
-import { CatalogBrowser } from "@/components/catalog-browser";
-import { widgets } from "@/lib/catalog";
-import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
+import { LegacyKindRedirect } from "@/components/legacy-kind-redirect";
+import { kindFilterHref, kindLabel } from "@/lib/catalog";
 
 export const metadata: Metadata = {
-  title: "桌面工具",
-  description:
-    "Lull 的第三方 Widget：静态 Web 包 + 逐项能力授权，安装不等于启用，启用不等于自动开窗。",
+  title: "正在跳转",
+  description: "组件列表已经合并到组件市场页。",
+  robots: { index: false, follow: false },
 };
 
-export default function WidgetsPage() {
-  const items = widgets();
-  const filters = [
-    { href: "/scenes", label: "下载壁纸", },
-    { href: "/widgets", label: "下载工具", },
-  ];
+/** `/widgets` 不再单独渲染列表，只负责把旧链接带到合并后的类型筛选。 */
+export default function WidgetsRedirectPage() {
   return (
-    <div className="shell ">
-        <div className="mt-8 flex flex-wrap items-center gap-2">
-            {filters.map((filter) => (
-              <Link
-                key={filter.href}
-                href={filter.href}
-                className={buttonVariants({ size: "lg" })}
-              >
-                {filter.label}
-              </Link>
-            ))}
-        </div>
-      <header className="max-w-2xl">
-        <p className="eyebrow">widgets</p>
-        <h1 className="mt-3 flex items-baseline gap-3 text-[clamp(1.7rem,3.4vw,2.3rem)] font-normal tracking-[-0.01em]">
-          桌面工具
-          <span className="font-mono text-[0.9rem] text-line-2">
-            {String(items.length).padStart(2, "0")}
-          </span>
-        </h1>
-        <p className="mt-4 text-[13.5px] leading-relaxed text-muted">
-          装进 Lull 后在独立窗口里运行。每个工具都要在清单里写明申请的能力，启用时逐项确认；
-          窗口运行在不透明源的 iframe 里，拿不到宿主 DOM。
-        </p>
-      </header>
-
-      <div className="mt-9">
-        <CatalogBrowser items={items} />
-      </div>
-    </div>
+    <LegacyKindRedirect href={kindFilterHref("widget")} label={kindLabel("widget")} />
   );
 }

@@ -2,7 +2,7 @@
 /**
  * 只打包，不建站。
  *
- *   node scripts/package-content.mjs            # 全部作品 → artifacts/
+ *   node scripts/package-content.mjs            # 组件市场 → artifacts/
  *   node scripts/package-content.mjs mist       # 指定 slug → artifacts/
  *
  * 用的是和构建网站完全相同的打包逻辑（build-catalog 内部同一套函数语义），

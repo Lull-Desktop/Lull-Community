@@ -22,7 +22,7 @@
     "featured": {
       "type": "boolean",
       "default": false,
-      "description": "是否进入首页精选；维护者合并时决定。"
+      "description": "是否在作品列表中标记为精选；维护者合并时决定。"
     },
     "addedAt": {
       "type": "string",
