@@ -1,0 +1,50 @@
+# 壁纸更新：源码仓库与目录取 community.json 的登记，不从表单读。
+# label 文本是协议，改一处必须改两处（test/forms.test.mjs 守着）。
+name: 壁纸更新 / Scene update
+description: 为已收录的壁纸提交新版本
+title: "[壁纸更新] "
+labels: ["scene-update"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        只有登记的作者可以提交更新。CI 会从登记的仓库取回新版本，检查格式
+        （版本号必须比当前高、id 与 slug 不变），并给出与已收录版本的对比链接。
+        维护者审查后合并。
+
+        需要更换源码仓库或目录时，请在这里说明，由维护者处理。
+        格式检查未通过、14 天内没有回应的 issue 会自动关闭。
+
+  - type: input
+    id: item-id
+    attributes:
+      label: 作品 id / Item id
+      description: 已收录的作品 id，与 catalog.json 一致
+      placeholder: yourname.aurora-night
+    validations:
+      required: true
+
+  - type: input
+    id: ref
+    attributes:
+      label: 版本 / Version (tag or commit)
+      description: 新版本的 tag（推荐）、分支名或完整的 40 位 commit
+      placeholder: v1.1.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: changes
+    attributes:
+      label: 更新说明 / What changed
+      description: 这个版本改了什么；能力或参数有变化时说明原因
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: 确认 / Confirmations
+      options:
+        - label: 新版本同样不加载远程脚本、不访问宿主数据（除非清单里明确声明的能力）
+          required: true

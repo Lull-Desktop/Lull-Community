@@ -17,7 +17,12 @@
     "build:site": "pnpm --dir site build",
     "build": "pnpm content:check && pnpm build:catalog && pnpm build:site",
     "dev": "pnpm build:catalog && pnpm --dir site dev",
-    "new": "node scripts/new-item.mjs"
+    "new": "node scripts/new-item.mjs",
+    "test": "node --test \"test/*.test.mjs\"",
+    "sign:release": "node scripts/sign-release.mjs",
+    "verify:release": "node scripts/verify-release.mjs",
+    "check:issue": "node scripts/ci/check-issue.mjs",
+    "release": "node scripts/release.mjs"
   },
   "devDependencies": {
     "ajv": "^8.17.1"

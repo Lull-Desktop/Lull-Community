@@ -4,6 +4,8 @@
 
 ## 一、投稿作品
 
+### 方式 A：Pull Request（能改文件、一次带多个作品）
+
 ### 1. 生成骨架
 
 ```bash
@@ -134,6 +136,32 @@ PR 模板里有清单，逐项勾选。`validate.yml` 会跑校验、试构建�
 git config core.hooksPath .githooks
 ```
 
+### 方式 B：issue 表单（不 fork、不装 Node）
+
+作品放在**你自己的公开仓库**里，结构与本仓库 `content/<scenes|widgets>/<slug>/` 逐字相同：
+
+```text
+<your-repo>/lull/aurora-night/
+├── package/                 ★ 与本仓库同构的包
+├── item.json
+├── preview.webp
+├── README.md
+└── LICENSE
+```
+
+1. 打一个 tag（推荐），或记下完整 commit；
+2. 开「壁纸提交」或「插件提交」issue，填表：作品 id、slug、仓库地址、版本、目录、能力说明、许可证，
+   并把一张**运行截图**拖进截图框（外链不算）；
+3. `submission-check` 会取回那个提交检查格式，回帖告诉你差什么。改完**编辑原 issue** 即自动重查；
+4. 维护者审查后评论 `/merge <commit>`，机器人把目录写进 `content/` 并登记到 `community.json`。
+
+几个必须知道的点：
+
+- **摘要不用你算**：`integrity` / `.lull-integrity.json` 在合并时由 CI 重算，作者不需要跑 `content:hash`；
+- **同一个作品只留一条提交 issue**：重复开的会被自动关闭并指回第一条；更新用「壁纸更新 / 插件更新」；
+- **仓库地址与目录以首次收录为准**，要换请在 issue 里说明，由维护者改登记表；
+- 格式检查失败且 14 天没回应的 issue 会被自动关闭。
+
 ## 二、审查标准
 
 维护者合并前会看四件事：
@@ -144,6 +172,7 @@ git config core.hooksPath .githooks
 | 授权 | 素材来源不明、许可与清单不一致、条款禁止再分发 | 没写素材出处 |
 | 安全 | 加载远程脚本、尝试读宿主数据、伪造能力声明 | 申请了不必要的能力 |
 | 表达 | 与已有作品完全重复 | README 太短、预览图偏糊 |
+| 来源 | 仓库与目录说不清、commit 对不上、表单里的 id/slug 与清单不一致 | 只有一个 tag 没有源码 |
 
 作品完全重复、或与 Lull 官方内置内容高度重合的，会建议改成衍生或拒绝。
 

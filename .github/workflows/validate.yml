@@ -40,8 +40,16 @@ jobs:
       - name: Validate community content
         run: pnpm content:check
 
+      # 表单 label 与解析器的契约：改了模板却忘了改 FORM_FIELDS 会在这里红
+      - name: Unit tests
+        run: pnpm test
+
       - name: Generate catalog
         run: pnpm build:catalog
+
+      # 验签只读公钥（仓库里没有私钥）：签名坏了/已签字节被改 → 失败；清单过期只警告
+      - name: Verify release signature
+        run: pnpm verify:release
 
       # 站点构建会跑类型检查，能挡住"改了索引字段但页面没跟上"这类问题
       - name: Build static site

@@ -16,6 +16,8 @@ import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { listPackageFiles, readFiles } from "./lib/digest.mjs";
+import { getEntry, readRegistry } from "./lib/registry.mjs";
+import { RELEASE_FILE, SIGNATURE_FILE, readRelease } from "./lib/signing.mjs";
 import { writeZip } from "./lib/zip.mjs";
 import { loadContent, printReport } from "./validate-content.mjs";
 
@@ -24,6 +26,8 @@ const SITE = join(ROOT, "site");
 const GENERATED = join(SITE, "src", "generated");
 const ASSETS = join(SITE, "public", "content-assets");
 const DOWNLOADS = join(SITE, "public", "downloads");
+/** 发布清单与签名对外公布的副本（站点根 /release/）。 */
+const RELEASE_PUBLIC = join(SITE, "public", "release");
 
 /**
  * 固定 zip 内时间戳，让同一份内容在不同机器、不同时间打出相同字节。
@@ -86,6 +90,16 @@ function main() {
     rmSync(dir, { recursive: true, force: true });
     mkdirSync(dir, { recursive: true });
   }
+  // 发布清单的对外副本单独处理：没签名时这个目录根本不该存在（「未签名」要能表达出来）
+  rmSync(RELEASE_PUBLIC, { recursive: true, force: true });
+
+  // 登记表：谁提的、来自哪个仓库。文件不存在时（首次上线）当作空表。
+  let registry = null;
+  try {
+    registry = readRegistry(ROOT);
+  } catch (error) {
+    fail(`community.json 读不出来：${error.message}`);
+  }
 
   const items = result.items
     .map((item) => {
@@ -106,6 +120,7 @@ function main() {
       const zipBytes = writeZip(join(DOWNLOADS, zipName), entries, ZIP_TIMESTAMP);
 
       const packageBytes = entries.reduce((sum, entry) => sum + entry.data.length, 0);
+      const registered = registry?.exists ? getEntry(registry, item.kind, item.manifest.id) : null;
 
       return {
         kind: item.kind,
@@ -134,6 +149,11 @@ function main() {
         authorUrl: item.item.authorUrl ?? null,
         homepage: item.item.homepage ?? null,
         sourcePath: `content/${group}/${item.slug}`,
+        // 登记信息：只对走过投稿流程的作品存在。展示层据此显示「来自 @alice 的仓库 · #42」。
+        source: registered?.source ?? null,
+        sourceCommit: registered?.commit ?? null,
+        submission: registered?.submission ?? null,
+        owners: registered?.owners ?? null,
         // 许可原文所在位置（相对仓库根），没有则是 null
         licensePath: item.licensePath
           ? relative(ROOT, item.licensePath).split("\\").join("/")
@@ -152,6 +172,32 @@ function main() {
       return left.name.localeCompare(right.name, "zh-Hans-CN");
     });
 
+  // 发布清单与签名对外公布：站点根 /release/ 下给一份副本，用户与脚本都能直接取。
+  // 没有清单（还没签过）时目录保持为空——「未签名」是一个要能表达出来的状态。
+  const release = readRelease(ROOT);
+  let releaseInfo = null;
+  if (release.exists && release.data) {
+    mkdirSync(RELEASE_PUBLIC, { recursive: true });
+    cpSync(join(ROOT, RELEASE_FILE), join(RELEASE_PUBLIC, "release.json"));
+    if (release.signatureExists) cpSync(join(ROOT, SIGNATURE_FILE), join(RELEASE_PUBLIC, "release.json.sig"));
+    releaseInfo = {
+      keyId: release.data.signedBy?.keyId ?? null,
+      releaseSeq: release.data.releaseSeq ?? null,
+      signedAt: release.data.generatedAt ?? null,
+      url: "/release/release.json",
+      signatureUrl: release.signatureExists ? "/release/release.json.sig" : null,
+    };
+  }
+
+  // 逐项标注是否被签名覆盖：签名清单里有同 id、同版本、同摘要的条目才算。
+  // 只比对 id 会把「签完之后又更新了版本」的旧条目算成已签名，那是错的。
+  const signedKeys = new Set(
+    (release.data?.items ?? []).map((entry) => `${entry.kind}:${entry.id}:${entry.version}:${entry.digest}`),
+  );
+  for (const item of items) {
+    item.signed = signedKeys.has(`${item.kind}:${item.id}:${item.version}:${item.integrity}`);
+  }
+
   const catalog = {
     schemaVersion: 1,
     generatedAt: new Date().toISOString(),
@@ -160,6 +206,8 @@ function main() {
       scenes: items.filter((item) => item.kind === "scene").length,
       widgets: items.filter((item) => item.kind === "widget").length,
     },
+    // 发布签名：只用于标注来源。null = 还没签过，页面显示「来源未验证」。
+    release: releaseInfo,
     items,
   };
 
@@ -175,6 +223,11 @@ function main() {
         ` → downloads/${item.download.split("/").pop()} (${(item.downloadBytes / 1024).toFixed(1)} KiB)`,
     );
   }
+  console.log(
+    releaseInfo
+      ? `[build:catalog] 发布签名：keyId ${releaseInfo.keyId} · seq ${releaseInfo.releaseSeq}`
+      : "[build:catalog] 发布签名：尚未签名（站点上所有作品都会标为「来源未验证」）",
+  );
 }
 
 main();

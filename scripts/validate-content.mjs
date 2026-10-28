@@ -26,6 +26,7 @@ import {
   sceneDigest,
   widgetDigest,
 } from "./lib/digest.mjs";
+import { checkRegistry, readRegistry } from "./lib/registry.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const CONTENT_DIR = join(ROOT, "content");
@@ -51,23 +52,31 @@ export const WIDGET_CAPABILITIES = [
   "widget.chrome",
 ];
 
-const SCENE_ID = /^[a-z0-9][a-z0-9._-]{2,63}$/;
-const WIDGET_ID = /^[a-z][a-z0-9-]{1,31}$/;
-const VERSION = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
-const SLUG = /^[a-z0-9][a-z0-9-]{1,31}$/;
+/**
+ * 身份与路径规则。导出给 `scripts/ci/lib/submission.mjs` 复用：
+ * 表单校验与内容校验必须是同一套正则，否则会出现「校验脚本说合法、CI 说不合法」。
+ */
+export const SCENE_ID = /^[a-z0-9][a-z0-9._-]{2,63}$/;
+export const WIDGET_ID = /^[a-z][a-z0-9-]{1,31}$/;
+export const VERSION = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
+export const SLUG = /^[a-z0-9][a-z0-9-]{1,31}$/;
 const SAFE_ENTRY = /^(?!\/)(?!.*(?:^|\/)\.\.(?:\/|$))[A-Za-z0-9][A-Za-z0-9._/-]*\.html$/;
 const IMAGE_FILE = /^[A-Za-z0-9][A-Za-z0-9._-]*\.(?:webp|png|jpg|jpeg|avif)$/i;
 const NETWORK_SOURCE = /^https:\/\/[^\s]+$|^http:\/\/localhost:\d+$/;
 
+/** 每个 kind 的清单 id 规则。 */
+export const ID_PATTERNS = { scene: SCENE_ID, widget: WIDGET_ID };
+
 /** 与 Lull 安装管线一致的体积上限（`docs/extension-center.md` §7.1）。 */
-const LIMITS = {
+export const LIMITS = {
   files: 512,
   fileBytes: 8 * 1024 * 1024,
   totalBytes: 64 * 1024 * 1024,
   previewBytes: 3 * 1024 * 1024,
 };
 
-const KINDS = ["scenes", "widgets"];
+/** 内容目录里的分组名，顺序即输出顺序。 */
+export const KINDS = ["scenes", "widgets"];
 
 function isObject(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -213,11 +222,13 @@ function checkScene(bundle, validators, report) {
 
   const declared = scene.integrity?.digest;
   if (!declared) {
-    report.error(
-      at,
-      "缺少 integrity.digest；Lull 安装器要求场景包必须带整包摘要，请运行 pnpm content:hash",
-    );
-  } else if (declared !== digest && !report.fix) {
+    if (report.requireDigest) {
+      report.error(
+        at,
+        "缺少 integrity.digest；Lull 安装器要求场景包必须带整包摘要，请运行 pnpm content:hash",
+      );
+    }
+  } else if (declared !== digest && !report.fix && report.requireDigest) {
     report.error(
       at,
       `integrity 不匹配：声明 ${declared.slice(0, 16)}…，实际 ${digest.slice(0, 16)}…；` +
@@ -383,7 +394,7 @@ function checkWidget(bundle, report) {
           "字段必须是 schemaVersion:1 / algorithm:sha256 / scope:package",
         );
       }
-      if (declared !== digest && !report.fix) {
+      if (declared !== digest && !report.fix && report.requireDigest) {
         report.error(
           ".lull-integrity.json",
           `摘要不匹配：声明 ${String(declared).slice(0, 16)}…，实际 ${digest.slice(0, 16)}…；` +
@@ -393,7 +404,7 @@ function checkWidget(bundle, report) {
     } catch (error) {
       report.error(".lull-integrity.json", `不是合法 JSON：${error.message}`);
     }
-  } else if (!report.fix) {
+  } else if (!report.fix && report.requireDigest) {
     report.error(
       ".lull-integrity.json",
       "缺少摘要锁；为了发布的 zip 可复现，请运行 pnpm content:hash 生成",
@@ -425,11 +436,20 @@ function checkBudget(files, where, report) {
 /**
  * 扫描并校验全部内容。
  *
- * @param {{ root?: string, fix?: boolean, verifyDigest?: boolean }} [options]
+ * `digestPolicy` 决定「作者声明的摘要」算不算硬性条件：
+ * - `require`（默认）：缺摘要或不符都报错，PR 投稿与部署都走这条；
+ * - `skip`：缺摘要、摘要不符只当作「待重算」，不报错，仍返回实算值——
+ *   免 fork 投稿的作者不该被迫跑 `content:hash`，摘要在导入时由 CI 重算；
+ * - `write`：等同 `--fix`，把实算值写回清单/锁文件。
+ *
+ * @param {{ root?: string, fix?: boolean, verifyDigest?: boolean,
+ *   digestPolicy?: "require" | "skip" | "write" }} [options]
  */
 export function loadContent(options = {}) {
   const root = options.root ?? ROOT;
-  const fix = options.fix ?? false;
+  const digestPolicy = options.digestPolicy ?? (options.fix ? "write" : "require");
+  const fix = options.fix ?? digestPolicy === "write";
+  const requireDigest = digestPolicy !== "skip";
   const contentDir = join(root, "content");
   const validators = loadValidators();
 
@@ -438,6 +458,8 @@ export function loadContent(options = {}) {
   const problems = [];
   const report = {
     fix,
+    digestPolicy,
+    requireDigest,
     get errors() {
       return errors;
     },
@@ -622,7 +644,20 @@ export function loadContent(options = {}) {
     }
   }
 
-  return { root, contentDir, items, problems, errors, warnings, fix };
+  // 登记表与内容的交叉校验：有登记就必须对得上；没登记视为 PR 投稿，合法且不提示。
+  // 只在仓库根（有 content/ 与 community.json 的那一层）跑，临时目录里没有登记表。
+  try {
+    const registry = readRegistry(root);
+    if (registry.exists) {
+      const result = checkRegistry(registry, items);
+      for (const problem of result.errors) report.error(problem.where, problem.message);
+      for (const problem of result.warnings) report.warn(problem.where, problem.message);
+    }
+  } catch (error) {
+    report.error("community.json", error.message);
+  }
+
+  return { root, contentDir, items, problems, errors, warnings, fix, digestPolicy };
 }
 
 /** 简单的报告打印，CLI 与 CI 共用。 */

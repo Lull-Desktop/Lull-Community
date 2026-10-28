@@ -1,0 +1,39 @@
+# 每天扫一遍投稿 issue：格式检查失败、且作者 14 天没回应的，自动关掉。
+# 判定逻辑在 scripts/ci/lib/submission.mjs 的 isStaleFailure()，与测试是同一份。
+
+name: close-stale
+
+on:
+  schedule:
+    - cron: "0 3 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: close-stale
+  cancel-in-progress: false
+
+jobs:
+  close:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      # 这一步只用 REST，不读内容包，所以不需要 pnpm install
+      - name: Close stale submissions
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/ci/close-stale.mjs

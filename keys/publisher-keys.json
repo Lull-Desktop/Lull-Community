@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "keys": [
+    {
+      "keyId": "279aff591d2627ed",
+      "algorithm": "ed25519",
+      "publicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAuXEeCgcI7Tn16mfAA8X7JXtCsSUSsuWRjOcNEvPlCZs=\n-----END PUBLIC KEY-----\n",
+      "notBefore": "2026-10-28",
+      "retiredAt": null,
+      "revoked": false,
+      "note": "community 发布密钥（2026 年度），持有人：发布责任人"
+    }
+  ]
+}

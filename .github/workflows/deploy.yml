@@ -43,6 +43,11 @@ jobs:
       - name: Generate catalog and packages
         run: pnpm build:catalog
 
+      # 发布门禁：签名坏了、或已签名的字节被改过，就不发布新站点。
+      # 清单过期（有内容还没签）只警告，不阻断——签名是离线动作，不能卡住自动部署。
+      - name: Verify release signature
+        run: pnpm verify:release
+
       - name: Build static site
         run: pnpm --dir site build
 

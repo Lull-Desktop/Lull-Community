@@ -8,15 +8,22 @@ Lull 的第三方社区站：浏览、下载、提交**壁纸场景**与**桌面
 开发者可以提交 PR，维护者审核合并，GitHub Actions
 自动校验、打包、构建、发布到 GitHub Pages——没有数据库，没有后端 API，没有账号系统（后期考虑完善）。
 
+不想 fork 也行：在自己的仓库里放好作品，填一张 issue 表单（壁纸 / 插件的提交与更新各一份），
+CI 取回那个提交做格式检查，维护者 `/merge <commit>` 后由机器人写入 `content/`。
+
 ```text
 content/scenes|widgets/<slug>/     ← 内容的唯一来源（GitHub 仓库）
         │
         ├─ pnpm content:check      ← 校验：Lull 的 Schema + Rust 侧规则 + 整包摘要
         ├─ pnpm build:catalog      ← 扫目录 → 生成索引、复制预览图、打可安装 zip
+        ├─ pnpm verify:release     ← 验签：签名坏了/已签字节被改就停（清单过期只警告）
         └─ next build (export)     ← 生成纯静态站点
                     │
                     └─ GitHub Pages   ← 公开网站
 ```
+
+> 发布签名（Ed25519，离线）只标注「这批文件由 community 发布」，
+> 不授予权限、不放宽限制、不参与「能不能装/能不能跑」。见 [SECURITY.md](SECURITY.md)。
 
 ## 目录
 
@@ -30,6 +37,9 @@ Lull-Community/
 │   │   ├── README.md            作品说明，渲染进详情页
 │   │   └── LICENSE              作品自身许可
 │   └── widgets/<slug>/          同构，package/ 内是 widget.json + 页面
+├── community.json               投稿登记表：谁提的、来自哪个仓库、审查到哪个 commit
+├── keys/publisher-keys.json     发布签名的公钥（私钥不在这里，也永远不该在这里）
+├── release/                     发布清单与 detached 签名（每次发布更新一次）
 ├── schemas/                     Lull 的 JSON Schema（逐字复制，不自创）
 ├── scripts/
 │   ├── validate-content.mjs     校验 + 摘要写回（--fix）
@@ -37,14 +47,23 @@ Lull-Community/
 │   ├── build-catalog.mjs        索引 / 预览图 / zip
 │   ├── package-content.mjs      只打包到 artifacts/，供手工试装
 │   ├── new-item.mjs             生成作品骨架
-│   └── lib/{digest,zip}.mjs     摘要算法与 zip 写入（与安装器逐字节对齐）
+│   ├── keygen.mjs               离线生成发布密钥对
+│   ├── sign-release.mjs         离线签一批发布（CI 上会被拒绝）
+│   ├── verify-release.mjs       验签 + 覆盖度 + 防回滚（CI 与本地同一份）
+│   ├── release.mjs              一条命令：校验 → 打包 → 签名 → 验签
+│   ├── ci/                      issue 表单检查与合并（check-issue / import-submission）
+│   └── lib/{digest,zip,registry,signing}.mjs
 ├── site/                        Next.js 16 静态站（Tailwind v4）
 │   └── src/app/{page,scenes,widgets,submit}
+├── test/                        node:test：表单契约、投稿规则、签名、端到端取回
 ├── .githooks/commit-msg         可选的本地提交信息钩子
 └── .github/workflows/
-    ├── validate.yml             PR：校验 + 试构建，只读权限
+    ├── validate.yml             PR：校验 + 单测 + 验签 + 试构建，只读权限
     ├── commit.yml               PR：标题即提交信息，校验格式
-    └── deploy.yml               main：校验 → 构建 → 部署 Pages
+    ├── submission-check.yml     投稿 issue：取回作者仓库 → 校验 → 回帖
+    ├── submission-import.yml    `/merge <commit>`：写入 content/ 与登记表
+    ├── close-stale.yml          每天：清理无回应的失败投稿
+    └── deploy.yml               main：校验 → 构建 → 验签 → 部署 Pages
 ```
 
 ## 关键约束：格式以 Lull 为准
@@ -84,7 +103,8 @@ pnpm content:check
 pnpm content:pack               # artifacts/ 里直接拖进 Lull 试装
 ```
 
-细节与审查标准见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+细节与审查标准见 [CONTRIBUTING.md](CONTRIBUTING.md)；从收到投稿到签名的完整操作顺序见
+[docs/review-runbook.md](docs/review-runbook.md)。
 
 ## 部署
 

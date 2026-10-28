@@ -4,6 +4,9 @@
 
 > 标题就是合并后的提交信息（本仓库只做 squash），格式 `type(scope): subject`。
 > 完整规范：<https://lull-desktop.github.io/Lull-Community/submit#spec>
+>
+> 已经通过 issue 表单收录的作品**不要**再开 PR 改内容：内容更新请开「壁纸更新 / 插件更新」issue，
+> 否则登记表里的 commit 与内容会对不上（`pnpm content:check` 会报出来）。
 
 - [ ] 新增壁纸场景（`content/scenes/<slug>/`）
 - [ ] 新增桌面工具（`content/widgets/<slug>/`）

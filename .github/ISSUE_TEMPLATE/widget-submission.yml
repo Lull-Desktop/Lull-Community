@@ -1,0 +1,115 @@
+# 插件（widget）免 fork 提交。label 文本是协议：scripts/ci/lib/submission.mjs
+# 的 FORM_FIELDS 按这里的 label 取值，改一处必须改两处（test/forms.test.mjs 守着）。
+name: 插件提交 / Plugin submission
+description: 从你自己的仓库提交一个桌面插件（工具窗口），格式检查通过后由维护者收录
+title: "[插件提交] "
+labels: ["widget-submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        不需要 fork 本仓库。流程：
+
+        1. 在你的公开仓库里放一个**作品目录**，结构与本站的 `content/widgets/<slug>/` 相同：
+           `package/widget.json`、包内入口页、`item.json`、`preview.webp`（16:9，1600×900，< 3 MiB）、
+           `README.md`、`LICENSE`。打一个 tag（推荐）或记下完整 commit。
+           目录名默认等于插件 id，不要另起一个。
+        2. 在标题「[插件提交]」后面写上插件名字，填完本表单，并附一张插件在 Lull 里
+           正常运行的截图。CI 会取回那个提交、检查格式，并在下面回复结果。
+        3. 通过后等维护者审查；审查通过后维护者合并，插件进入站点与下载包。
+        4. 以后发新版本，开一个「插件更新」issue。
+
+        摘要（`.lull-integrity.json`）不用你算，导入时由 CI 重算。以 `.` 开头的文件和目录、
+        `node_modules` 不会被收录；不要包含符号链接。格式见
+        <https://lull-desktop.github.io/Lull-Community/submit#spec>。
+
+  - type: input
+    id: item-id
+    attributes:
+      label: 作品 id / Item id
+      description: 与 widget.json 的 id 完全相同；小写字母开头，2–32 位，收录后不可改
+      placeholder: breathing
+    validations:
+      required: true
+
+  - type: input
+    id: repository
+    attributes:
+      label: 源码仓库 / Source repository
+      description: 公开仓库的 https 地址（GitHub、GitLab、Codeberg 等）
+      placeholder: https://github.com/you/lull-widgets
+    validations:
+      required: true
+
+  - type: input
+    id: ref
+    attributes:
+      label: 版本 / Version (tag or commit)
+      description: 要收录的 tag（推荐）、分支名或完整的 40 位 commit；审查与合并都绑定到它当时指向的提交
+      placeholder: v1.0.0
+    validations:
+      required: true
+
+  - type: input
+    id: path
+    attributes:
+      label: 作品目录 / Item directory
+      description: 仓库里那个作品目录（含 package/ 与 item.json）的相对路径；在仓库根目录就留空
+      placeholder: lull/breathing
+    validations:
+      required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 作品说明 / Description
+      description: 它做什么、什么时候用、界面上有哪些操作
+      placeholder: 呼吸节奏：按 4-7-8 节奏缩放一个圆，可调呼气时长。
+    validations:
+      required: true
+
+  - type: textarea
+    id: capabilities
+    attributes:
+      label: 能力说明 / Capabilities
+      description: |
+        逐条说明 widget.json 里每个 capabilities 与 network 条目为什么需要，例如：
+        - widget.ui：自绘界面
+        - widget.state：记住上次的选择
+        - widget.network + https://api.example.com：同步待办（只读）
+        清单里没声明的能力不要写；声明了不用会在审查时被要求删掉。
+    validations:
+      required: true
+
+  - type: input
+    id: license
+    attributes:
+      label: 许可证 / License
+      description: 与你作品目录里的 LICENSE 一致；含第三方库时把它们的许可附在目录内
+      placeholder: MIT
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshot
+    attributes:
+      label: 运行截图 / Screenshot
+      description: |
+        一张插件在 Lull 里正常运行的屏幕截图：直接把图片拖进这个框上传（外链不算），
+        尽量带上 Lull 的版本信息。截图只留在这个 issue，不会进仓库，也不是 preview.webp。
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: 确认 / Confirmations
+      options:
+        - label: 我是这个插件的作者，或有权代表作者提交
+          required: true
+        - label: 插件不收集或上传用户数据，也不下载并执行远程代码（除非这是它明确声明的功能）
+          required: true
+        - label: 素材与依赖的许可允许再分发
+          required: true
+        - label: 我了解之后每个新版本都要重新审查
+          required: true

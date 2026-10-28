@@ -1,0 +1,50 @@
+# 插件更新：源码仓库与目录取 community.json 的登记，不从表单读。
+# label 文本是协议，改一处必须改两处（test/forms.test.mjs 守着）。
+name: 插件更新 / Plugin update
+description: 为已收录的插件提交新版本
+title: "[插件更新] "
+labels: ["widget-update"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        只有登记的作者可以提交更新。CI 会从登记的仓库取回新版本，检查格式
+        （版本号必须比当前高、id 不变），并给出与已收录版本的对比链接。
+        维护者审查后合并。
+
+        需要更换源码仓库或目录时，请在这里说明，由维护者处理。
+        格式检查未通过、14 天内没有回应的 issue 会自动关闭。
+
+  - type: input
+    id: item-id
+    attributes:
+      label: 作品 id / Item id
+      description: 已收录的插件 id，与 widget.json 一致
+      placeholder: breathing
+    validations:
+      required: true
+
+  - type: input
+    id: ref
+    attributes:
+      label: 版本 / Version (tag or commit)
+      description: 新版本的 tag（推荐）、分支名或完整的 40 位 commit
+      placeholder: v1.1.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: changes
+    attributes:
+      label: 更新说明 / What changed
+      description: 这个版本改了什么；权限有变化时说明原因
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmations
+    attributes:
+      label: 确认 / Confirmations
+      options:
+        - label: 新版本同样不收集或上传用户数据，也不下载并执行远程代码（除非这是它明确声明的功能）
+          required: true

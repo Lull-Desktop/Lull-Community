@@ -50,6 +50,22 @@ function Masthead({ item }: { item: CatalogItem }) {
                 精选
               </span>
             )}
+            {/* 只表示「这批字节由 community 发布」，不代表作者身份，也不影响安装与运行 */}
+            <span
+              className={cn(
+                "rounded-md border px-2 py-0.5 text-[10.5px]",
+                item.signed
+                  ? "border-[#9fc796]/40 bg-[#9fc796]/10 text-[#c8e0b6]"
+                  : "border-line-2 text-faint",
+              )}
+              title={
+                item.signed
+                  ? "该版本已包含在 community 的发布签名清单里"
+                  : "该版本还没有被发布签名覆盖；不影响安装与运行"
+              }
+            >
+              {item.signed ? "已签署发布" : "来源未验证"}
+            </span>
           </div>
 
           <h1 className="mt-3.5 text-[clamp(1.8rem,3.6vw,2.6rem)] font-normal leading-[1.18] tracking-[-0.02em]">
@@ -436,6 +452,40 @@ export function ItemDetail({ item }: { item: CatalogItem }) {
                   许可原文（{item.license}）→
                 </a>
               )}
+            </div>
+
+            <div className="rounded-2xl border border-line bg-panel/50 p-4">
+              <p className="text-[12.5px] font-medium text-ink">来源</p>
+              {item.source ? (
+                <>
+                  <p className="mt-2 text-[12px] leading-relaxed text-muted">
+                    提交自{" "}
+                    <a
+                      href={item.source}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="text-accent hover:underline"
+                    >
+                      {item.source.replace(/^https:\/\//, "")}
+                    </a>
+                    {item.submission ? ` · #${item.submission}` : ""}
+                  </p>
+                  {item.sourceCommit && (
+                    <p className="mt-1.5 font-mono text-[10.5px] text-faint">
+                      审查提交 {item.sourceCommit.slice(0, 12)}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="mt-2 text-[12px] leading-relaxed text-muted">
+                  这个作品是通过 PR 直接投稿的，没有登记外部仓库。
+                </p>
+              )}
+              <p className="mt-2.5 text-[11px] leading-relaxed text-faint">
+                {item.signed
+                  ? `已包含在发布签名清单里（keyId ${catalog.release?.keyId ?? "—"}）。签名只说明「这批文件由 community 发布」，不是作者认证。`
+                  : "还没有被发布签名覆盖。签名只用于标注来源，不改变安装与运行的条件。"}
+              </p>
             </div>
 
             <div className="rounded-2xl border border-line bg-panel/40 p-4">

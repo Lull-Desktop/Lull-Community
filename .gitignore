@@ -6,10 +6,16 @@ node_modules/
 site/src/generated/
 site/public/content-assets/
 site/public/downloads/
+site/public/release/
 site/out/
 site/.next/
 site/next-env.d.ts
 site/*.tsbuildinfo
+
+# 发布私钥绝不入库（公钥在 keys/publisher-keys.json 里，是刻意要提交的）
+*.key
+/publisher.pem
+/keys/*.pem
 
 # 本地打包产物
 artifacts/

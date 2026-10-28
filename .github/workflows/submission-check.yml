@@ -1,0 +1,59 @@
+# 投稿 issue 的格式检查。
+#
+# 作品来自作者自己的仓库：把指定的 commit 当**数据**取回（浅取、无 hooks、无子模块），
+# 按导入时的样子 stage 到临时目录，再用 main 上的规则校验。
+# 作者仓库里的任何内容都不会被执行，这个作业也没有 secrets。
+
+name: submission-check
+
+on:
+  issues:
+    types: [opened, edited, reopened, labeled]
+
+permissions: {}
+
+concurrency:
+  group: submission-check-${{ github.event.issue.number }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    # labeled 只在「加上那四条 kind 标签」时才跑：维护者打 needs-changes（或任何别的标签）
+    # 不能触发重跑，否则标签会被重置回 awaiting-review。
+    if: >-
+      (github.event.action != 'labeled'
+        || startsWith(github.event.label.name, 'scene-')
+        || startsWith(github.event.label.name, 'widget-'))
+      && (contains(github.event.issue.labels.*.name, 'scene-submission')
+        || contains(github.event.issue.labels.*.name, 'scene-update')
+        || contains(github.event.issue.labels.*.name, 'widget-submission')
+        || contains(github.event.issue.labels.*.name, 'widget-update'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      # 规则取自 main，而不是事件所在的提交：作者改不了正在评判他的那份规则
+      - name: Check out main
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # 复用仓库自己的 validate-content（含 ajv），换取「规则只有一份」
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check the submission
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/ci/check-issue.mjs --issue "${{ github.event.issue.number }}"

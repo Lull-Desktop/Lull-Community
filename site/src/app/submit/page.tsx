@@ -211,7 +211,23 @@ const BRANCH_RULES = [
 const CHECKS = [
   {
     term: "Validate content",
-    body: "每个 PR 都跑：content:check → 生成索引 → 站点构建（含类型检查）。不按路径过滤，否则只改文档的 PR 会一直等这个不会触发的检查。通过后把 zip 传成 7 天有效的 lull-packages 产物，reviewer 直接下载试装。",
+    body: "每个 PR 都跑：content:check → 单测 → 生成索引 → 验签 → 站点构建（含类型检查）。不按路径过滤，否则只改文档的 PR 会一直等这个不会触发的检查。通过后把 zip 传成 7 天有效的 lull-packages 产物，reviewer 直接下载试装。",
+  },
+  {
+    term: "submission-check",
+    body: "表单类 issue 建/改/重开时跑：解析字段 → 取回你仓库的提交 → 按 main 上的规则校验 → 回帖。作业无 secrets，只读你的仓库，不执行任何内容。",
+  },
+  {
+    term: "表单即协议",
+    body: "字段名就是校验依据，字段与清单交叉核对（许可证、能力说明、id、slug）。改字段等于改协议，会升版本号。",
+  },
+  {
+    term: "合并（/merge）",
+    body: "维护者审查后评论 `/merge <commit>`。合并只绑你指定的那个提交；之后改 tag 不影响已合并内容。",
+  },
+  {
+    term: "发布签名",
+    body: "发布批次由 community 用离线 Ed25519 私钥对 release.json 签名，公钥与签名都在站上。它只标注「这批文件由 community 发布」，不授予权限、不放宽限制、不改变安装与运行条件。",
   },
   {
     term: "Commit messages",
@@ -248,6 +264,14 @@ const GATES_SOFT = [
 
 const SPEC_HISTORY = [
   {
+    version: "v1.1",
+    date: "2026-10-28",
+    change:
+      "新增免 fork 提交：壁纸/插件的 issue 表单、submission-check 与登记表；新增 community 发布签名（只做来源标记，不改变准入）。",
+    files:
+      "scene-submission.yml · widget-submission.yml · submission-check.yml · submission-import.yml · sign-release.mjs · verify-release.mjs",
+  },
+  {
     version: "v1.0",
     date: "2026-10-26",
     change: "首次成文：提交信息、分支与合并、自动校验、合并门槛。",
@@ -280,8 +304,8 @@ export default function SubmitPage() {
           提交你的<span className="text-gradient">作品</span>
         </h1>
         <p className="mt-4 text-[13.5px] leading-relaxed text-muted">
-          作品就是仓库里的一个目录，通过 Pull Request 提交。
-          合并之后，网站会在一两分钟内自动更新。
+          两种方式二选一：开 Pull Request（能改文件、一次带多个作品），或者在自己的仓库里放好作品、
+          填一张 issue 表单（不 fork、不装 Node）。合并之后，网站会在一两分钟内自动更新。
         </p>
       </header>
 
@@ -402,10 +426,94 @@ export default function SubmitPage() {
         </dl>
       </section>
 
+      <section id="issues" className="mt-10 scroll-mt-24 rounded-2xl border border-line bg-panel/50 p-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h2 className="text-[14.5px] font-medium tracking-tight text-ink">不想 fork？用 issue 表单</h2>
+          <p className="font-mono text-[10px] tracking-[0.18em] text-faint">no fork</p>
+        </div>
+        <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
+          内容放在你自己的公开仓库里，用一张表单告诉我们「仓库 + tag + 目录」。
+          CI 会把那个提交取回来检查格式，维护者审查后合并，站点与下载包随之更新。
+        </p>
+
+        <ol className="mt-4 space-y-2.5 text-[12.5px] leading-relaxed text-ink-soft">
+          <li className="flex gap-3">
+            <span className="font-mono text-[11px] text-line-2">01</span>
+            <span>
+              在自己的仓库里放一个作品目录，结构与本站 <InlineCode>content/&lt;scenes|widgets&gt;/&lt;slug&gt;/</InlineCode> 相同：
+              <InlineCode>package/</InlineCode>、<InlineCode>item.json</InlineCode>、
+              <InlineCode>preview.webp</InlineCode>、<InlineCode>README.md</InlineCode>、<InlineCode>LICENSE</InlineCode>。
+              打一个 tag。
+            </span>
+          </li>
+          <li className="flex gap-3">
+            <span className="font-mono text-[11px] text-line-2">02</span>
+            <span>
+              开「壁纸提交」或「插件提交」issue，填表，并把一张运行截图拖进截图框
+              （外链不算，截图只留在 issue 里，不会进仓库）。
+            </span>
+          </li>
+          <li className="flex gap-3">
+            <span className="font-mono text-[11px] text-line-2">03</span>
+            <span>
+              CI 回帖告诉你差什么。改完直接**编辑原 issue**，会自动重新检查；同一个作品只保留一条提交 issue。
+            </span>
+          </li>
+          <li className="flex gap-3">
+            <span className="font-mono text-[11px] text-line-2">04</span>
+            <span>
+              审查通过后维护者合并。以后发新版本用「壁纸更新 / 插件更新」，仓库地址与目录以首次收录为准。
+            </span>
+          </li>
+        </ol>
+
+        <p className="mt-4 text-[11.5px] leading-relaxed text-muted">
+          摘要（<InlineCode>integrity</InlineCode> / <InlineCode>.lull-integrity.json</InlineCode>）不用你算，
+          合并时由 CI 重算。格式检查失败且 14 天没有回应的 issue 会被自动关闭。
+        </p>
+
+        <div className="mt-4 rounded-xl border border-line bg-void/40 p-4">
+          <p className="text-[12px] font-medium text-ink">关于「发布签名」</p>
+          <p className="mt-1.5 text-[11.5px] leading-relaxed text-muted">
+            收录后的版本会由 community 用离线密钥签一份发布清单，站点上显示「已签署发布」。
+            它只说明**这批文件由 community 发布**，不证明作者身份，也不授予任何权限：
+            验签不改变安装与运行的条件。细则见{" "}
+            <a
+              href={`${catalog.repo.url}/blob/${catalog.repo.branch}/SECURITY.md`}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="text-accent hover:underline"
+            >
+              SECURITY.md
+            </a>
+            。
+          </p>
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-2">
+          {[
+            { label: "壁纸提交", template: "scene-submission.yml" },
+            { label: "插件提交", template: "widget-submission.yml" },
+            { label: "壁纸更新", template: "scene-update.yml" },
+            { label: "插件更新", template: "widget-update.yml" },
+          ].map((entry) => (
+            <a
+              key={entry.template}
+              href={`${catalog.repo.url}/issues/new?template=${entry.template}`}
+              target="_blank"
+              rel="noreferrer noopener"
+              className={buttonVariants({ variant: "ghost", size: "sm" })}
+            >
+              {entry.label}
+            </a>
+          ))}
+        </div>
+      </section>
+
       <section id="spec" className="mt-10 scroll-mt-24">
         <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <h2 className="text-[14.5px] font-medium tracking-tight text-ink">提交规范</h2>
-          <p className="font-mono text-[10px] tracking-[0.18em] text-faint">v1.0 · 2026-10-26</p>
+          <p className="font-mono text-[10px] tracking-[0.18em] text-faint">v1.1 · 2026-10-28</p>
         </div>
         <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
           从写第一行提交信息到按下合并，四层：提交信息 → 分支与合并 → 自动校验 → 合并门槛。
@@ -508,10 +616,11 @@ export default function SubmitPage() {
         <h2 className="text-[14.5px] font-medium tracking-tight text-ink">然后呢</h2>
         <ol className="mt-3 space-y-2.5 text-[12.5px] leading-relaxed text-ink-soft">
           <li>
-            1. 开 Pull Request。校验与提交信息两个工作流会先跑一遍，失败直接标红，
-            检查项在 PR 页面底部能逐条看到。
+            1. 开 Pull Request，或者填 issue 表单。两条路都会先跑一遍校验：PR 走{" "}
+            <InlineCode>Validate content</InlineCode>，表单走 <InlineCode>submission-check</InlineCode>，
+            失败原因会直接写出来。
           </li>
-          <li>2. 维护者审内容与许可。需要改的会在 PR 里指出，改完自动重跑。</li>
+          <li>2. 维护者审内容与许可。需要改的会在 PR / issue 里指出，改完自动重跑。</li>
           <li>3. 合并进 main。部署工作流重新生成索引、构建静态站、发布 Pages。</li>
         </ol>
 

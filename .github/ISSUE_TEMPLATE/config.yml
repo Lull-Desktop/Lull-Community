@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 投稿规范（字段、校验项、合并门槛）
+    url: https://lull-desktop.github.io/Lull-Community/submit#spec
+    about: 填表前先读这一页；表单里每个字段的含义与失败原因都能对上
+  - name: 完整贡献指南
+    url: https://github.com/Lull-Desktop/Lull-Community/blob/main/CONTRIBUTING.md
+    about: 想开 PR 或改网站看这里

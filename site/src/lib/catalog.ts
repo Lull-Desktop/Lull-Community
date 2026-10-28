@@ -39,6 +39,13 @@ export type CatalogItem = {
   authorUrl: string | null;
   homepage: string | null;
   sourcePath: string;
+  /** community.json 里登记的来源仓库；PR 投稿或未登记时为 null。 */
+  source: string | null;
+  sourceCommit: string | null;
+  submission: number | null;
+  owners: string[] | null;
+  /** 是否被 community 发布签名覆盖（同 id、同版本、同摘要）。只用于展示来源，不影响安装。 */
+  signed: boolean;
   licensePath: string | null;
   theme: { background: string; accent: string } | null;
   performance: { tier: string; targetFps?: number } | null;
@@ -57,11 +64,21 @@ export type CatalogItem = {
   network: string[] | null;
 };
 
+export type ReleaseInfo = {
+  keyId: string | null;
+  releaseSeq: number | null;
+  signedAt: string | null;
+  url: string;
+  signatureUrl: string | null;
+};
+
 export type Catalog = {
   schemaVersion: number;
   generatedAt: string;
   repo: { url: string; branch: string };
   counts: { scenes: number; widgets: number };
+  /** null = 还没有发布签名；站点上所有作品都会标成「来源未验证」。 */
+  release: ReleaseInfo | null;
   items: CatalogItem[];
 };
 
