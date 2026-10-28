@@ -153,18 +153,6 @@ function InstallCard({ item }: { item: CatalogItem }) {
           卸载在扩展中心里完成；scene 被壁纸引用时会先提示切换场景。
         </li>
       </ol>
-
-      <details className="mt-4 border-t border-line pt-3">
-        <summary className="cursor-pointer text-[11px] text-muted transition-colors hover:text-ink">
-          包摘要（sha256）
-        </summary>
-        <p className="mt-2 break-all rounded-lg bg-void/70 p-2.5 font-mono text-[10px] leading-relaxed text-ink-soft ring-1 ring-inset ring-line">
-          {item.integrity}
-        </p>
-        <p className="mt-2 text-[10.5px] leading-relaxed text-muted">
-          摘要只证明「下载到的文件与发布时一致」，不是作者签名。安装器会复算并拒绝被改过的包。
-        </p>
-      </details>
     </div>
   );
 }
@@ -298,15 +286,16 @@ function formatUtcMinute(iso: string): string {
  */
 function SignatureSection({ item }: { item: CatalogItem }) {
   const release = catalog.release;
-  const keyName = release
-    ? [release.keyName, release.keyLabel].filter(Boolean).join(" ") || release.keyId
-    : null;
+  const keyId = release?.keyId ?? null;
+  /** 公钥清单里登记的人可读名；没登记就退回 keyId，不编名字。 */
+  const keyName = release ? [release.keyName, release.keyLabel].filter(Boolean).join(" ") : "";
 
   const rows: { label: string; value: string; note?: string }[] = [
     {
       label: "签名密钥",
-      value: item.signed ? (keyName ?? "—") : "—",
-      note: item.signed && release?.keyId ? `keyId ${release.keyId}` : undefined,
+      value: item.signed ? (keyName || keyId || "—") : "—",
+      // 有名字时才补一行 keyId：否则它已经在值里，重复显示只是噪音
+      note: item.signed && keyName && keyId ? `keyId ${keyId}` : undefined,
     },
     {
       label: "签名时间",
@@ -314,7 +303,8 @@ function SignatureSection({ item }: { item: CatalogItem }) {
     },
     {
       label: "签名摘要",
-      value: item.signed && release?.manifestSha256 ? release.manifestSha256 : "—",
+      // 每个包自己的内容摘要：签名清单里登记的就是它，安装器复算的也是它
+      value: item.integrity,
     },
     // 这一行不依赖签名：任何一次构建都能给出这份 zip 的字节摘要
     { label: "文件 SHA-256", value: item.zipSha256 },
@@ -349,7 +339,7 @@ function SignatureSection({ item }: { item: CatalogItem }) {
 
       {item.signed ? (
         <p className="mt-2.5 text-[11px] leading-relaxed text-muted">
-          签名覆盖{" "}
+          签名清单{" "}
           <a
             href={asset(release?.url ?? "/release/release.json")}
             target="_blank"
@@ -359,14 +349,16 @@ function SignatureSection({ item }: { item: CatalogItem }) {
             release/release.json
           </a>
           {release?.releaseSeq ? `（第 ${release.releaseSeq} 批）` : ""}
-          ，摘要即这份清单原始字节的 SHA-256。它只说明这批文件由发布者发出，
+          里为这个包登记的就是上面的签名摘要，安装器会按同一算法复算并拒绝被改过的包。
+          签名只说明这批文件由发布者发出，
           <span className="text-ink-soft">不证明作者是谁</span>
-          ，也不参与安装与运行的判断；摘要一致只说明文件没被改过。
+          ，也不参与安装与运行；文件 SHA-256 是下载 zip 的字节摘要，与包摘要是两层。
         </p>
       ) : (
         <p className="mt-2.5 text-[11px] leading-relaxed text-muted">
-          这个版本不在签名清单里，所以签名时间与签名摘要为空。
-          文件 SHA-256 是构建时算的，下载后仍可复算，用来确认文件没在传输中被改过。
+          这个版本不在签名清单里，所以没有签名密钥与签名时间。
+          签名摘要是构建时算出的包摘要，安装器会复算并拒绝被改过的包；
+          文件 SHA-256 用于核对下载的 zip 有没有在传输中被改。
         </p>
       )}
     </section>
@@ -572,11 +564,6 @@ export function ItemDetail({ item }: { item: CatalogItem }) {
                   这个作品是通过 PR 直接投稿的，没有登记外部仓库。
                 </p>
               )}
-              <p className="mt-2.5 text-[11px] leading-relaxed text-faint">
-                {item.signed
-                  ? `已包含在发布签名清单里（keyId ${catalog.release?.keyId ?? "—"}）。签名只说明「这批文件由 community 发布」，不是作者认证。`
-                  : "还没有被发布签名覆盖。签名只用于标注来源，不改变安装与运行的条件。"}
-              </p>
             </div>
 
             <div className="rounded-2xl border border-line bg-panel/40 p-4">

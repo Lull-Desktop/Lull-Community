@@ -192,13 +192,9 @@ function main() {
       keyId,
       keyName: key?.name ?? null,
       keyLabel: key?.label ?? null,
-      algorithm: release.data.signedBy?.algorithm ?? null,
       releaseSeq: release.data.releaseSeq ?? null,
       signedAt: release.data.generatedAt ?? null,
-      // 签名覆盖的是清单的原始字节，它的 sha256 就是「这次到底签了什么」
-      manifestSha256: release.bytes ? sha256Hex(release.bytes) : null,
       url: "/release/release.json",
-      signatureUrl: release.signatureExists ? "/release/release.json.sig" : null,
     };
     for (const entry of release.data.items ?? []) {
       signedEntries.set(`${entry.kind}:${entry.id}:${entry.version}:${entry.digest}`, entry);

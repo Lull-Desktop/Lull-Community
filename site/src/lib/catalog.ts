@@ -72,13 +72,9 @@ export type ReleaseInfo = {
   keyName: string | null;
   /** 密钥期次（如「folium-2026-1」），未登记时 null。 */
   keyLabel: string | null;
-  algorithm: string | null;
   releaseSeq: number | null;
   signedAt: string | null;
-  /** 被签名清单（release/release.json）原始字节的 sha256，即「签名摘要」。 */
-  manifestSha256: string | null;
   url: string;
-  signatureUrl: string | null;
 };
 
 export type Catalog = {
