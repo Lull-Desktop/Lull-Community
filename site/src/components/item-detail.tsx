@@ -11,13 +11,41 @@ import {
   itemDownloadUrl,
   itemSourceUrl,
   kindLabel,
+  type AuthorizationStatus,
   type CatalogItem,
 } from "@/lib/catalog";
 import { renderMarkdown } from "@/lib/markdown";
 import { cn } from "@/lib/utils";
 
+const AUTHORIZATION_META: Record<
+  AuthorizationStatus,
+  { label: string; title: string; tone: "good" | "warn" | "muted" }
+> = {
+  current: {
+    label: "当前批次收录",
+    title: "该版本在当前 community 发布签名清单里，且逐包签名通过",
+    tone: "good",
+  },
+  "batch-only": {
+    label: "旧版清单收录",
+    title: "该版本在当前批次里，但清单是旧版、没有逐包签名；建议重签",
+    tone: "warn",
+  },
+  "not-listed": {
+    label: "不在当前批次",
+    title: "有签名清单，但这一版不在其中；可能是旧版本，或还没有被签",
+    tone: "muted",
+  },
+  unsigned: {
+    label: "尚未签名",
+    title: "仓库还没有发布签名；不影响安装与运行",
+    tone: "muted",
+  },
+};
+
 function Masthead({ item }: { item: CatalogItem }) {
   const categoryHref = item.kind === "scene" ? "/scenes" : "/widgets";
+  const authorization = AUTHORIZATION_META[item.authorization] ?? AUTHORIZATION_META.unsigned;
 
   return (
     <div>
@@ -50,21 +78,19 @@ function Masthead({ item }: { item: CatalogItem }) {
                 精选
               </span>
             )}
-            {/* 只表示「这批字节由 community 发布」，不代表作者身份，也不影响安装与运行 */}
+            {/* 只表示「当前批次是否收录 + 逐包签名」，不代表作者身份，也不影响安装与运行 */}
             <span
               className={cn(
                 "rounded-md border px-2 py-0.5 text-[10.5px]",
-                item.signed
-                  ? "border-[#9fc796]/40 bg-[#9fc796]/10 text-[#c8e0b6]"
-                  : "border-line-2 text-faint",
+                authorization.tone === "good" &&
+                  "border-[#9fc796]/40 bg-[#9fc796]/10 text-[#c8e0b6]",
+                authorization.tone === "warn" &&
+                  "border-[#e0a878]/40 bg-[#e0a878]/10 text-[#f0d0b0]",
+                authorization.tone === "muted" && "border-line-2 text-faint",
               )}
-              title={
-                item.signed
-                  ? "该版本已包含在 community 的发布签名清单里"
-                  : "该版本还没有被发布签名覆盖；不影响安装与运行"
-              }
+              title={authorization.title}
             >
-              {item.signed ? "已签署发布" : "来源未验证"}
+              {authorization.label}
             </span>
           </div>
 
@@ -281,7 +307,7 @@ function formatUtcMinute(iso: string): string {
 }
 
 /**
- * 签名与校验：四行机器可核对的事实。
+ * 签名与校验：当前授权、批次、包身份、密钥、算法、清单匹配、逐包签名与三层哈希。
  * 措辞只到「这批字节是不是发布者发的」为止——不写成安全背书，也不暗示作者身份。
  */
 function SignatureSection({ item }: { item: CatalogItem }) {
@@ -289,25 +315,94 @@ function SignatureSection({ item }: { item: CatalogItem }) {
   const keyId = release?.keyId ?? null;
   /** 公钥清单里登记的人可读名；没登记就退回 keyId，不编名字。 */
   const keyName = release ? [release.keyName, release.keyLabel].filter(Boolean).join(" ") : "";
+  const authorization = AUTHORIZATION_META[item.authorization] ?? AUTHORIZATION_META.unsigned;
+  const batchText = release?.releaseSeq ? `第 ${release.releaseSeq} 批` : "未签名";
+  const keyStatusLabel =
+    release?.keyStatus === "revoked"
+      ? "已撤销"
+      : release?.keyStatus === "retired"
+        ? "已退役（仍可验旧签名）"
+        : release?.keyStatus === "not-yet-valid"
+          ? "尚未生效"
+          : null;
+  const keyNote = [
+    keyId ? `keyId ${keyId}` : null,
+    release?.keyFingerprint ? `指纹 ${release.keyFingerprint}` : null,
+    keyStatusLabel,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const authorizationNote =
+    item.authorization === "current"
+      ? `${batchText} · 逐包签名已校验`
+      : item.authorization === "batch-only"
+        ? `${batchText} · 旧版清单无逐包签名`
+        : item.authorization === "not-listed"
+          ? "当前签名清单里没有这一版"
+          : "仓库尚未发布签名";
+  const signatureLabel = item.signature
+    ? item.signatureVerified
+      ? "已生成并校验"
+      : "已生成，待校验"
+    : item.authorization === "batch-only"
+      ? "旧版无逐包签名"
+      : "—";
 
   const rows: { label: string; value: string; note?: string }[] = [
     {
-      label: "签名密钥",
-      value: item.signed ? (keyName || keyId || "—") : "—",
-      // 有名字时才补一行 keyId：否则它已经在值里，重复显示只是噪音
-      note: item.signed && keyName && keyId ? `keyId ${keyId}` : undefined,
+      label: "当前授权",
+      value: authorization.label,
+      note: authorizationNote,
     },
     {
-      label: "签名时间",
-      value: item.signed && release?.signedAt ? formatUtcMinute(release.signedAt) : "—",
+      label: "批次 / 时间",
+      value: batchText,
+      note: release?.signedAt ? formatUtcMinute(release.signedAt) : undefined,
     },
     {
-      label: "签名摘要",
-      // 每个包自己的内容摘要：签名清单里登记的就是它，安装器复算的也是它
+      label: "包身份",
+      value: `${item.kind} / ${item.id} / ${item.version}`,
+    },
+    {
+      label: "发布密钥",
+      value: keyName || keyId || "—",
+      note: keyNote || undefined,
+    },
+    {
+      label: "签名算法",
+      value: release?.signatureAlgorithm ?? "—",
+      note: release
+        ? release.perPackageSignatures
+          ? `envelope v${release.signatureSchemaVersion ?? "?"} · statement v${release.statementVersion ?? "?"}`
+          : "仅批次清单签名（旧版）"
+        : undefined,
+    },
+    {
+      label: "清单条目",
+      value: item.signed ? "匹配" : "无匹配条目",
+      note: item.signed ? "kind + id + version + digest + zip.sha256" : "当前清单里没有这一版",
+    },
+    {
+      label: "逐包签名",
+      value: signatureLabel,
+      note: item.signature ?? (item.authorization === "batch-only" ? "旧版清单只有批次签名" : undefined),
+    },
+    {
+      label: "签名文件 SHA-256",
+      // sidecar 文件本身的摘要：清单 item.signature.sha256 登记的就是它
+      value: item.signatureSha256 ?? "—",
+    },
+    {
+      label: "包内容摘要",
+      // 每个包自己的内容摘要：签名声明里登记的就是它，安装器复算的也是它
       value: item.integrity,
     },
-    // 这一行不依赖签名：任何一次构建都能给出这份 zip 的字节摘要
-    { label: "文件 SHA-256", value: item.zipSha256 },
+    {
+      label: "下载文件 SHA-256",
+      value: item.zipSha256,
+      // 这一行不依赖签名：任何一次构建都能给出这份 zip 的字节摘要
+      note: `${formatBytes(item.downloadBytes)} · 和官网公布值比对`,
+    },
   ];
 
   return (
@@ -331,34 +426,83 @@ function SignatureSection({ item }: { item: CatalogItem }) {
               >
                 {row.value}
               </span>
-              {row.note && <span className="mt-0.5 block font-mono text-[10px] text-faint">{row.note}</span>}
+              {row.note && (
+                <span className="mt-0.5 block break-all font-mono text-[10px] text-faint">
+                  {row.note}
+                </span>
+              )}
             </dd>
           </div>
         ))}
       </dl>
 
-      {item.signed ? (
-        <p className="mt-2.5 text-[11px] leading-relaxed text-muted">
-          签名清单{" "}
-          <a
-            href={asset(release?.url ?? "/release/release.json")}
-            target="_blank"
-            rel="noreferrer noopener"
-            className="font-mono text-accent hover:underline"
-          >
-            release/release.json
-          </a>
-          {release?.releaseSeq ? `（第 ${release.releaseSeq} 批）` : ""}
-          里为这个包登记的就是上面的签名摘要，安装器会按同一算法复算并拒绝被改过的包。
-          签名只说明这批文件由发布者发出，
-          <span className="text-ink-soft">不证明作者是谁</span>
-          ，也不参与安装与运行；文件 SHA-256 是下载 zip 的字节摘要，与包摘要是两层。
-        </p>
+      {release ? (
+        <>
+          <p className="mt-2.5 text-[11px] leading-relaxed text-muted">
+            复核入口：{" "}
+            <a
+              href={asset(release.url)}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="font-mono text-accent hover:underline"
+            >
+              release.json
+            </a>
+            {" · "}
+            <a
+              href={asset(release.signatureUrl ?? "/release/release.json.sig")}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="font-mono text-accent hover:underline"
+            >
+              release.json.sig
+            </a>
+            {" · "}
+            <a
+              href={asset(release.keysUrl ?? "/release/keys.json")}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="font-mono text-accent hover:underline"
+            >
+              keys.json
+            </a>
+            {item.signature && (
+              <>
+                {" · "}
+                <a
+                  href={asset(item.signature)}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="font-mono text-accent hover:underline"
+                >
+                  逐包签名文件
+                </a>
+              </>
+            )}
+            。
+          </p>
+
+          <p className="mt-1.5 text-[11px] leading-relaxed text-muted">
+            本页数据构建于 {formatUtcMinute(catalog.generatedAt)}；清单以最新 release.json 为准。
+            签名只说明这批字节由发布者发出，
+            <span className="text-ink-soft">不证明作者是谁</span>
+            ，也不参与安装与运行。
+          </p>
+
+          {item.authorization === "batch-only" && (
+            <p className="mt-1.5 text-[11px] leading-relaxed text-muted">
+              该批次清单是旧版，没有逐包签名；建议重签后再发布。
+            </p>
+          )}
+          {item.authorization === "not-listed" && (
+            <p className="mt-1.5 text-[11px] leading-relaxed text-muted">
+              这一版不在当前签名清单里；如果是从旧链接进入，请回到作品页确认当前版本。
+            </p>
+          )}
+        </>
       ) : (
         <p className="mt-2.5 text-[11px] leading-relaxed text-muted">
-          这个版本不在签名清单里，所以没有签名密钥与签名时间。
-          签名摘要是构建时算出的包摘要，安装器会复算并拒绝被改过的包；
-          文件 SHA-256 用于核对下载的 zip 有没有在传输中被改。
+          仓库尚未发布签名清单；当前只展示包内容摘要与下载文件哈希，不能据此判断发布来源。
         </p>
       )}
     </section>

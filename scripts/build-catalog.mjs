@@ -4,12 +4,13 @@
  *
  *   node scripts/build-catalog.mjs
  *
- * 做三件事，都不需要数据库：
+ * 做四件事，都不需要数据库：
  * 1. 复制预览图到 site/public/content-assets/（网站只读这一份，不读 content/）
  * 2. 把每个作品打成 Lull 能直接安装的 zip，放到 site/public/downloads/
- * 3. 输出 site/src/generated/catalog.json，供 Next 在构建时生成静态页面
+ * 3. 验签后把 release.json / .sig / signatures/ / keys.json 复制到 site/public/release/
+ * 4. 输出 site/src/generated/catalog.json，供 Next 在构建时生成静态页面
  *
- * 「内容 → 网站」只有这一个方向：网站不再维护第二份作品清单。
+ * 清单验签失败时直接停止：不能让伪造/损坏的清单在页面上显示成「已签署发布」。
  */
 import { cpSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
@@ -17,7 +18,16 @@ import { fileURLToPath } from "node:url";
 
 import { listPackageFiles, readFiles } from "./lib/digest.mjs";
 import { getEntry, readRegistry } from "./lib/registry.mjs";
-import { RELEASE_FILE, SIGNATURE_FILE, loadPublicKeys, readRelease, sha256Hex } from "./lib/signing.mjs";
+import {
+  RELEASE_FILE,
+  RELEASE_SIGNATURES_DIR,
+  SIGNATURE_FILE,
+  fingerprintOf,
+  loadPublicKeys,
+  sha256Hex,
+  verifyRelease,
+} from "./lib/signing.mjs";
+import { verifyPackageSignatures, PACKAGE_SIGNATURE_SCHEMA_VERSION, PACKAGE_STATEMENT_VERSION } from "./lib/package-signature.mjs";
 import { writeZip } from "./lib/zip.mjs";
 import { loadContent, printReport } from "./validate-content.mjs";
 
@@ -84,6 +94,32 @@ function main() {
     fail("内容校验未通过，已停止构建。先跑 pnpm content:check 看问题。");
   }
   if (result.warnings > 0) printReport(result);
+
+  // 先验签，再使用 release.json。否则一个伪造/损坏的清单也能让站点标出
+  // 「已签署发布」——徽章就变成了「文件存在」而不是「签名有效」。
+  const releaseCheck = verifyRelease(ROOT);
+  if (releaseCheck.errors.length > 0) {
+    for (const message of releaseCheck.errors) console.error(`[build:catalog] ${message}`);
+    fail("发布清单验签失败：不复制清单、不生成 signed 标记。");
+  }
+  const signatureCheck = verifyPackageSignatures({
+    root: ROOT,
+    release: releaseCheck.release.data,
+    key: releaseCheck.key,
+  });
+  if (signatureCheck.errors.length > 0) {
+    for (const message of signatureCheck.errors) console.error(`[build:catalog] [逐包] ${message}`);
+    fail("逐包签名校验失败：不复制清单、不生成 signed 标记。");
+  }
+  const seenWarnings = new Set();
+  for (const warning of [
+    ...releaseCheck.warnings,
+    ...(signatureCheck.legacy ? [] : signatureCheck.warnings),
+  ]) {
+    if (seenWarnings.has(warning)) continue;
+    seenWarnings.add(warning);
+    console.warn(`[build:catalog] ${warning}`);
+  }
 
   // 每次都重建，避免删掉的作品留下孤儿图和旧 zip
   for (const dir of [GENERATED, ASSETS, DOWNLOADS]) {
@@ -177,24 +213,61 @@ function main() {
 
   // 发布清单与签名对外公布：站点根 /release/ 下给一份副本，用户与脚本都能直接取。
   // 没有清单（还没签过）时目录保持为空——「未签名」是一个要能表达出来的状态。
-  const release = readRelease(ROOT);
+  // 走到这里时 releaseCheck 已经通过签名校验，才允许复制。
+  const release = releaseCheck.release;
   let releaseInfo = null;
   /** 签名清单里「同 kind + id + 版本 + 摘要」的条目，用来标注 signed 与 zip 摘要。 */
   const signedEntries = new Map();
-  if (release.exists && release.data) {
+  if (release.exists && release.data && releaseCheck.signed) {
     mkdirSync(RELEASE_PUBLIC, { recursive: true });
     cpSync(join(ROOT, RELEASE_FILE), join(RELEASE_PUBLIC, "release.json"));
     if (release.signatureExists) cpSync(join(ROOT, SIGNATURE_FILE), join(RELEASE_PUBLIC, "release.json.sig"));
+
+    // 逐包签名文件与公钥清单一并公布：前者供离线/镜像场景单独核对，
+    // 后者供人工核对指纹。宿主端是否内置公钥、是否验签不在本仓库职责内。
+    const signaturesDir = join(ROOT, RELEASE_SIGNATURES_DIR);
+    if (existsSync(signaturesDir)) {
+      cpSync(signaturesDir, join(RELEASE_PUBLIC, "signatures"), { recursive: true });
+    }
+    const publishedKeys = loadPublicKeys(ROOT).map(({ note, ...entry }) => ({
+      ...entry,
+      fingerprint: entry.fingerprint ?? fingerprintOf(entry.publicKey),
+    }));
+    writeFileSync(
+      join(RELEASE_PUBLIC, "keys.json"),
+      `${JSON.stringify({ schemaVersion: 1, keys: publishedKeys }, null, 2)}\n`,
+    );
+
     const keyId = release.data.signedBy?.keyId ?? null;
     // 密钥的人可读名字只存在公钥清单里，清单本身只有 keyId；对不上就老实显示 keyId
     const key = keyId ? (loadPublicKeys(ROOT).find((entry) => entry.keyId === keyId) ?? null) : null;
+    const keyStatus = key
+      ? key.revoked === true
+        ? "revoked"
+        : key.retiredAt && Date.parse(`${key.retiredAt}T00:00:00Z`) <= Date.now()
+          ? "retired"
+          : key.notBefore && Date.parse(`${key.notBefore}T00:00:00Z`) > Date.now()
+            ? "not-yet-valid"
+            : "active"
+      : "unknown";
     releaseInfo = {
+      schemaVersion: release.data.schemaVersion ?? null,
       keyId,
       keyName: key?.name ?? null,
       keyLabel: key?.label ?? null,
+      keyFingerprint: key ? (key.fingerprint ?? fingerprintOf(key.publicKey)) : null,
+      keyStatus,
       releaseSeq: release.data.releaseSeq ?? null,
       signedAt: release.data.generatedAt ?? null,
+      signatureAlgorithm: release.data.signedBy?.algorithm ?? "ed25519",
+      signatureSchemaVersion:
+        Number(release.data.schemaVersion) >= 2 ? PACKAGE_SIGNATURE_SCHEMA_VERSION : null,
+      statementVersion: Number(release.data.schemaVersion) >= 2 ? PACKAGE_STATEMENT_VERSION : null,
+      perPackageSignatures: Number(release.data.schemaVersion) >= 2,
+      signatureCount: signatureCheck.verified.size,
       url: "/release/release.json",
+      signatureUrl: "/release/release.json.sig",
+      keysUrl: "/release/keys.json",
     };
     for (const entry of release.data.items ?? []) {
       signedEntries.set(`${entry.kind}:${entry.id}:${entry.version}:${entry.digest}`, entry);
@@ -206,6 +279,12 @@ function main() {
   for (const item of items) {
     const entry = signedEntries.get(`${item.kind}:${item.id}:${item.version}:${item.integrity}`);
     item.signed = Boolean(entry);
+    item.signature = entry?.signature?.path ?? null;
+    item.signatureSha256 = entry?.signature?.sha256 ?? null;
+    item.signatureVerified = Boolean(
+      entry &&
+        signatureCheck.verified.has(`${item.kind}:${item.id}:${item.version}:${item.integrity}`),
+    );
     // 清单里记的 zip 摘要必须与站上这份 zip 的字节一致，否则「签名覆盖」就是句空话
     const listedSha = entry?.zip?.sha256 ?? null;
     if (listedSha && listedSha !== item.zipSha256) {
@@ -214,7 +293,17 @@ function main() {
           "页面会按未覆盖处理。重新签一次再发布。",
       );
       item.signed = false;
+      item.signatureVerified = false;
     }
+    // 当前授权状态：current = 当前批次 + 逐包签名通过；batch-only = 当前批次但旧版清单无逐包签名；
+    // not-listed = 有清单但这一版不在里面；unsigned = 整个仓库还没签过。
+    item.authorization = item.signed
+      ? item.signatureVerified
+        ? "current"
+        : "batch-only"
+      : releaseInfo
+        ? "not-listed"
+        : "unsigned";
   }
 
   const catalog = {
@@ -245,7 +334,10 @@ function main() {
   console.log(
     releaseInfo
       ? `[build:catalog] 发布签名：${[releaseInfo.keyName, releaseInfo.keyLabel].filter(Boolean).join(" ") || "未登记名称"}` +
-          `（keyId ${releaseInfo.keyId}）· seq ${releaseInfo.releaseSeq}`
+          `（keyId ${releaseInfo.keyId}）· seq ${releaseInfo.releaseSeq}` +
+          (releaseInfo.perPackageSignatures
+            ? ` · 逐包签名 ${releaseInfo.signatureCount} 个`
+            : " · 旧版清单：没有逐包签名")
       : "[build:catalog] 发布签名：尚未签名（站点上所有作品都会标为「来源未验证」）",
   );
 }

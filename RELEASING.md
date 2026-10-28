@@ -102,14 +102,45 @@ pnpm verify:release
 1. 拒绝 CI 环境、拒绝仓库内的私钥路径；
 2. 读 `site/src/generated/catalog.json` 与 `site/public/downloads/*`，逐项算 zip 的 sha256；
 3. `releaseSeq` = 上一版 +1；
-4. **手写**规范化 JSON 文本（键序、缩进、换行写死，不靠 `JSON.stringify`）；
-5. 对这段字节做 Ed25519，写 `release/release.json.sig`（单行 base64）；
-6. 立刻用公钥自验一次——签坏了当场知道。
+4. 为每个条目生成逐包签名 `release/signatures/<kind>/<slug>-<version>.lull-signature.json`；
+5. 把每个 sidecar 的 `path` / `sha256` 写回清单 item；
+6. **手写**规范化 JSON 文本（键序、缩进、换行写死，不靠 `JSON.stringify`）；
+7. 对这段字节做 Ed25519，写 `release/release.json.sig`（单行 base64）；
+8. 立刻用公钥自验一次：清单签名 + 每个包的逐包签名——签坏了当场知道。
 
-提交 `release/release.json` 与 `release/release.json.sig`。**建议开 PR**：签名也值得被第二个人核对一眼。
+提交 `release/release.json`、`release/release.json.sig` **以及整个 `release/signatures/`**。
+**建议开 PR**：签名也值得被第二个人核对一眼。
 
-> `pnpm release` 会在签完之后再生成一次索引，这样本地 `catalog.json` 的 `release` 字段与
-> 每项的 `signed` 标记就是最新状态；只跑 `sign:release` 时它们会停留在「尚未签名」。
+### 逐包签名（v2）是什么
+
+批次签名回答「这一批清单是不是 community 发的」；逐包签名回答「这一个包是不是 community 发的」。
+后者让单个 zip 可以脱离 `release.json` 被离线/镜像场景核对，不需要先找到整批清单。
+
+每个 sidecar 是一个 JSON envelope：
+
+```json
+{
+  "schemaVersion": 1,
+  "algorithm": "ed25519",
+  "keyId": "279aff591d2627ed",
+  "payload": "<base64 的规范包声明>",
+  "signature": "<64 字节 Ed25519 签名，base64>"
+}
+```
+
+`payload` 解码后的声明包含 `kind/slug/id/version/digest/zip/signedBy/releaseSeq/signedAt`。
+签名对象是 **payload 的原始字节**，不是 zip 文件本身——内容摘要才是包的身份，
+重新压缩/换打包器不应该让签名失效；zip 的 sha256 仍写在声明里，作为传输校验。
+
+> 逐包签名**不进 zip**，放在 `release/signatures/`。进包会改摘要、扩大下发面，
+> 而且会把「发布侧的事」塞进用户机器；这条约束没有变。
+
+`pnpm release` 会在签完后再跑一次 `build:catalog`，把 `release/signatures/` 与
+`release/keys.json` 复制到 `site/public/release/`；不要手工改站点下的副本。
+
+> `pnpm release` 会在签完之后再生成一次索引，这样本地 `catalog.json` 的 `release` 字段、
+> 每项的 `signed` / `signatureVerified` 标记就是最新状态；只跑 `sign:release` 时它们会停留在
+> 「尚未刷新」的旧状态，必须再跑一次 `build:catalog`。
 
 合并后 `deploy.yml` 会跑 `pnpm verify:release`，验签通过才发布。
 
@@ -122,6 +153,11 @@ pnpm verify:release
 3. 旧条目填 `retiredAt`（不要删、不要 `revoked`——删了它签过的历史清单就验不过了）；
 4. 用新密钥签一次，让当前清单由新密钥签署；
 5. 合并。此后所有新签名都用新 keyId。
+
+> 退役只禁止「退役之后的新签名」；退役之前签的清单与逐包声明仍会通过验签
+> （`findVerificationKey` 按声明里的 `signedAt` 判断）。所以**不要**把旧公钥删掉。
+> `sign-release` 每次只重建当前批次的 `release/signatures/`；旧批次的清单与 sidecar
+> 仍留在 git 历史里，不要重写历史。
 
 **撤销**（`revoked: true`）只在「私钥确认泄漏」时用：它对 CI 与站点展示立即生效，
 但**对已内置公钥的客户端不生效**——离线内置公钥的代价就是撤销慢，只能随客户端版本更新。
@@ -151,13 +187,16 @@ pnpm verify:release
 | `公钥清单里没有 keyId …` | 新密钥还没登记就签了 | 先把公钥加进 `keys/publisher-keys.json` |
 | `验签失败 V4` | 签名之后改了 zip | 还原 zip，或重新签一批 |
 | `[V6] … 还没进签名清单` | 合并了新内容但没重签 | 正常，重签一次即可；不阻断部署 |
-| `[V7] releaseSeq 没有递增` | 把旧清单贴回来了 | 重新签，不要手改清单 |
+| `[V5] … schemaVersion 1（旧版…）` | 还是只有批次签名的旧清单 | 跑 `pnpm release` 生成 v2 与 `release/signatures/` |
+| `[V8] … 签名文件不存在 / 摘要与清单不一致` | 清单与 sidecar 不同步（或只提交了清单） | 重签整批，提交 `release/signatures/`；不要只手改清单 |
+| `[V7] releaseSeq 没有递增` | 把旧清单贴回来了，或手改后重签 | 重新签，不要手改清单 |
 
 ---
 
 ## 6. 不要做的事
 
 - 不要手工编辑 `release/release.json`：签名会对不上，而且下次签名会整段重写。
-- 不要把签名文件放进 `package/`：会改摘要（自己签自己），还会下发到用户机器。
+- 不要手工编辑 `release/signatures/`：清单里记了每个 sidecar 的 sha256，改一个字符 V8 就拦。
+- 不要把签名文件放进 `package/`：会改摘要（自己签自己），还会下发到用户机器。逐包签名放 `release/signatures/`。
 - 不要把私钥贴进 issue、聊天、CI secret 或任何云端。
 - 不要在文档里把发布签名说成「作者认证」或「官方认证」：它只代表 community 发布了这批字节。

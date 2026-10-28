@@ -21,7 +21,7 @@ import { homedir } from "node:os";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { expandHome, generateKeyPairPem } from "./lib/signing.mjs";
+import { expandHome, fingerprintOf, generateKeyPairPem } from "./lib/signing.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -75,6 +75,7 @@ const entry = {
   label: argValue("--label", null),
   algorithm: "ed25519",
   publicKey: publicPem,
+  fingerprint: fingerprintOf(publicPem),
   notBefore: new Date().toISOString().slice(0, 10),
   retiredAt: null,
   revoked: false,

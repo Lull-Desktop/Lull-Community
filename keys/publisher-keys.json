@@ -10,7 +10,8 @@
       "notBefore": "2026-10-28",
       "retiredAt": null,
       "revoked": false,
-      "note": "community 发布密钥（2026 年度），持有人：发布责任人"
+      "note": "community 发布密钥（2026 年度），持有人：发布责任人",
+      "fingerprint": "279aff591d2627ed6c5f78fafcdffaae1dc5362c97c9fc1d2efb71035fe22eb8"
     }
   ]
 }

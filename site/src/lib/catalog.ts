@@ -14,6 +14,8 @@ export type SceneParam = {
   options?: { value: string; label: string }[];
 };
 
+export type AuthorizationStatus = "current" | "batch-only" | "not-listed" | "unsigned";
+
 export type CatalogItem = {
   kind: ItemKind;
   slug: string;
@@ -48,6 +50,20 @@ export type CatalogItem = {
   owners: string[] | null;
   /** 是否被 community 发布签名覆盖（同 id、同版本、同摘要）。只用于展示来源，不影响安装。 */
   signed: boolean;
+  /** 逐包签名文件（站点绝对路径）；旧版清单或未签名时为 null。 */
+  signature: string | null;
+  /** 逐包签名文件自身的 sha256；旧版清单或未签名时为 null。 */
+  signatureSha256: string | null;
+  /** 逐包签名是否真的通过验签（不是只看文件存在）。 */
+  signatureVerified: boolean;
+  /**
+   * 当前授权状态：
+   * - current：在当前签名批次里，且逐包签名通过；
+   * - batch-only：在当前批次里，但清单是旧版、没有逐包签名；
+   * - not-listed：有签名清单，但这一版不在其中；
+   * - unsigned：整个仓库还没签过。
+   */
+  authorization: AuthorizationStatus;
   licensePath: string | null;
   theme: { background: string; accent: string } | null;
   performance: { tier: string; targetFps?: number } | null;
@@ -67,14 +83,32 @@ export type CatalogItem = {
 };
 
 export type ReleaseInfo = {
+  /** 清单格式版本：1 = 只有批次签名，2 = 批次 + 逐包签名。 */
+  schemaVersion: number | null;
   keyId: string | null;
   /** 公钥清单里登记的人可读名字（如「Folium official」），未登记时 null。 */
   keyName: string | null;
   /** 密钥期次（如「folium-2026-1」），未登记时 null。 */
   keyLabel: string | null;
+  /** 公钥 SPKI DER 的 sha256 全指纹；宿主人眼核对用。 */
+  keyFingerprint: string | null;
+  /** active / retired / revoked / not-yet-valid / unknown；展示用。 */
+  keyStatus: string;
   releaseSeq: number | null;
   signedAt: string | null;
+  /** 签名算法；当前固定 ed25519。 */
+  signatureAlgorithm: string;
+  /** 逐包签名 envelope 的 schemaVersion；旧版清单为 null。 */
+  signatureSchemaVersion: number | null;
+  /** 逐包声明的 statementVersion；旧版清单为 null。 */
+  statementVersion: number | null;
+  /** 这一批是否带逐包签名（v2）。 */
+  perPackageSignatures: boolean;
+  /** 通过验签的逐包签名数量。 */
+  signatureCount: number;
   url: string;
+  signatureUrl: string;
+  keysUrl: string;
 };
 
 export type Catalog = {

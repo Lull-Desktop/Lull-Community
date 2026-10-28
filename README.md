@@ -22,7 +22,8 @@ content/scenes|widgets/<slug>/     ← 内容的唯一来源（GitHub 仓库）
                     └─ GitHub Pages   ← 公开网站
 ```
 
-> 发布签名（Ed25519，离线）只标注「这批文件由 community 发布」，
+> 发布签名（Ed25519，离线）包含两层：批次清单 `release.json` 的签名，以及
+> `release/signatures/` 下每个包的 detached 签名。它只标注「这批文件由 community 发布」，
 > 不授予权限、不放宽限制、不参与「能不能装/能不能跑」。见 [SECURITY.md](SECURITY.md)。
 
 ## 目录
@@ -39,8 +40,11 @@ Lull-Community/
 │   └── widgets/<slug>/          同构，package/ 内是 widget.json + 页面
 ├── community.json               投稿登记表：谁提的、来自哪个仓库、审查到哪个 commit
 ├── keys/publisher-keys.json     发布签名的公钥（私钥不在这里，也永远不该在这里）
-├── release/                     发布清单与 detached 签名（每次发布更新一次）
-├── schemas/                     Lull 的 JSON Schema（逐字复制，不自创）
+├── release/                     发布清单、批次签名与逐包签名（每次发布更新一次）
+│   ├── release.json             批次清单（v2：每项带 signature 指针）
+│   ├── release.json.sig         对清单原始字节的 Ed25519 签名
+│   └── signatures/              每个包的 detached 签名（envelope，v2 起）
+├── schemas/                     Lull 的 JSON Schema + 本仓库发布契约
 ├── scripts/
 │   ├── validate-content.mjs     校验 + 摘要写回（--fix）
 │   ├── check-commit.mjs         提交信息校验（钩子与 PR 工作流共用）
@@ -49,10 +53,10 @@ Lull-Community/
 │   ├── new-item.mjs             生成作品骨架
 │   ├── keygen.mjs               离线生成发布密钥对
 │   ├── sign-release.mjs         离线签一批发布（CI 上会被拒绝）
-│   ├── verify-release.mjs       验签 + 覆盖度 + 防回滚（CI 与本地同一份）
+│   ├── verify-release.mjs       清单验签 + 逐包验签 + 覆盖度 + 防回滚（CI 与本地同一份）
 │   ├── release.mjs              一条命令：校验 → 打包 → 签名 → 验签
 │   ├── ci/                      issue 表单检查与合并（check-issue / import-submission）
-│   └── lib/{digest,zip,registry,signing}.mjs
+│   └── lib/{digest,zip,registry,signing,package-signature}.mjs
 ├── site/                        Next.js 16 静态站（Tailwind v4）
 │   └── src/app/{page,scenes,widgets,submit}
 ├── test/                        node:test：表单契约、投稿规则、签名、端到端取回
@@ -77,7 +81,8 @@ Lull 主仓库：
 | Widget 包格式 | `docs/widget-sdk.md`、`src-tauri/src/widget_package/manifest.rs` |
 | 扩展中心 / 安装管线 | `docs/extension-center.md` |
 
-`schemas/` 里的两个文件是逐字副本（见 `schemas/README.md`）。上游改格式，这里跟着改；
+`schemas/scene.schema.json` 与 `catalog.schema.json` 是上游逐字副本；`release.schema.json` 与
+`package-signature.schema.json` 是本仓库的发布契约（见 `schemas/README.md`）。上游改格式，这里跟着改；
 `scripts/lib/digest.mjs` 里带一个**已知值自检**：官方「雾岚」包的摘要必须算出
 `f6b86e63…a608ecb`，算不出来就说明算法漂移了，此时打出的所有 zip 都会被安装器拒绝。
 
@@ -102,6 +107,9 @@ pnpm content:hash               # 重算摘要并写回
 pnpm content:check
 pnpm content:pack               # artifacts/ 里直接拖进 Lull 试装
 ```
+
+> `artifacts/` 里的包只用于本地试装，没有逐包签名；正式发布的逐包签名由
+> `pnpm release` 在离线机器上生成到 `release/signatures/`。
 
 细节与审查标准见 [CONTRIBUTING.md](CONTRIBUTING.md)；从收到投稿到签名的完整操作顺序见
 [docs/review-runbook.md](docs/review-runbook.md)。

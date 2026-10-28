@@ -31,3 +31,16 @@ Lull 桌面端安装内容包时，按 `scene.schema.json` 与 `catalog.schema.j
 
 它只描述**网站展示用的元数据**（标签、精选、预览图），不会进入内容包，
 也不会被 Lull 读取。作者需要在作品目录里提供 `item.json`，但 Lull 完全不知道它的存在。
+
+## release / package-signature 是本仓库的发布契约
+
+这两个 schema 也不来自上游，而是本仓库发布流程的格式：
+
+| 文件 | 描述 |
+| --- | --- |
+| `release.schema.json` | `release/release.json`。v1 = 只有批次签名；v2 = 每个 item 多一个 `signature` 指针，指向逐包签名文件 |
+| `package-signature.schema.json` | `release/signatures/` 下的逐包签名 envelope：base64 payload + 对 payload 原始字节的 Ed25519 签名 |
+
+它们**不是 Lull 内容包格式**，Lull 安装器不会读取；改这两个文件时，
+要同步改 `scripts/lib/signing.mjs`、`scripts/lib/package-signature.mjs`、`scripts/sign-release.mjs`、
+`scripts/verify-release.mjs` 与 `test/package-signature.test.mjs`。

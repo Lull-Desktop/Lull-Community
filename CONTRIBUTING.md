@@ -175,7 +175,7 @@ git config core.hooksPath .githooks
 | `…/<slug>/preview.webp`、`screenshots` | 作者 | 不进 | 卡片与详情页头图 |
 | `…/<slug>/README.md`、`LICENSE` | 作者 | 不进 | 详情页正文、许可原文 |
 | `community.json` | 机器人 | 不进 | 登记表：提交人、来源仓库、审查 commit、版本 |
-| `release/`、`keys/` | compound | 不进 | 发布清单与签名、公钥；与作品目录无关 |
+| `release/`、`keys/` | compound | 不进 | 发布清单、批次签名、逐包签名、公钥；与作品目录无关 |
 | `site/public/{downloads,content-assets,release}/` | 构建生成 | — | 站点产物，从不入库 |
 
 **`package/` 是唯一会被安装的边界**：外面的东西（预览图、说明、许可）永远不会进包，

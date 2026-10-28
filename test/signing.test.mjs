@@ -14,7 +14,9 @@ import {
   assertOfflineSigningAllowed,
   canonicalReleaseJson,
   expandHome,
+  findSigningKey,
   findUsableKey,
+  findVerificationKey,
   generateKeyPairPem,
   keyIdOf,
   loadPublicKeys,
@@ -127,6 +129,85 @@ test("公钥状态：撤销 / 未生效 / 已退役都不能用", () => {
   assert.match(findUsableKey(keys, "retired", now).error, /退役/);
   assert.match(findUsableKey(keys, "wrong-alg", now).error, /只接受 ed25519/);
   assert.match(findUsableKey(keys, "missing", now).error, /没有 keyId/);
+});
+
+test("退役密钥：旧签名仍可验，退役后不能再签", () => {
+  const pairs = generateKeyPairPem();
+  const key = {
+    keyId: pairs.keyId,
+    algorithm: "ed25519",
+    publicKey: pairs.publicPem,
+    notBefore: "2026-01-01",
+    retiredAt: "2026-06-01",
+    revoked: false,
+  };
+  const beforeRetire = Date.parse("2026-05-01T00:00:00Z");
+  const afterRetire = Date.parse("2026-07-01T00:00:00Z");
+
+  assert.equal(findSigningKey([key], pairs.keyId, beforeRetire).key.keyId, pairs.keyId);
+  assert.match(findSigningKey([key], pairs.keyId, afterRetire).error, /退役/);
+
+  // 退役前签的历史清单必须仍能验——否则轮换一次，历史发布全部失效。
+  assert.equal(
+    findVerificationKey([key], pairs.keyId, {
+      now: afterRetire,
+      signedAt: "2026-05-01T00:00:00Z",
+    }).key.keyId,
+    pairs.keyId,
+  );
+  assert.match(
+    findVerificationKey([key], pairs.keyId, {
+      now: afterRetire,
+      signedAt: "2026-07-01T00:00:00Z",
+    }).error,
+    /晚于/,
+  );
+  // 没有签名时间时只能保守拒绝
+  assert.match(findVerificationKey([key], pairs.keyId, { now: afterRetire }).error, /退役/);
+});
+
+test("公钥清单必须由公钥推导 keyId，拒绝错配与重复", () => {
+  const root = mkdtempSync(join(tmpdir(), "lull-keyid-check-"));
+  mkdirSync(join(root, "keys"), { recursive: true });
+  const pairs = generateKeyPairPem();
+  const write = (keys) =>
+    writeFileSync(join(root, "keys", "publisher-keys.json"), JSON.stringify({ schemaVersion: 1, keys }), "utf8");
+
+  write([{ keyId: "0".repeat(16), algorithm: "ed25519", publicKey: pairs.publicPem }]);
+  assert.throws(() => loadPublicKeys(root), /keyId 与公钥不匹配/);
+
+  write([{ keyId: pairs.keyId, algorithm: "ed25519", publicKey: pairs.publicPem, fingerprint: "0".repeat(64) }]);
+  assert.throws(() => loadPublicKeys(root), /fingerprint 与公钥不匹配/);
+
+  const entry = { keyId: pairs.keyId, algorithm: "ed25519", publicKey: pairs.publicPem };
+  write([entry, { ...entry }]);
+  assert.throws(() => loadPublicKeys(root), /重复/);
+
+  rmSync(root, { recursive: true, force: true });
+});
+
+test("v2 清单规范化包含逐包签名指针", () => {
+  const keyId = "0".repeat(16);
+  const base = releaseFor(keyId);
+  const v2 = {
+    ...base,
+    schemaVersion: 2,
+    items: [
+      {
+        ...base.items[0],
+        signature: {
+          path: "/release/signatures/scene/aurora-1.0.0.lull-signature.json",
+          sha256: "a".repeat(64),
+        },
+      },
+    ],
+  };
+  const text = canonicalReleaseJson(v2);
+  assert.match(text, /"schemaVersion": 2/);
+  assert.match(text, /"signature": \{/);
+  assert.match(text, /"path": "\/release\/signatures\/scene\/aurora-1\.0\.0\.lull-signature\.json"/);
+  assert.ok(text.endsWith("}\n"));
+  assert.ok(!text.includes("\r"));
 });
 
 test("还没签过 = 未验证但不算失败", () => {

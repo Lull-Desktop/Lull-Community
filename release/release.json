@@ -1,14 +1,14 @@
 {
-  "schemaVersion": 1,
-  "releaseSeq": 2,
-  "generatedAt": "2026-10-28T05:38:43Z",
+  "schemaVersion": 2,
+  "releaseSeq": 3,
+  "generatedAt": "2026-10-28T07:30:19Z",
   "signedBy": {
     "keyId": "279aff591d2627ed",
     "algorithm": "ed25519"
   },
   "repo": {
     "url": "https://github.com/lull-desktop/Lull-Community",
-    "builtFrom": "59947400ae836c93ed7bd472ea4e393ebb7dbf99"
+    "builtFrom": "e2d4b8ec59fd6af443145a1541f97b451c596624"
   },
   "counts": {
     "scenes": 3,
@@ -25,6 +25,10 @@
         "path": "/downloads/community.aurora-veil-1.0.0.zip",
         "sha256": "61a589a7e563a64a74a979a2edbfea3352e950f6bfdda2e4bf59818e731fd1ab",
         "bytes": 3007
+      },
+      "signature": {
+        "path": "/release/signatures/scene/aurora-veil-1.0.0.lull-signature.json",
+        "sha256": "da588fa5747c2aaf95b7c981eff999c4e6e0ee47fc137a9b70190c78b1b92e8c"
       }
     },
     {
@@ -37,6 +41,10 @@
         "path": "/downloads/community.mist-1.0.0.zip",
         "sha256": "e2d29e9b115d7f888fa086392083defd8c7e6099ea2291c4ceb5d8f19d328187",
         "bytes": 2167
+      },
+      "signature": {
+        "path": "/release/signatures/scene/mist-1.0.0.lull-signature.json",
+        "sha256": "8908c96b9055ef1d4b6afc05e9ebe4958e097a2eaab97d3a9ddf954665355802"
       }
     },
     {
@@ -49,6 +57,10 @@
         "path": "/downloads/demo.three-scene-1.0.0.zip",
         "sha256": "ab627e85308ffb8c48bf9cf5eda575733587b5434bf11061d286c9f289696b03",
         "bytes": 139917
+      },
+      "signature": {
+        "path": "/release/signatures/scene/three-scene-1.0.0.lull-signature.json",
+        "sha256": "0df991ddd613be7647aea05decf82b451e41d23b10b055567a6c23e0aea8e33c"
       }
     },
     {
@@ -61,6 +73,10 @@
         "path": "/downloads/community-breath-1.0.0.lull-widget.zip",
         "sha256": "6d6349b53863946d9f216b34a71df73808ea48506070ce7c27303d28c0238bc6",
         "bytes": 3792
+      },
+      "signature": {
+        "path": "/release/signatures/widget/breathing-1.0.0.lull-signature.json",
+        "sha256": "adf664bf38415902b0eb61c69d137fc38f877c0295784225e2ef3bc1b223e058"
       }
     },
     {
@@ -73,6 +89,10 @@
         "path": "/downloads/community-clock-1.0.0.lull-widget.zip",
         "sha256": "3eec917948d2aeeb0918f5de8d67701a8e66cb907f5761f2fc83f179ebb0f75e",
         "bytes": 3138
+      },
+      "signature": {
+        "path": "/release/signatures/widget/minimal-clock-1.0.0.lull-signature.json",
+        "sha256": "4000c3dd83dbdc5d00bbcc0e26d37d5c6941cda519f79edbd7a9a7a57eb4fe6d"
       }
     }
   ]
