@@ -8,13 +8,20 @@
 import { writeFileSync } from "node:fs";
 import { crc32, deflateRawSync } from "node:zlib";
 
+/**
+ * DOS 时间字段（32 位拆成 time/date）。
+ *
+ * **必须用 UTC**：zip 的字节要跨机器一致，离线签名才有意义。用 `getHours()` 这类本地时区
+ * 取值会让同一份内容在 UTC+8 的机器上写成 08:00、在 UTC 的 CI 上写成 00:00——
+ * 长度一样、字节不同，签名清单立刻全挂（而且是「看起来像被篡改」的挂法）。
+ */
 function dosDateTime(date) {
-  const year = Math.max(date.getFullYear(), 1980);
+  const year = Math.max(date.getUTCFullYear(), 1980);
   const time =
-    (date.getHours() << 11) |
-    (date.getMinutes() << 5) |
-    Math.floor(date.getSeconds() / 2);
-  const day = ((year - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate();
+    (date.getUTCHours() << 11) |
+    (date.getUTCMinutes() << 5) |
+    Math.floor(date.getUTCSeconds() / 2);
+  const day = ((year - 1980) << 9) | ((date.getUTCMonth() + 1) << 5) | date.getUTCDate();
   return { time: time & 0xffff, date: day & 0xffff };
 }
 

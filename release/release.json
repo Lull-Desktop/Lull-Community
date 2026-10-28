@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "releaseSeq": 1,
-  "generatedAt": "2026-10-28T01:27:14Z",
+  "releaseSeq": 2,
+  "generatedAt": "2026-10-28T05:38:43Z",
   "signedBy": {
     "keyId": "279aff591d2627ed",
     "algorithm": "ed25519"
   },
   "repo": {
     "url": "https://github.com/lull-desktop/Lull-Community",
-    "builtFrom": "dae8deafd39cad69fb5d8bcb57f2e9ebcdc07c61"
+    "builtFrom": "59947400ae836c93ed7bd472ea4e393ebb7dbf99"
   },
   "counts": {
     "scenes": 3,
@@ -23,7 +23,7 @@
       "digest": "2fffe53b91b5b0cf4900929fdeeb7c3335ddfe76e1e2beafcec3ffca1277b650",
       "zip": {
         "path": "/downloads/community.aurora-veil-1.0.0.zip",
-        "sha256": "4d7596fd696c20048c23953c3e773f1fe11586afeccacd39004547b6ef4d81f9",
+        "sha256": "61a589a7e563a64a74a979a2edbfea3352e950f6bfdda2e4bf59818e731fd1ab",
         "bytes": 3007
       }
     },
@@ -35,7 +35,7 @@
       "digest": "f6b86e63434d810099e293bfa74c556542a02fbe96fc7ce97390e0938a608ecb",
       "zip": {
         "path": "/downloads/community.mist-1.0.0.zip",
-        "sha256": "9817b2d8d41fc74bb2f0a470dce6fc109c2c8e6f62016044c03956240d27444a",
+        "sha256": "e2d29e9b115d7f888fa086392083defd8c7e6099ea2291c4ceb5d8f19d328187",
         "bytes": 2167
       }
     },
@@ -47,7 +47,7 @@
       "digest": "fbad259bf8bbdc3f822aa53533d4325b4d6a82d7f5e75147118cc975827496e8",
       "zip": {
         "path": "/downloads/demo.three-scene-1.0.0.zip",
-        "sha256": "07363e009a802f5000786f0bc452f99ad61703ea24e7b86487f023f569fee551",
+        "sha256": "ab627e85308ffb8c48bf9cf5eda575733587b5434bf11061d286c9f289696b03",
         "bytes": 139917
       }
     },
@@ -59,7 +59,7 @@
       "digest": "ee418f0328502cb00c2b5cf9155ee886b611eaf9076cb01b5b56db30d0176567",
       "zip": {
         "path": "/downloads/community-breath-1.0.0.lull-widget.zip",
-        "sha256": "05d5e576b4a011cc37f39103f586c7d89700228b7e86871a8a0367105a01bd20",
+        "sha256": "6d6349b53863946d9f216b34a71df73808ea48506070ce7c27303d28c0238bc6",
         "bytes": 3792
       }
     },
@@ -71,7 +71,7 @@
       "digest": "220454129937b67fd2f8aaa0c40b75ba59fdf74091a1c090903d1a6f50d5e899",
       "zip": {
         "path": "/downloads/community-clock-1.0.0.lull-widget.zip",
-        "sha256": "83fd7853d98a8cc007636f853f363ca09b86a70ba6b943eb82b18bc040ca8653",
+        "sha256": "3eec917948d2aeeb0918f5de8d67701a8e66cb907f5761f2fc83f179ebb0f75e",
         "bytes": 3138
       }
     }
