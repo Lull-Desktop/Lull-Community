@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "releaseSeq": 1,
+  "generatedAt": "2026-10-28T01:27:14Z",
+  "signedBy": {
+    "keyId": "279aff591d2627ed",
+    "algorithm": "ed25519"
+  },
+  "repo": {
+    "url": "https://github.com/lull-desktop/Lull-Community",
+    "builtFrom": "dae8deafd39cad69fb5d8bcb57f2e9ebcdc07c61"
+  },
+  "counts": {
+    "scenes": 3,
+    "widgets": 2
+  },
+  "items": [
+    {
+      "kind": "scene",
+      "slug": "aurora-veil",
+      "id": "community.aurora-veil",
+      "version": "1.0.0",
+      "digest": "2fffe53b91b5b0cf4900929fdeeb7c3335ddfe76e1e2beafcec3ffca1277b650",
+      "zip": {
+        "path": "/downloads/community.aurora-veil-1.0.0.zip",
+        "sha256": "4d7596fd696c20048c23953c3e773f1fe11586afeccacd39004547b6ef4d81f9",
+        "bytes": 3007
+      }
+    },
+    {
+      "kind": "scene",
+      "slug": "mist",
+      "id": "community.mist",
+      "version": "1.0.0",
+      "digest": "f6b86e63434d810099e293bfa74c556542a02fbe96fc7ce97390e0938a608ecb",
+      "zip": {
+        "path": "/downloads/community.mist-1.0.0.zip",
+        "sha256": "9817b2d8d41fc74bb2f0a470dce6fc109c2c8e6f62016044c03956240d27444a",
+        "bytes": 2167
+      }
+    },
+    {
+      "kind": "scene",
+      "slug": "three-scene",
+      "id": "demo.three-scene",
+      "version": "1.0.0",
+      "digest": "fbad259bf8bbdc3f822aa53533d4325b4d6a82d7f5e75147118cc975827496e8",
+      "zip": {
+        "path": "/downloads/demo.three-scene-1.0.0.zip",
+        "sha256": "07363e009a802f5000786f0bc452f99ad61703ea24e7b86487f023f569fee551",
+        "bytes": 139917
+      }
+    },
+    {
+      "kind": "widget",
+      "slug": "breathing",
+      "id": "community-breath",
+      "version": "1.0.0",
+      "digest": "ee418f0328502cb00c2b5cf9155ee886b611eaf9076cb01b5b56db30d0176567",
+      "zip": {
+        "path": "/downloads/community-breath-1.0.0.lull-widget.zip",
+        "sha256": "05d5e576b4a011cc37f39103f586c7d89700228b7e86871a8a0367105a01bd20",
+        "bytes": 3792
+      }
+    },
+    {
+      "kind": "widget",
+      "slug": "minimal-clock",
+      "id": "community-clock",
+      "version": "1.0.0",
+      "digest": "220454129937b67fd2f8aaa0c40b75ba59fdf74091a1c090903d1a6f50d5e899",
+      "zip": {
+        "path": "/downloads/community-clock-1.0.0.lull-widget.zip",
+        "sha256": "83fd7853d98a8cc007636f853f363ca09b86a70ba6b943eb82b18bc040ca8653",
+        "bytes": 3138
+      }
+    }
+  ]
+}
