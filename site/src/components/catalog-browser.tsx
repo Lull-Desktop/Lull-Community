@@ -63,7 +63,6 @@ function TypeParamSync({ onChange }: { onChange: (type: TypeFilter) => void }) {
 export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
   const [query, setQuery] = useState("");
   const [type, setType] = useState<TypeFilter>("all");
-  const [tag, setTag] = useState<string | null>(null);
   const [sort, setSort] = useState<SortKey>("latest");
   const [filters, setFilters] = useState<CatalogFilters>(DEFAULT_CATALOG_FILTERS);
 
@@ -78,9 +77,7 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
   const visible = useMemo(() => {
     const keyword = query.trim().toLowerCase();
     const filtered = items.filter((item) => {
-      // 类型与标签是 AND 关系，但各自保留自己的选择。
       if (type !== "all" && item.kind !== type) return false;
-      if (tag && !item.tags.includes(tag)) return false;
       if (!keyword) return true;
       return [item.name, item.description, item.author, item.id, ...item.tags]
         .join(" ")
@@ -94,14 +91,13 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
       if (left.addedAt !== right.addedAt) return right.addedAt.localeCompare(left.addedAt);
       return left.name.localeCompare(right.name, "zh-Hans-CN");
     });
-  }, [items, query, tag, type, sort, filters]);
+  }, [items, query, type, sort, filters]);
 
   const activeCount = countActiveFilters(filters, type);
-  const hasFilters = type !== "all" || tag !== null || query.trim().length > 0 || activeCount > 0;
+  const hasFilters = type !== "all" || query.trim().length > 0 || activeCount > 0;
 
   const clearFilters = () => {
     setQuery("");
-    setTag(null);
     setType("all");
     setFilters(DEFAULT_CATALOG_FILTERS);
     writeTypeParam("all");
@@ -113,8 +109,8 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
         <TypeParamSync onChange={setType} />
       </Suspense>
 
-      <div className="flex flex-col gap-5 border-b border-line pb-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-3 border-b border-line pb-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <label className="relative flex-1">
             <span className="sr-only">搜索作品</span>
             <svg
@@ -132,11 +128,11 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="搜作品名、作者或标签…"
-              className="h-10 w-full rounded-full border border-line bg-white/[0.02] pl-10 pr-4 text-[13px] text-ink placeholder:text-faint transition-colors focus:border-primary/60 focus:outline-none"
+              className="h-9 w-full rounded-full border border-line bg-white/[0.02] pl-10 pr-4 text-[13px] text-ink placeholder:text-faint transition-colors focus:border-primary/60 focus:outline-none"
             />
           </label>
 
-          <div className="flex items-center gap-1 rounded-lg border border-line p-1">
+          <div className="flex items-center gap-0.5 rounded-full border border-line p-0.5">
             {SORTS.map((option) => (
               <button
                 key={option.key}
@@ -144,7 +140,7 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
                 onClick={() => setSort(option.key)}
                 aria-pressed={sort === option.key}
                 className={cn(
-                  "rounded-full px-3 py-1.5 text-[12px] transition-colors",
+                  "rounded-full px-2.5 py-1 text-[11.5px] transition-colors",
                   sort === option.key ? "bg-primary/12 text-ink" : "text-muted hover:text-ink",
                 )}
               >
@@ -162,53 +158,16 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
           }}
           filters={filters}
           onChange={setFilters}
+          tags={tags}
         />
-
-        {tags.length > 0 && (
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-            <span className="shrink-0 font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
-              标签
-            </span>
-            <div role="group" aria-label="按标签筛选" className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setTag(null)}
-                aria-pressed={tag === null}
-                className={cn(
-                  "rounded-full border px-3 py-1 text-[11.5px] transition-colors",
-                  tag === null
-                    ? "border-primary/50 bg-primary/10 text-ink"
-                    : "border-line text-muted hover:border-line-2 hover:text-ink",
-                )}
-              >
-                全部
-              </button>
-              {tags.map(([value, count]) => (
-                <button
-                  key={value}
-                  type="button"
-                  onClick={() => setTag(tag === value ? null : value)}
-                  aria-pressed={tag === value}
-                  className={cn(
-                    "rounded-full border px-3 py-1 text-[11.5px] transition-colors",
-                    tag === value
-                      ? "border-primary/50 bg-primary/10 text-ink"
-                      : "border-line text-muted hover:border-line-2 hover:text-ink",
-                  )}
-                >
-                  {value}
-                  <span className="ml-1.5 font-mono text-[10px] opacity-60">{count}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
-      <p className="py-4 text-[12px] text-muted">
+      <p className="py-3 text-[12px] text-muted">
         共 <span className="font-mono text-ink">{visible.length}</span> 个作品
         {type !== "all" && <span> · {FILTER_KIND_LABELS[type]}</span>}
-        {tag && <span> · 标签「{tag}」</span>}
+        {filters.common.tags.length > 0 && (
+          <span> · 标签「{filters.common.tags.join(" / ")}」</span>
+        )}
         {query.trim() && <span> · 关键词「{query.trim()}」</span>}
         {activeCount > 0 && <span> · 筛选 {activeCount} 项</span>}
         {hasFilters && (

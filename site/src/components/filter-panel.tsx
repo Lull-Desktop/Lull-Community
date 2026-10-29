@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 
-import { FilterChips, type ChipOption } from "@/components/filter-chips";
-import { FilterSelect } from "@/components/filter-select";
+import { FilterSelect, type SelectOption } from "@/components/filter-select";
 import {
   BACKGROUND_POLICY_LABELS,
   FILTER_KIND_LABELS,
@@ -38,33 +37,21 @@ import type {
 
 export type ResourceType = "all" | "scene" | "widget";
 
-const ALL_OPTION: ChipOption = { value: "all", label: "全部" };
-const ANY_OPTION: ChipOption = { value: "all", label: "不限" };
+const KINDS: ResourceType[] = ["all", "scene", "widget"];
 
-/** 枚举文案表 → 胶囊选项；`unknown` 不进筛选（未知只在详情页标注）。 */
-function chipOptions(
-  labels: Record<string, string>,
-  first: ChipOption,
-): ChipOption[] {
-  return [
-    first,
-    ...Object.keys(labels)
-      .filter((value) => value !== "unknown")
-      .map((value) => ({ value, label: labels[value] })),
-  ];
+/** 枚举文案表 → 下拉选项；`unknown` 不进筛选（未知只在详情页标注）。 */
+function enumOptions(labels: Record<string, string>): SelectOption[] {
+  return Object.keys(labels)
+    .filter((value) => value !== "unknown")
+    .map((value) => ({ value, label: labels[value] }));
 }
 
-function selectOptions(labels: Record<string, string>) {
-  return [
-    { value: "all", label: "不限" },
-    ...Object.keys(labels)
-      .filter((value) => value !== "unknown")
-      .map((value) => ({ value, label: labels[value] })),
-  ];
+function withAny(labels: Record<string, string>): SelectOption[] {
+  return [{ value: "all", label: "不限" }, ...enumOptions(labels)];
 }
 
-/** 内容类型：全部资源时把壁纸与组件的分类合并成一组（取值域不重叠，`其他` 去重）。 */
-function contentOptions(type: ResourceType): ChipOption[] {
+/** 内容类型：全部资源时把壁纸与组件的分类合并（取值域不重叠，`其他` 去重）。 */
+function contentOptions(type: ResourceType): SelectOption[] {
   const merged = new Map<string, string>();
   if (type !== "widget") {
     for (const value of Object.keys(SCENE_TYPE_LABELS) as SceneType[]) {
@@ -76,7 +63,7 @@ function contentOptions(type: ResourceType): ChipOption[] {
       if (value !== "unknown" && !merged.has(value)) merged.set(value, WIDGET_TYPE_LABELS[value]);
     }
   }
-  return [ALL_OPTION, ...[...merged].map(([value, label]) => ({ value, label }))];
+  return [{ value: "all", label: "不限" }, ...[...merged].map(([value, label]) => ({ value, label }))];
 }
 
 /** 面板收起时按钮上要能看出当前生效了几项。 */
@@ -88,6 +75,7 @@ export function countActiveFilters(filters: CatalogFilters, type: ResourceType):
   if (common.recommendedUse !== "all") count += 1;
   if (common.platform !== "all") count += 1;
   if (common.withoutSpecialPermissions) count += 1;
+  if (common.tags.length > 0) count += 1;
   if (filters.contentType !== "all") count += 1;
 
   if (type !== "widget" && filters.scene.multiMonitorMode !== "all") count += 1;
@@ -106,20 +94,23 @@ export function countActiveFilters(filters: CatalogFilters, type: ResourceType):
 /**
  * 目录页筛选。
  *
- * 首屏只放 6 组常用条件（资源类型、内容类型、性能与画质、使用场景、运行平台、权限要求）；
- * 渲染技术、多屏模式、交互程度、更新策略、后台行为、窗口能力收进「高级筛选」下拉。
- * 壁纸与组件的内容类型不同，切换资源类型时内容类型会重置，避免出现空结果。
+ * 布局目标：筛选只占一行工具栏，资源列表才是页面主体。
+ * - 资源类型用分段胶囊，其余常用条件各是一颗紧凑下拉胶囊；
+ * - 标签与实现细节类条件收进「高级筛选」，展开后是带标题的下拉；
+ * - 壁纸与组件的内容类型不同，切换资源类型时内容类型会重置。
  */
 export function FilterPanel({
   type,
   onTypeChange,
   filters,
   onChange,
+  tags,
 }: {
   type: ResourceType;
   onTypeChange: (type: ResourceType) => void;
   filters: CatalogFilters;
   onChange: (filters: CatalogFilters) => void;
+  tags: readonly (readonly [string, number])[];
 }) {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const activeCount = countActiveFilters(filters, type);
@@ -137,71 +128,99 @@ export function FilterPanel({
     if (filters.contentType !== "all") onChange({ ...filters, contentType: "all" });
   };
 
+  const tagOptions: SelectOption[] = tags.map(([value, count]) => ({
+    value,
+    label: `${value} · ${count}`,
+  }));
+
   return (
-    <div className="flex flex-col gap-5">
-      <FilterChips
-        label="资源类型"
-        options={Object.keys(FILTER_KIND_LABELS).map((value) => ({
-          value,
-          label: FILTER_KIND_LABELS[value as ResourceType],
-        }))}
-        selected={[type]}
-        onSelect={(value) => changeType(value as ResourceType)}
-      />
-
-      <FilterChips
-        label="内容类型"
-        options={contentOptions(type)}
-        selected={[filters.contentType]}
-        onSelect={(value) => onChange({ ...filters, contentType: value as ContentTypeFilter })}
-      />
-
-      <FilterChips
-        label="性能与画质"
-        options={chipOptions(QUALITY_CLASS_LABELS, ALL_OPTION)}
-        selected={[filters.common.qualityClass]}
-        onSelect={(value) => patchCommon({ qualityClass: value as QualityClass | "all" })}
-      />
-
-      <FilterChips
-        label="使用场景"
-        options={chipOptions(RECOMMENDED_USE_LABELS, ALL_OPTION)}
-        selected={[filters.common.recommendedUse]}
-        onSelect={(value) => patchCommon({ recommendedUse: value as RecommendedUse | "all" })}
-      />
-
-      <div className="flex flex-wrap gap-x-10 gap-y-5">
-        <div className="min-w-[14rem]">
-          <FilterChips
-            label="运行平台"
-            options={chipOptions(PLATFORM_LABELS, ALL_OPTION)}
-            selected={[filters.common.platform]}
-            onSelect={(value) => patchCommon({ platform: value as Platform | "all" })}
-          />
+    <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <div
+          role="group"
+          aria-label="资源类型"
+          className="flex items-center rounded-full border border-line p-0.5"
+        >
+          {KINDS.map((value) => {
+            const active = type === value;
+            return (
+              <button
+                key={value}
+                type="button"
+                onClick={() => changeType(value)}
+                aria-pressed={active}
+                className={cn(
+                  "rounded-full px-2.5 py-1 text-[11.5px] transition-colors",
+                  active
+                    ? "bg-primary/20 font-medium text-ink"
+                    : "text-muted hover:text-ink",
+                )}
+              >
+                {FILTER_KIND_LABELS[value]}
+              </button>
+            );
+          })}
         </div>
-        <div className="min-w-[14rem]">
-          <FilterChips
-            label="权限要求"
-            options={[ANY_OPTION, { value: "none", label: "无需特殊权限" }]}
-            selected={[filters.common.withoutSpecialPermissions ? "none" : "all"]}
-            onSelect={(value) => patchCommon({ withoutSpecialPermissions: value === "none" })}
-          />
-        </div>
-      </div>
 
-      <div>
+        <FilterSelect
+          compact
+          label="内容类型"
+          options={contentOptions(type)}
+          values={[filters.contentType]}
+          onChange={(values) =>
+            onChange({ ...filters, contentType: values[0] as ContentTypeFilter })
+          }
+        />
+
+        <FilterSelect
+          compact
+          label="性能与画质"
+          options={withAny(QUALITY_CLASS_LABELS)}
+          values={[filters.common.qualityClass]}
+          onChange={(values) => patchCommon({ qualityClass: values[0] as QualityClass | "all" })}
+        />
+
+        <FilterSelect
+          compact
+          label="使用场景"
+          options={withAny(RECOMMENDED_USE_LABELS)}
+          values={[filters.common.recommendedUse]}
+          onChange={(values) =>
+            patchCommon({ recommendedUse: values[0] as RecommendedUse | "all" })
+          }
+        />
+
+        <FilterSelect
+          compact
+          label="运行平台"
+          options={withAny(PLATFORM_LABELS)}
+          values={[filters.common.platform]}
+          onChange={(values) => patchCommon({ platform: values[0] as Platform | "all" })}
+        />
+
+        <FilterSelect
+          compact
+          label="权限"
+          options={[
+            { value: "all", label: "不限" },
+            { value: "none", label: "无需特殊权限" },
+          ]}
+          values={[filters.common.withoutSpecialPermissions ? "none" : "all"]}
+          onChange={(values) => patchCommon({ withoutSpecialPermissions: values[0] === "none" })}
+        />
+
         <button
           type="button"
           onClick={() => setShowAdvanced((value) => !value)}
           aria-expanded={showAdvanced}
           className={cn(
-            "flex w-full items-center gap-2 rounded-lg border px-3 py-2.5 text-left text-[12.5px] transition-colors",
+            "ml-auto flex h-8 items-center gap-1.5 rounded-full border px-3 text-[12px] transition-colors",
             showAdvanced || activeCount > 0
               ? "border-primary/45 bg-primary/[0.07] text-ink"
               : "border-line text-muted hover:border-line-2 hover:text-ink",
           )}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
             <path
               d="M4 6h16M7 12h10M10 18h4"
               stroke="currentColor"
@@ -214,12 +233,12 @@ export function FilterPanel({
             <span className="font-mono text-[10px] text-primary">{activeCount}</span>
           )}
           <svg
-            width="11"
-            height="11"
+            width="10"
+            height="10"
             viewBox="0 0 24 24"
             fill="none"
             aria-hidden="true"
-            className={cn("ml-auto text-muted transition-transform", showAdvanced && "rotate-180")}
+            className={cn("text-muted transition-transform", showAdvanced && "rotate-180")}
           >
             <path
               d="m6 9 6 6 6-6"
@@ -230,66 +249,76 @@ export function FilterPanel({
             />
           </svg>
         </button>
+      </div>
 
-        {showAdvanced && (
-          <div className="mt-2 grid gap-4 rounded-xl border border-line/70 bg-panel/30 p-4 sm:grid-cols-2">
+      {showAdvanced && (
+        <div className="grid gap-3 rounded-xl border border-line/70 bg-panel/30 p-3 sm:grid-cols-2 lg:grid-cols-3">
+          {tagOptions.length > 0 && (
             <FilterSelect
-              label="渲染技术"
-              options={selectOptions(RENDER_CLASS_LABELS)}
-              values={[filters.common.renderClass]}
-              onChange={(values) => patchCommon({ renderClass: values[0] as RenderClass | "all" })}
+              label="标签"
+              multiple
+              options={tagOptions}
+              values={filters.common.tags}
+              onChange={(values) => patchCommon({ tags: values })}
             />
+          )}
 
-            {type !== "widget" && (
+          <FilterSelect
+            label="渲染技术"
+            options={withAny(RENDER_CLASS_LABELS)}
+            values={[filters.common.renderClass]}
+            onChange={(values) => patchCommon({ renderClass: values[0] as RenderClass | "all" })}
+          />
+
+          {type !== "widget" && (
+            <FilterSelect
+              label="多屏模式"
+              options={withAny(MULTI_MONITOR_MODE_LABELS)}
+              values={[filters.scene.multiMonitorMode]}
+              onChange={(values) =>
+                patchScene({ multiMonitorMode: values[0] as MultiMonitorMode | "all" })
+              }
+            />
+          )}
+
+          {type !== "scene" && (
+            <>
               <FilterSelect
-                label="多屏模式"
-                options={selectOptions(MULTI_MONITOR_MODE_LABELS)}
-                values={[filters.scene.multiMonitorMode]}
+                label="交互程度"
+                options={withAny(INTERACTION_LEVEL_LABELS)}
+                values={[filters.widget.interactionLevel]}
                 onChange={(values) =>
-                  patchScene({ multiMonitorMode: values[0] as MultiMonitorMode | "all" })
+                  patchWidget({ interactionLevel: values[0] as InteractionLevel | "all" })
                 }
               />
-            )}
-
-            {type !== "scene" && (
-              <>
-                <FilterSelect
-                  label="交互程度"
-                  options={selectOptions(INTERACTION_LEVEL_LABELS)}
-                  values={[filters.widget.interactionLevel]}
-                  onChange={(values) =>
-                    patchWidget({ interactionLevel: values[0] as InteractionLevel | "all" })
-                  }
-                />
-                <FilterSelect
-                  label="更新策略"
-                  options={selectOptions(UPDATE_POLICY_LABELS)}
-                  values={[filters.widget.updatePolicy]}
-                  onChange={(values) => patchWidget({ updatePolicy: values[0] as UpdatePolicy | "all" })}
-                />
-                <FilterSelect
-                  label="后台行为"
-                  options={selectOptions(BACKGROUND_POLICY_LABELS)}
-                  values={[filters.widget.backgroundPolicy]}
-                  onChange={(values) =>
-                    patchWidget({ backgroundPolicy: values[0] as BackgroundPolicy | "all" })
-                  }
-                />
-                <FilterSelect
-                  label="窗口能力"
-                  multiple
-                  options={Object.keys(WINDOW_ABILITY_LABELS).map((value) => ({
-                    value,
-                    label: WINDOW_ABILITY_LABELS[value as WindowAbility],
-                  }))}
-                  values={filters.widget.windowAbilities}
-                  onChange={(values) => patchWidget({ windowAbilities: values as WindowAbility[] })}
-                />
-              </>
-            )}
-          </div>
-        )}
-      </div>
+              <FilterSelect
+                label="更新策略"
+                options={withAny(UPDATE_POLICY_LABELS)}
+                values={[filters.widget.updatePolicy]}
+                onChange={(values) => patchWidget({ updatePolicy: values[0] as UpdatePolicy | "all" })}
+              />
+              <FilterSelect
+                label="后台行为"
+                options={withAny(BACKGROUND_POLICY_LABELS)}
+                values={[filters.widget.backgroundPolicy]}
+                onChange={(values) =>
+                  patchWidget({ backgroundPolicy: values[0] as BackgroundPolicy | "all" })
+                }
+              />
+              <FilterSelect
+                label="窗口能力"
+                multiple
+                options={Object.keys(WINDOW_ABILITY_LABELS).map((value) => ({
+                  value,
+                  label: WINDOW_ABILITY_LABELS[value as WindowAbility],
+                }))}
+                values={filters.widget.windowAbilities}
+                onChange={(values) => patchWidget({ windowAbilities: values as WindowAbility[] })}
+              />
+            </>
+          )}
+        </div>
+      )}
     </div>
   );
 }

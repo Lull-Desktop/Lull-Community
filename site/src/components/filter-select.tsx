@@ -21,12 +21,15 @@ export function FilterSelect({
   values,
   onChange,
   multiple = false,
+  compact = false,
 }: {
   label: string;
   options: readonly SelectOption[];
   values: readonly string[];
   onChange: (values: string[]) => void;
   multiple?: boolean;
+  /** 紧凑模式：没有独立标题行，按钮本身就是一颗胶囊。 */
+  compact?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -62,21 +65,39 @@ export function FilterSelect({
   };
 
   return (
-    <div ref={rootRef} className="relative">
-      <p className="text-[11px] tracking-[0.02em] text-muted">{label}</p>
+    <div ref={rootRef} className={cn("relative", compact && "shrink-0")}>
+      {!compact && (
+        <p className="text-[11px] tracking-[0.02em] text-muted">{label}</p>
+      )}
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
         aria-haspopup="listbox"
         aria-expanded={open}
         className={cn(
-          "mt-2 flex h-9 w-full items-center justify-between gap-2 rounded-lg border bg-white/[0.02] px-3 text-left text-[12.5px] transition-colors",
+          "flex items-center justify-between gap-2 border bg-white/[0.02] text-left transition-colors",
+          compact
+            ? "h-8 rounded-full px-3 text-[12px]"
+            : "mt-2 h-9 w-full rounded-lg px-3 text-[12.5px]",
           open ? "border-primary/50" : "border-line hover:border-line-2",
         )}
       >
-        <span className={cn("truncate", values.length === 0 ? "text-faint" : "text-ink")}>
-          {summary}
-        </span>
+        {compact ? (
+          <span className="flex min-w-0 items-center gap-1.5">
+            {values.length === 0 ? (
+              <span className="truncate text-muted">{label}</span>
+            ) : (
+              <>
+                <span className="shrink-0 text-faint">{label}</span>
+                <span className="truncate text-ink">{summary}</span>
+              </>
+            )}
+          </span>
+        ) : (
+          <span className={cn("truncate", values.length === 0 ? "text-faint" : "text-ink")}>
+            {summary}
+          </span>
+        )}
         <svg
           width="11"
           height="11"
@@ -100,7 +121,7 @@ export function FilterSelect({
           role="listbox"
           aria-label={label}
           aria-multiselectable={multiple}
-          className="absolute z-30 mt-1.5 max-h-64 w-full overflow-y-auto rounded-xl border border-line-2 bg-void-2/95 p-1 shadow-[0_18px_40px_-20px_rgba(0,0,0,0.9)] backdrop-blur-xl"
+          className="absolute z-30 mt-1.5 max-h-64 w-full min-w-[10rem] overflow-y-auto rounded-xl border border-line-2 bg-void-2/95 p-1 shadow-[0_18px_40px_-20px_rgba(0,0,0,0.9)] backdrop-blur-xl"
         >
           {multiple && values.length === 0 && (
             <li className="px-3 py-1.5 text-[11px] text-faint">不选 = 不限</li>
