@@ -2,10 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 
 import ShinyText from "@/components/react-bits/ShinyText";
-import { SearchDialog } from "@/components/search-dialog";
 import { buttonVariants } from "@/components/ui/button";
 import { asset, catalog } from "@/lib/catalog";
 
@@ -38,18 +36,6 @@ function Mark() {
 
 export function SiteHeader() {
   const pathname = usePathname();
-  const [searchOpen, setSearchOpen] = useState(false);
-
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault();
-        setSearchOpen(true);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
 
   const isActive = (href: string) =>
     href === "/"
@@ -125,20 +111,6 @@ export function SiteHeader() {
           </nav>
 
           <div className="ml-auto flex items-center gap-2.5">
-            <button
-              type="button"
-              onClick={() => setSearchOpen(true)}
-              aria-label="搜索作品"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-line text-muted transition-colors hover:border-line-2 hover:text-ink-soft sm:w-[228px] sm:justify-start sm:gap-2 sm:px-3.5"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <circle cx="11" cy="11" r="6.5" stroke="currentColor" strokeWidth="1.9" />
-                <path d="m16 16 4 4" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" />
-              </svg>
-              <span className="hidden sm:inline">搜索场景与组件…</span>
-              <kbd className="ml-auto hidden font-mono text-[10px] text-faint sm:inline">⌘K</kbd>
-            </button>
-
             <a
               href={catalog.repo.url}
               target="_blank"
@@ -195,8 +167,6 @@ export function SiteHeader() {
           )}
         </div>
       </header>
-
-      {searchOpen && <SearchDialog onClose={() => setSearchOpen(false)} />}
     </>
   );
 }
