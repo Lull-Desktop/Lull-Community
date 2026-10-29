@@ -781,17 +781,19 @@ export default function SubmitPage() {
         </div>
 
         <div className="mt-4 flex flex-wrap items-center gap-2">
-          <span className="text-[11.5px] text-faint">更新已收录的作品：</span>
+          <span className="text-[11.5px] text-faint">提交通道：</span>
           {[
-            { label: "壁纸更新", template: ISSUE_TEMPLATES.sceneUpdate },
-            { label: "插件更新", template: ISSUE_TEMPLATES.widgetUpdate },
+            { label: "壁纸提交↗", template: ISSUE_TEMPLATES.sceneSubmit },
+            { label: "插件提交↗", template: ISSUE_TEMPLATES.widgetSubmit },
+            { label: "壁纸更新↗", template: ISSUE_TEMPLATES.sceneUpdate },
+            { label: "插件更新↗", template: ISSUE_TEMPLATES.widgetUpdate },
           ].map((entry) => (
             <a
               key={entry.template}
               href={issueUrl(entry.template)}
               target="_blank"
               rel="noreferrer noopener"
-              className={buttonVariants({ variant: "ghost", size: "sm" })}
+              className={buttonVariants({ size: "sm" })}
             >
               {entry.label}
             </a>
