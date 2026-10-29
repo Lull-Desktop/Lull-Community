@@ -53,6 +53,38 @@ export const WIDGET_CAPABILITIES = [
 ];
 
 /**
+ * `item.json → meta` 里属于另一类资源的字段。
+ *
+ * 混用只警告不阻断（社区仓库只判断「能不能装进 Lull」），但归一化只读本类型的键，
+ * 所以混进来的字段不会影响筛选结果——警告是为了让作者顺手删掉。
+ */
+export const SCENE_ONLY_META_KEYS = [
+  "sceneType",
+  "visualStyle",
+  "animationMode",
+  "qualityProfiles",
+  "resolutionProfiles",
+  "multiMonitorModes",
+  "supportsSync",
+  "supportsDynamicResolution",
+  "supportsAdaptiveFps",
+];
+export const WIDGET_ONLY_META_KEYS = [
+  "widgetType",
+  "subcategories",
+  "interactionLevel",
+  "updatePolicy",
+  "defaultSize",
+  "minSize",
+  "resizable",
+  "multiInstance",
+  "alwaysOnTop",
+  "supportsDrag",
+  "supportsTransparency",
+  "supportsClickThrough",
+];
+
+/**
  * 身份与路径规则。导出给 `scripts/ci/lib/submission.mjs` 复用：
  * 表单校验与内容校验必须是同一套正则，否则会出现「校验脚本说合法、CI 说不合法」。
  */
@@ -524,6 +556,15 @@ export function loadContent(options = {}) {
       if (itemProblems.length > 0) continue;
       if (item.slug !== slug) {
         report.error(`${where}/item.json`, `slug 必须与目录名一致（目录 ${slug}，声明 ${item.slug}）`);
+      }
+      const foreignMetaKeys = (
+        kind === "scene" ? WIDGET_ONLY_META_KEYS : SCENE_ONLY_META_KEYS
+      ).filter((key) => Object.hasOwn(item.meta ?? {}, key));
+      if (foreignMetaKeys.length > 0) {
+        report.warn(
+          `${where}/item.json`,
+          `meta 里出现了另一类资源的字段（${foreignMetaKeys.join(", ")}）：归一化不会读取，筛选也不会用到，建议删掉`,
+        );
       }
 
       // 预览图

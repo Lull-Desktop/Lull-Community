@@ -57,6 +57,226 @@
       "type": "string",
       "maxLength": 280,
       "description": "维护者备注，不展示在公开页面上。"
+    },
+    "meta": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "站点侧扩展元数据（L2 公共运行字段 + L3 业务字段）。不进内容包，Lull 不读取。未声明的字段由构建脚本归一化为 unknown / 空数组 / null，构建脚本不会猜测未声明的能力。",
+      "properties": {
+        "renderType": { "$ref": "#/$defs/renderType" },
+        "renderTech": {
+          "type": "array",
+          "maxItems": 6,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/renderTech" }
+        },
+        "requiredFeatures": {
+          "type": "array",
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1, "maxLength": 32 },
+          "description": "运行所必需的能力名，由客户端按自身支持情况过滤；站点只做属性筛选。"
+        },
+        "optionalFeatures": {
+          "type": "array",
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1, "maxLength": 32 }
+        },
+        "performanceTier": { "$ref": "#/$defs/performanceTier" },
+        "performanceEvidence": { "$ref": "#/$defs/performanceEvidence" },
+        "hardwareLevel": { "$ref": "#/$defs/hardwareLevel" },
+        "powerProfile": { "$ref": "#/$defs/powerProfile" },
+        "targetFps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 240,
+          "description": "目标帧率，不是保证帧率。"
+        },
+        "supportsPause": { "$ref": "#/$defs/capabilitySupport" },
+        "supportsReducedMotion": { "$ref": "#/$defs/capabilitySupport" },
+        "platforms": {
+          "type": "array",
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/platform" }
+        },
+        "runtimeRequirements": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "minAppVersion": { "type": "string", "minLength": 1, "maxLength": 32 },
+            "minWebView2Version": { "type": "string", "minLength": 1, "maxLength": 32 }
+          }
+        },
+        "requiredPermissions": {
+          "type": "array",
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/permission" }
+        },
+        "optionalPermissions": {
+          "type": "array",
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/permission" }
+        },
+        "backgroundPolicy": { "$ref": "#/$defs/backgroundPolicy" },
+        "networkPolicy": { "$ref": "#/$defs/networkPolicy" },
+        "recommendedUse": {
+          "type": "array",
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/recommendedUse" }
+        },
+
+        "sceneType": { "$ref": "#/$defs/sceneType" },
+        "visualStyle": {
+          "type": "array",
+          "maxItems": 5,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/visualStyle" }
+        },
+        "animationMode": { "$ref": "#/$defs/animationMode" },
+        "qualityProfiles": {
+          "type": "array",
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/qualityProfile" }
+        },
+        "resolutionProfiles": {
+          "type": "array",
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/resolutionProfile" }
+        },
+        "multiMonitorModes": {
+          "type": "array",
+          "maxItems": 3,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/multiMonitorMode" }
+        },
+        "supportsSync": { "$ref": "#/$defs/capabilitySupport" },
+        "supportsDynamicResolution": { "$ref": "#/$defs/capabilitySupport" },
+        "supportsAdaptiveFps": { "$ref": "#/$defs/capabilitySupport" },
+
+        "widgetType": { "$ref": "#/$defs/widgetType" },
+        "subcategories": {
+          "type": "array",
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1, "maxLength": 16 }
+        },
+        "interactionLevel": { "$ref": "#/$defs/interactionLevel" },
+        "updatePolicy": { "$ref": "#/$defs/updatePolicy" },
+        "defaultSize": { "$ref": "#/$defs/size" },
+        "minSize": { "$ref": "#/$defs/size" },
+        "resizable": { "$ref": "#/$defs/capabilitySupport" },
+        "multiInstance": { "$ref": "#/$defs/capabilitySupport" },
+        "alwaysOnTop": { "$ref": "#/$defs/capabilitySupport" },
+        "supportsDrag": { "$ref": "#/$defs/capabilitySupport" },
+        "supportsTransparency": { "$ref": "#/$defs/capabilitySupport" },
+        "supportsClickThrough": { "$ref": "#/$defs/capabilitySupport" }
+      }
+    }
+  },
+  "$defs": {
+    "capabilitySupport": {
+      "type": ["boolean", "null"],
+      "description": "true = 已确认支持；false = 已确认不支持；null = 未声明或未确认。不要把「未声明」写成 false。"
+    },
+    "size": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "renderType": {
+      "type": "string",
+      "enum": ["web", "2d", "3d", "video", "hybrid", "unknown"],
+      "description": "主要渲染形态。unknown = 未声明；入口是 HTML 不代表就是 web。"
+    },
+    "renderTech": {
+      "type": "string",
+      "enum": ["css", "svg", "canvas2d", "webgl", "webgpu", "video"]
+    },
+    "performanceTier": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "unverified"]
+    },
+    "performanceEvidence": {
+      "type": "string",
+      "enum": ["unverified", "author-declared", "manifest-declared", "benchmark-verified"],
+      "description": "等级来源。manifest-declared 只表示继承自上游清单，不代表经过基准测试。"
+    },
+    "hardwareLevel": {
+      "type": "string",
+      "enum": ["basic", "accelerated", "advanced", "unknown"]
+    },
+    "powerProfile": {
+      "type": "string",
+      "enum": ["efficient", "balanced", "quality", "unknown"]
+    },
+    "backgroundPolicy": {
+      "type": "string",
+      "enum": ["pause", "throttle", "continue", "unknown"],
+      "description": "资源支持或建议的后台策略。宿主实际执行策略由宿主自己决定。"
+    },
+    "networkPolicy": {
+      "type": "string",
+      "enum": ["none", "optional", "required", "unknown"],
+      "description": "required 只能由作者声明：有网络能力不等于没网就跑不起来。"
+    },
+    "recommendedUse": {
+      "type": "string",
+      "enum": ["office", "laptop", "multiMonitor", "highQuality"]
+    },
+    "platform": {
+      "type": "string",
+      "enum": ["windows", "macos", "linux"]
+    },
+    "permission": {
+      "type": "string",
+      "enum": ["network", "filesystem", "media", "notifications"]
+    },
+    "sceneType": {
+      "type": "string",
+      "enum": ["ambient", "nature", "abstract", "scene", "interactive", "other", "unknown"]
+    },
+    "visualStyle": {
+      "type": "string",
+      "enum": ["minimal", "cinematic", "anime", "realistic", "generative"]
+    },
+    "animationMode": {
+      "type": "string",
+      "enum": ["static", "loop", "realtime", "interactive", "unknown"]
+    },
+    "qualityProfile": {
+      "type": "string",
+      "enum": ["low", "medium", "high", "ultra"]
+    },
+    "resolutionProfile": {
+      "type": "string",
+      "enum": ["1080p", "1440p", "4k", "custom"]
+    },
+    "multiMonitorMode": {
+      "type": "string",
+      "enum": ["mirror", "independent", "span"]
+    },
+    "widgetType": {
+      "type": "string",
+      "enum": ["clock", "music", "monitor", "utility", "visual", "other", "unknown"]
+    },
+    "interactionLevel": {
+      "type": "string",
+      "enum": ["static", "interactive", "continuous", "unknown"]
+    },
+    "updatePolicy": {
+      "type": "string",
+      "enum": ["onDemand", "interval", "animation", "unknown"]
     }
   }
 }

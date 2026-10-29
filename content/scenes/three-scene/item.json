@@ -6,5 +6,19 @@
   "addedAt": "2026-10-25",
   "preview": "preview.webp",
   "authorUrl": "https://github.com/lull-desktop",
-  "note": "来自 Lull 上游示例 examples/content/three-scene，作为脚本场景（wallpaper.script + wallpaper.params）的参考实现收录；Three.js 已随包打包，作者与许可沿用上游清单。"
+  "note": "来自 Lull 上游示例 examples/content/three-scene，作为脚本场景（wallpaper.script + wallpaper.params）的参考实现收录；Three.js 已随包打包，作者与许可沿用上游清单。",
+  "meta": {
+    "renderType": "3d",
+    "renderTech": ["webgl"],
+    "sceneType": "abstract",
+    "visualStyle": ["generative"],
+    "animationMode": "realtime",
+    "recommendedUse": ["highQuality"],
+    "qualityProfiles": ["low", "medium", "high"],
+    "multiMonitorModes": ["independent"],
+    "hardwareLevel": "accelerated",
+    "powerProfile": "quality",
+    "supportsReducedMotion": false,
+    "networkPolicy": "none"
+  }
 }

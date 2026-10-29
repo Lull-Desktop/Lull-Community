@@ -4,5 +4,17 @@
   "tags": ["极光", "星空", "山脊"],
   "featured": true,
   "addedAt": "2026-10-25",
-  "preview": "preview.webp"
+  "preview": "preview.webp",
+  "meta": {
+    "renderType": "web",
+    "renderTech": ["css"],
+    "sceneType": "nature",
+    "visualStyle": ["cinematic", "minimal"],
+    "animationMode": "loop",
+    "recommendedUse": ["office", "laptop"],
+    "qualityProfiles": ["medium", "high"],
+    "powerProfile": "efficient",
+    "supportsReducedMotion": true,
+    "networkPolicy": "none"
+  }
 }

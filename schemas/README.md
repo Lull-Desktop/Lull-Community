@@ -32,6 +32,11 @@ Lull 桌面端安装内容包时，按 `scene.schema.json` 与 `catalog.schema.j
 它只描述**网站展示用的元数据**（标签、精选、预览图），不会进入内容包，
 也不会被 Lull 读取。作者需要在作品目录里提供 `item.json`，但 Lull 完全不知道它的存在。
 
+其中的 `meta` 是站点侧扩展（渲染技术、性能、兼容性、权限、壁纸/组件专属字段）：
+枚举定义集中在 `$defs` 里，既供 `scripts/lib/metadata.mjs` 归一化使用，
+也由 `scripts/build-catalog.mjs` 生成 `site/src/generated/community-enums.ts`
+供站点类型推导——枚举只维护这一份。
+
 ## release / package-signature 是本仓库的发布契约
 
 这两个 schema 也不来自上游，而是本仓库发布流程的格式：

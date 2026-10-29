@@ -3,24 +3,22 @@
 import { useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 
+import { FilterPanel, countActiveFilters, type ResourceType } from "@/components/filter-panel";
 import { ItemCard } from "@/components/item-card";
 import { Button } from "@/components/ui/button";
-import { kindLabel, type CatalogItem, type ItemKind } from "@/lib/catalog";
+import { type CatalogItem } from "@/lib/catalog";
+import { filterCatalog } from "@/lib/community/filter";
+import { FILTER_KIND_LABELS } from "@/lib/community/labels";
 import { cn } from "@/lib/utils";
+import { DEFAULT_CATALOG_FILTERS, type CatalogFilters } from "@/types/community";
 
 type SortKey = "latest" | "name" | "size";
-type TypeFilter = "all" | ItemKind;
+type TypeFilter = ResourceType;
 
 const SORTS: { key: SortKey; label: string }[] = [
   { key: "latest", label: "按日期" },
   { key: "name", label: "按名称" },
   { key: "size", label: "按体积" },
-];
-
-const TYPE_FILTERS: { value: TypeFilter; label: string }[] = [
-  { value: "all", label: "全部类型" },
-  { value: "scene", label: kindLabel("scene") },
-  { value: "widget", label: kindLabel("widget") },
 ];
 
 /** 类型只认 `?type=scene` / `?type=widget`；其他值一律回到全部。 */
@@ -32,7 +30,7 @@ function typeFromParam(value: string | null): TypeFilter {
  * 把类型写回地址栏，让 `/?type=scene` 这样的链接可以分享、刷新后仍然有效。
  *
  * 这里用 `replaceState` 而不是 `router.replace`：类型切换不该触发一次导航，
- * 也不该重置页面里的标签、关键词和排序状态。`popstate` / 站内 Link 带来的
+ * 也不该重置页面里的标签、关键词和筛选状态。`popstate` / 站内 Link 带来的
  * 查询串变化由下面的 `TypeParamSync` 负责接收。
  */
 function writeTypeParam(type: TypeFilter) {
@@ -59,18 +57,15 @@ function TypeParamSync({ onChange }: { onChange: (type: TypeFilter) => void }) {
  * 数据在构建时已经内联进页面（catalog.json），所以筛选是纯前端的：
  * 没有接口、没有索引服务，也不需要为「搜索」引入任何后端。
  *
+ * 筛选规则集中在 `lib/community/filter.ts`；面板结构在 `FilterPanel`：
+ * 首屏只放常用条件，实现细节类条件收进「高级筛选」下拉。
  */
 export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
   const [query, setQuery] = useState("");
   const [type, setType] = useState<TypeFilter>("all");
   const [tag, setTag] = useState<string | null>(null);
   const [sort, setSort] = useState<SortKey>("latest");
-
-  const typeCounts = useMemo(() => {
-    const counts: Record<ItemKind, number> = { scene: 0, widget: 0 };
-    for (const item of items) counts[item.kind] += 1;
-    return counts;
-  }, [items]);
+  const [filters, setFilters] = useState<CatalogFilters>(DEFAULT_CATALOG_FILTERS);
 
   const tags = useMemo(() => {
     const counts = new Map<string, number>();
@@ -93,20 +88,22 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
         .includes(keyword);
     });
 
-    return [...filtered].sort((left, right) => {
+    return [...filterCatalog(filtered, filters)].sort((left, right) => {
       if (sort === "name") return left.name.localeCompare(right.name, "zh-Hans-CN");
       if (sort === "size") return left.downloadBytes - right.downloadBytes;
       if (left.addedAt !== right.addedAt) return right.addedAt.localeCompare(left.addedAt);
       return left.name.localeCompare(right.name, "zh-Hans-CN");
     });
-  }, [items, query, tag, type, sort]);
+  }, [items, query, tag, type, sort, filters]);
 
-  const hasFilters = type !== "all" || tag !== null || query.trim().length > 0;
+  const activeCount = countActiveFilters(filters, type);
+  const hasFilters = type !== "all" || tag !== null || query.trim().length > 0 || activeCount > 0;
 
   const clearFilters = () => {
     setQuery("");
     setTag(null);
     setType("all");
+    setFilters(DEFAULT_CATALOG_FILTERS);
     writeTypeParam("all");
   };
 
@@ -116,7 +113,7 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
         <TypeParamSync onChange={setType} />
       </Suspense>
 
-      <div className="flex flex-col gap-4 border-b border-line pb-5">
+      <div className="flex flex-col gap-5 border-b border-line pb-5">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <label className="relative flex-1">
             <span className="sr-only">搜索作品</span>
@@ -157,49 +154,15 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
           </div>
         </div>
 
-        {/* 类型是独立分组：只按 kind 筛选，不读写标签状态 */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-t border-line/60 pt-3.5">
-          <span className="shrink-0 font-mono text-[10px] tracking-[0.16em] text-faint uppercase">
-            类型
-          </span>
-          <div
-            role="group"
-            aria-label="按类型筛选"
-            className="flex flex-wrap items-center gap-1 rounded-lg border border-line p-1"
-          >
-            {TYPE_FILTERS.map((option) => {
-              const count = option.value === "all" ? items.length : typeCounts[option.value];
-              const active = type === option.value;
-              return (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => {
-                    setType(option.value);
-                    writeTypeParam(option.value);
-                  }}
-                  aria-pressed={active}
-                  className={cn(
-                    "rounded-full px-3 py-1 text-[11.5px] transition-colors",
-                    active
-                      ? "bg-primary/25 font-medium text-ink shadow-[inset_0_0_0_1px_rgba(159,191,150,0.45)]"
-                      : "text-muted hover:text-ink",
-                  )}
-                >
-                  {option.label}
-                  <span
-                    className={cn(
-                      "ml-1.5 font-mono text-[10px]",
-                      active ? "text-primary" : "opacity-60",
-                    )}
-                  >
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <FilterPanel
+          type={type}
+          onTypeChange={(next) => {
+            setType(next);
+            writeTypeParam(next);
+          }}
+          filters={filters}
+          onChange={setFilters}
+        />
 
         {tags.length > 0 && (
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
@@ -244,9 +207,10 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
 
       <p className="py-4 text-[12px] text-muted">
         共 <span className="font-mono text-ink">{visible.length}</span> 个作品
-        {type !== "all" && <span> · 类型「{kindLabel(type)}」</span>}
+        {type !== "all" && <span> · {FILTER_KIND_LABELS[type]}</span>}
         {tag && <span> · 标签「{tag}」</span>}
         {query.trim() && <span> · 关键词「{query.trim()}」</span>}
+        {activeCount > 0 && <span> · 筛选 {activeCount} 项</span>}
         {hasFilters && (
           <button
             type="button"
@@ -262,7 +226,7 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
         <div className="rounded-2xl border border-dashed border-line-2 bg-panel/40 px-6 py-16 text-center">
           <p className="text-[13.5px] text-ink">没有匹配的作品</p>
           <p className="mt-1.5 text-[12.5px] text-muted">
-            换个类型、标签或关键词，或者清掉筛选条件看看全部。
+            换个资源类型、内容类型或关键词，或者清掉筛选条件看看全部。
           </p>
           <Button variant="ghost" size="sm" onClick={clearFilters} className="mt-5 text-ink-soft">
             清除筛选

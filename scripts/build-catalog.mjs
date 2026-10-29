@@ -35,6 +35,8 @@ import {
 } from "./lib/package-signature.mjs";
 import { ZIP_TIMESTAMP, packageZipEntries, packageZipName } from "./lib/package-zip.mjs";
 import { writeZip } from "./lib/zip.mjs";
+import { deriveMeta } from "./lib/metadata.mjs";
+import { readEnums, renderEnumsTs } from "./lib/community-enums.mjs";
 import { loadContent, printReport } from "./validate-content.mjs";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -120,6 +122,10 @@ function main() {
   // 发布清单的对外副本单独处理：没签名时这个目录根本不该存在（「未签名」要能表达出来）
   rmSync(RELEASE_PUBLIC, { recursive: true, force: true });
 
+  // 枚举只在 schema 里维护一次；这里生成站点用的常量，类型侧从它推导联合类型
+  writeFileSync(join(GENERATED, "community-enums.ts"), renderEnumsTs(readEnums(ROOT)));
+
+
   // 登记表：谁提的、来自哪个仓库。文件不存在时（首次上线）当作空表。
   let registry = null;
   try {
@@ -188,6 +194,9 @@ function main() {
         licensePath: item.licensePath
           ? relative(ROOT, item.licensePath).split("\\").join("/")
           : null,
+        // 站点侧统一元数据：清单能确认的自动推导，其余只认 item.json 的 meta，
+        // 未声明的一律 unknown / [] / null，不猜测。
+        meta: deriveMeta({ kind: item.kind, manifest: item.manifest, item: item.item }),
         theme: item.manifest.theme ?? null,
         performance: item.manifest.performance ?? null,
         compatibility: item.manifest.compatibility ?? null,

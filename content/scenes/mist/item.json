@@ -6,5 +6,18 @@
   "addedAt": "2026-10-20",
   "preview": "preview.webp",
   "authorUrl": "https://github.com/lull-desktop",
-  "note": "种子内容：来自 Lull 官方内容目录，摘要与 Rust 侧已知值一致，用作算法自检基准。"
+  "note": "种子内容：来自 Lull 官方内容目录，摘要与 Rust 侧已知值一致，用作算法自检基准。",
+  "meta": {
+    "renderType": "web",
+    "renderTech": ["css"],
+    "sceneType": "ambient",
+    "visualStyle": ["minimal"],
+    "animationMode": "loop",
+    "recommendedUse": ["office"],
+    "qualityProfiles": ["low", "medium"],
+    "multiMonitorModes": ["mirror", "span"],
+    "powerProfile": "efficient",
+    "supportsReducedMotion": true,
+    "networkPolicy": "none"
+  }
 }

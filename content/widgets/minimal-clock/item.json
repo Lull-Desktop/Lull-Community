@@ -4,5 +4,17 @@
   "tags": ["时钟", "玻璃", "零权限"],
   "featured": true,
   "addedAt": "2026-10-25",
-  "preview": "preview.webp"
+  "preview": "preview.webp",
+  "meta": {
+    "renderType": "web",
+    "renderTech": ["css"],
+    "widgetType": "clock",
+    "interactionLevel": "static",
+    "updatePolicy": "interval",
+    "backgroundPolicy": "continue",
+    "networkPolicy": "none",
+    "platforms": ["windows"],
+    "recommendedUse": ["office"],
+    "supportsReducedMotion": false
+  }
 }

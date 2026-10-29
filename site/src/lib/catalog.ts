@@ -1,4 +1,5 @@
 import catalogJson from "@/generated/catalog.json";
+import type { ResourceMeta } from "@/types/community";
 
 export type ItemKind = "scene" | "widget";
 
@@ -65,6 +66,11 @@ export type CatalogItem = {
    */
   authorization: AuthorizationStatus;
   licensePath: string | null;
+  /**
+   * 站点侧统一元数据（L2 公共字段 + L3 业务字段），由 build-catalog 归一化：
+   * 清单能确认的自动推导，其余只认 `item.json` 的 `meta`，未声明为 unknown / [] / null。
+   */
+  meta: ResourceMeta;
   theme: { background: string; accent: string } | null;
   performance: { tier: string; targetFps?: number } | null;
   compatibility: { hostApi: number; platforms?: string[] } | null;

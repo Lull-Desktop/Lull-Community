@@ -30,6 +30,22 @@ content/
 **`package/` 是分界线**：里面的东西会被原样校验、摘要、打 zip；外面的
 `item.json`、`preview.webp`、`README.md` 只用于网站展示，永远不会进包。
 
+## item.json 里的 `meta`（站点侧扩展）
+
+`meta` 是社区站自己的元数据，不进包、不参与摘要，Lull 也不读取：
+
+- 能从包内清单确认的（性能档位、目标帧率、平台、窗口尺寸、是否透明等）由
+  `scripts/build-catalog.mjs` 自动推导，不用手写；
+- 只有作者能声明的（`renderType`、`renderTech`、`sceneType`、`widgetType`、
+  `recommendedUse`、窗口能力等）写在 `meta` 里，没写就是「未声明」；
+- 「未声明」不等于「不支持」：能力字段为 `null` 时，筛选「不支持」不会命中它；
+- `renderType` 不会因为入口是 HTML 就默认成 `web`，`networkPolicy: "required"` 也不会
+  因为申请了联网能力自动生成——这两条只能由作者声明；
+- 枚举取值以 `schemas/community-item.schema.json` 的 `$defs` 为准，
+  站点类型从它生成，改枚举后重跑 `pnpm build:catalog`。
+
+示例见 `content/scenes/aurora-veil/item.json` 与 `content/widgets/minimal-clock/item.json`。
+
 ## 外部投稿用同一套路径
 
 通过 issue 表单投稿的作者，在自己的仓库里也用 `content/<scenes|widgets>/<slug>/` 这个路径，
