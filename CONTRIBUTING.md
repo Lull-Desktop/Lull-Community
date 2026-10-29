@@ -35,6 +35,44 @@ content/scenes/aurora-night/
 外面的 `preview.webp` / `README.md` / `item.json` 只影响网站展示，永远不会进包。
 不要把截图和文档塞进 `package/`。
 
+### 2.1 `item.json`（必交，但不进包）
+
+缺了它 `pnpm content:check` 会直接报错。最小示例：
+
+```json
+{
+  "schemaVersion": 1,
+  "slug": "aurora-night",
+  "tags": ["极光", "极简"],
+  "featured": false,
+  "addedAt": "2026-10-28",
+  "preview": "preview.webp"
+}
+```
+
+- `slug` 必须与目录名完全一致（插件目录名就是 id）；`tags` 最多 8 项、每项 ≤ 16 字；
+- `preview` / `screenshots` 只能写目录内的 webp/png/jpg/avif 文件名，文件必须存在；
+- `addedAt` / `featured` 由合并流程覆盖（首次收录日 / `false`），照填即可；
+- 其余可选字段：`authorUrl`、`homepage`、`note`（维护者备注，不公开）。
+
+**可选的 `meta`** 决定它在目录页的筛选结果，字段分三组：
+
+| 组 | 字段 |
+| --- | --- |
+| 公共 | `renderType`、`renderTech[]`、`recommendedUse[]`、`platforms[]`、`performanceTier`、`powerProfile`、`hardwareLevel`、`networkPolicy`、`backgroundPolicy`、`requiredPermissions[]` |
+| 壁纸 | `sceneType`、`visualStyle[]`、`animationMode`、`multiMonitorModes[]`、`qualityProfiles[]`、`resolutionProfiles[]` |
+| 组件 | `widgetType`、`subcategories[]`、`interactionLevel`、`updatePolicy`、`supportsDrag`、`multiInstance`、`alwaysOnTop`、`supportsClickThrough` |
+
+两条规则：
+
+1. **能从包内清单确认的不用写**——性能等级、目标帧率、平台、窗口尺寸、是否透明、
+   `wallpaper.sync` 能力都由构建脚本推导；
+2. **只能由作者声明的必须手写**——渲染类型/技术、内容类型、交互与更新策略、窗口能力、
+   `networkPolicy` / `backgroundPolicy`。没写就是「未声明」，筛「不支持」时不会命中它。
+
+枚举取值以 `schemas/community-item.schema.json` 的 `$defs` 为准；写错会让 `content:check` 失败。
+在线字段表（投稿页）：<https://lull-desktop.github.io/Lull-Community/submit#item-json>。
+
 ### 3. 写清单
 
 **壁纸场景**（`package/catalog.json`，`schemaVersion: 1`）：
@@ -68,7 +106,7 @@ content/scenes/aurora-night/
   并通过 `@lull/scene-sdk` 读参数与视口，不要碰宿主 DOM。
 - 声明 `params` 必须同时申请 `wallpaper.params`，且 `params` / `sync` 只能用于脚本场景。
 
-**桌面工具**（`package/widget.json`，`schemaVersion: 2`）：
+**桌面组件**（`package/widget.json`，`schemaVersion: 2`）：
 
 ```json
 {

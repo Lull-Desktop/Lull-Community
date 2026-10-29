@@ -38,7 +38,7 @@ export const WIDGET_TYPE_LABELS: Record<WidgetType, string> = {
   clock: "时钟时间",
   music: "音乐媒体",
   monitor: "系统监控",
-  utility: "桌面工具",
+  utility: "桌面组件",
   visual: "视觉氛围",
   other: "其他",
   unknown: "未声明",

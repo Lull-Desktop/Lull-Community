@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { FilterSelect, type SelectOption } from "@/components/filter-select";
@@ -317,6 +318,16 @@ export function FilterPanel({
               />
             </>
           )}
+
+          <p className="mt-1 border-t border-line/60 pt-2.5 text-[11px] leading-relaxed text-faint sm:col-span-2 lg:col-span-3">
+            「未声明」表示作者没有给出这个字段，不等于「不支持」。
+            <Link
+              href="/submit#item-json"
+              className="ml-1 text-accent transition-opacity hover:opacity-80"
+            >
+              字段说明 →
+            </Link>
+          </p>
         </div>
       )}
     </div>

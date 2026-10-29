@@ -44,25 +44,136 @@ const CHECKLIST = [
   "preview.webp —— 16:9 预览图，宽度 1280–1600px，用来做卡片",
   "README.md —— 一段说明：它是什么、怎么实现的、素材从哪来",
   "LICENSE —— 作品自身的许可原文（可以比仓库的 CC BY 4.0 更严格）",
-  "item.json —— 标签与收录信息，只影响网站展示",
+  "item.json —— 必交的展示元数据：schemaVersion、slug（= 目录名）、tags、addedAt、preview；可选 meta 决定筛选标签",
 ];
 
-const RULES = [
+const ITEM_JSON_EXAMPLE = `{
+  "schemaVersion": 1,
+  "slug": "aurora-night",
+  "tags": ["极光", "极简"],
+  "featured": false,
+  "addedAt": "2026-10-28",
+  "preview": "preview.webp"
+}`;
+
+type FieldSpec = { field: string; value: string; note: string };
+
+/** item.json 本体字段：必填在前，维护侧覆盖与可选字段在后。 */
+const ITEM_JSON_FIELDS: FieldSpec[] = [
+  { field: "schemaVersion", value: "1", note: "固定值" },
+  { field: "slug", value: "aurora-night", note: "必须与目录名一致；插件目录名就是 id" },
+  { field: "tags", value: "字符串数组", note: "≤ 8 项，每项 ≤ 16 字" },
+  { field: "addedAt", value: "YYYY-MM-DD", note: "合并时覆盖为首次收录日，照填即可" },
+  { field: "preview", value: "preview.webp", note: "目录内的 16:9 图片文件名" },
+  { field: "screenshots", value: "字符串数组（可选）", note: "≤ 6 张，列出的文件必须存在" },
+  { field: "featured", value: "true / false（可选）", note: "合并时统一置 false，精选由维护者决定" },
+  { field: "authorUrl / homepage", value: "https://…（可选）", note: "作者主页、作品主页" },
+  { field: "note", value: "字符串（可选）", note: "维护者备注，不公开" },
+];
+
+/** meta 分三组；每组第一列是字段名，第二列是可取值。 */
+const META_GROUPS: { group: string; hint: string; fields: FieldSpec[] }[] = [
   {
-    term: "能装进 Lull",
-    body: "清单通过 Lull 自己的 JSON Schema 与 Rust 侧规则，摘要与安装器一致，zip 不含越界路径。",
+    group: "公共字段",
+    hint: "壁纸与组件共用；可由清单推导的通常不用手写。",
+    fields: [
+      {
+        field: "renderType",
+        value: "web / 2d / 3d / video / hybrid / unknown",
+        note: "主要渲染形态，单选",
+      },
+      {
+        field: "renderTech",
+        value: "css / svg / canvas2d / webgl / webgpu / video",
+        note: "实际用到的技术，多选",
+      },
+      {
+        field: "recommendedUse",
+        value: "office / laptop / multiMonitor / highQuality",
+        note: "使用场景，多选",
+      },
+      {
+        field: "platforms",
+        value: "windows / macos / linux",
+        note: "壁纸从清单继承；组件需自己声明",
+      },
+      {
+        field: "performanceTier / performanceEvidence",
+        value: "low / medium / high / unverified",
+        note: "一般由清单推导并标注 manifest-declared",
+      },
+      {
+        field: "hardwareLevel / powerProfile",
+        value: "basic / accelerated / advanced；efficient / balanced / quality",
+        note: "缺省 unknown",
+      },
+      {
+        field: "networkPolicy",
+        value: "none / optional / required / unknown",
+        note: "required 只能由作者声明，不会因联网能力自动产生",
+      },
+      {
+        field: "backgroundPolicy",
+        value: "pause / throttle / continue / unknown",
+        note: "资源支持/建议的后台策略；宿主实际策略另算",
+      },
+      {
+        field: "requiredPermissions / optionalPermissions",
+        value: "network / filesystem / media / notifications",
+        note: "通常由 capability 推导",
+      },
+      {
+        field: "supportsPause / supportsReducedMotion",
+        value: "true / false（缺省 null）",
+        note: "null 表示未声明",
+      },
+    ],
   },
   {
-    term: "素材有权分发",
-    body: "图片、字体、音频的来源写清楚；不接受与社区再分发冲突的条款。",
+    group: "壁纸字段",
+    hint: "只对 scene 生效；写在组件的 item.json 里会被忽略。",
+    fields: [
+      {
+        field: "sceneType",
+        value: "ambient / nature / abstract / scene / interactive / other / unknown",
+        note: "内容分类，不是性能分类",
+      },
+      { field: "visualStyle", value: "minimal / cinematic / anime / realistic / generative", note: "多选" },
+      { field: "animationMode", value: "static / loop / realtime / interactive / unknown", note: "单选" },
+      { field: "qualityProfiles", value: "low / medium / high / ultra", note: "多选" },
+      { field: "resolutionProfiles", value: "1080p / 1440p / 4k / custom", note: "多选" },
+      { field: "multiMonitorModes", value: "mirror / independent / span", note: "多选" },
+      { field: "supportsSync 等能力", value: "true / false（缺省 null）", note: "sync 可从 wallpaper.sync 推导" },
+    ],
   },
   {
-    term: "不打擦边球",
-    body: "不加载远程脚本、不尝试读取宿主数据、不伪造能力声明。",
-  },
-  {
-    term: "说得清用途",
-    body: "README 解释实现与参数；工具要写明申请每项能力的理由。",
+    group: "组件字段",
+    hint: "只对 widget 生效；写在壁纸的 item.json 里会被忽略。",
+    fields: [
+      {
+        field: "widgetType",
+        value: "clock / music / monitor / utility / visual / other / unknown",
+        note: "功能分类，单选",
+      },
+      { field: "subcategories", value: "字符串数组", note: "受控标签，多选" },
+      { field: "interactionLevel", value: "static / interactive / continuous / unknown", note: "单选" },
+      { field: "updatePolicy", value: "onDemand / interval / animation / unknown", note: "单选" },
+      {
+        field: "defaultSize / minSize / resizable",
+        value: "{ width, height }；true / false",
+        note: "通常从 widget.json 的 window 推导",
+      },
+      {
+        field: "supportsTransparency",
+        value: "true / false（缺省 null）",
+        note: "可从 window.transparent 推导",
+      },
+      {
+        field: "supportsDrag / multiInstance / alwaysOnTop / supportsClickThrough",
+        value: "true / false（缺省 null）",
+        note: "只能自己声明；null 不算「不支持」",
+      },
+    ],
   },
 ];
 
@@ -111,7 +222,7 @@ const SDKS: {
     doc: { href: "https://lull-desktop.github.io/Lull/docs/scene-sdk/", label: "读 scene-sdk 文档" },
   },
   {
-    tag: "widget · 桌面工具",
+    tag: "widget · 桌面组件",
     name: "@lull/widget-sdk",
     role: "第三方工具窗口的插件侧 SDK。窗口、顶栏、主题令牌、状态持久化都由宿主负责，插件只管自己的 UI 与逻辑，不碰 Tauri IPC。",
     points: [
@@ -295,6 +406,32 @@ function CodeBlock({ children }: { children: string }) {
   );
 }
 
+/** 字段表：item.json 本体与 meta 共用。窄屏可横向滚动，不挤压正文。 */
+function FieldTable({ rows }: { rows: FieldSpec[] }) {
+  return (
+    <div className="mt-2 overflow-x-auto rounded-xl border border-line">
+      <table className="w-full min-w-[34rem] border-collapse text-[12px]">
+        <thead>
+          <tr className="bg-white/[0.04] text-left text-[10.5px] uppercase tracking-[0.12em] text-muted">
+            <th className="px-3.5 py-2 font-medium">字段</th>
+            <th className="px-3.5 py-2 font-medium">取值</th>
+            <th className="px-3.5 py-2 font-medium">说明</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.field} className="border-t border-line">
+              <td className="px-3.5 py-2.5 font-mono text-[11px] text-accent">{row.field}</td>
+              <td className="px-3.5 py-2.5 font-mono text-[11px] text-ink-soft">{row.value}</td>
+              <td className="px-3.5 py-2.5 leading-relaxed text-muted">{row.note}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 /** 四个 issue 表单的模板文件名。改名前先看 `.github/ISSUE_TEMPLATE/` 里的实际文件。 */
 const ISSUE_TEMPLATES = {
   sceneSubmit: "scene-submission.yml",
@@ -306,10 +443,52 @@ const ISSUE_TEMPLATES = {
 /** 直接打开某个模板的新建 issue 页（GitHub 会按模板渲染表单）。 */
 const issueUrl = (template: string) => `${catalog.repo.url}/issues/new?template=${template}`;
 
+/** 页面目录：侧边大纲与移动端折叠导航共用。顺序与页面章节一致。 */
+const OUTLINE: { id: string; label: string }[] = [
+  { id: "checklist", label: "前期准备" },
+  { id: "scene", label: "壁纸场景" },
+  { id: "widget", label: "桌面组件" },
+  { id: "sdk", label: "SDK 与官方示例" },
+  { id: "item-json", label: "item.json文档" },
+  { id: "issues", label: "免 fork 提交" },
+  { id: "spec", label: "提交规范" },
+  { id: "next", label: "提交作品" },
+];
+
+function SectionOutline({ className }: { className?: string }) {
+  return (
+    <nav aria-label="页面目录" className={className}>
+      <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-faint">outline</p>
+      <ol className="mt-3 space-y-1.5 border-l border-line pl-3">
+        {OUTLINE.map((entry, index) => (
+          <li key={entry.id}>
+            <a
+              href={`#${entry.id}`}
+              className="group flex items-baseline gap-2 text-[12px] leading-relaxed text-muted transition-colors hover:text-ink"
+            >
+              <span className="font-mono text-[10px] text-line-2 transition-colors group-hover:text-primary">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <span>{entry.label}</span>
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
+
 export default function SubmitPage() {
   return (
-    <div className="mx-auto max-w-3xl px-5 py-14 sm:px-8">
-      <header>
+    <div className="mx-auto w-full max-w-[1180px] px-5 py-14 sm:px-8 xl:px-12">
+      <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_14rem] xl:gap-12">
+        <div className="mx-auto w-full max-w-3xl xl:mx-0">
+          <details className="mb-6 rounded-xl border border-line bg-panel/40 px-4 py-3 xl:hidden">
+            <summary className="cursor-pointer text-[12.5px] text-ink">章节导航</summary>
+            <SectionOutline className="mt-3" />
+          </details>
+
+          <header>
         <p className="eyebrow">contribute</p>
         <h1 className="mt-3 text-[clamp(1.8rem,3.6vw,2.4rem)] font-normal tracking-[-0.02em]">
           提交你的<span className="text-gradient">作品</span>
@@ -364,8 +543,8 @@ export default function SubmitPage() {
         </div>
       </header>
 
-      <section className={cn(panelVariants(), "mt-10 p-6")}>
-        <h2 className="text-[14.5px] font-medium tracking-tight text-ink">一次提交需要包含</h2>
+      <section id="checklist" className={cn(panelVariants(), "mt-10 scroll-mt-24 p-6")}>
+        <h2 className="text-[14.5px] font-medium tracking-tight text-ink">前期准备</h2>
         <ul className="mt-4 space-y-2.5 text-[12.5px] leading-relaxed text-ink-soft">
           {CHECKLIST.map((line) => (
             <li key={line} className="flex gap-3">
@@ -374,9 +553,30 @@ export default function SubmitPage() {
             </li>
           ))}
         </ul>
+
+        <p className="mt-5 text-[12px] leading-relaxed text-muted">
+          <InlineCode>item.json</InlineCode> 不进包，但缺了它格式检查会直接报错。最小示例：
+        </p>
+        <CodeBlock>{ITEM_JSON_EXAMPLE}</CodeBlock>
+        <p className="mt-3 text-[11.5px] leading-relaxed text-muted">
+          可选 <InlineCode>meta</InlineCode> 决定目录页能筛到它的哪些维度：壁纸写{' '}
+          <InlineCode>sceneType</InlineCode> / <InlineCode>visualStyle</InlineCode> /{' '}
+          <InlineCode>animationMode</InlineCode> / <InlineCode>multiMonitorModes</InlineCode>，组件写{' '}
+          <InlineCode>widgetType</InlineCode> / <InlineCode>interactionLevel</InlineCode> /{' '}
+          <InlineCode>updatePolicy</InlineCode> / 窗口能力，公共字段是{' '}
+          <InlineCode>renderType</InlineCode> / <InlineCode>renderTech</InlineCode> /{' '}
+          <InlineCode>recommendedUse</InlineCode> / <InlineCode>platforms</InlineCode>。能从清单推导的
+          （性能等级、帧率、平台、窗口尺寸、是否透明）不用写；没写就是「未声明」，不会被当成「不支持」。
+          枚举取值以 <InlineCode>schemas/community-item.schema.json</InlineCode> 为准。
+          完整字段表见{" "}
+          <a href="#item-json" className="text-accent transition-opacity hover:opacity-80">
+            item.json 字段
+          </a>
+          。
+        </p>
       </section>
 
-      <section className="mt-10">
+      <section id="scene" className="mt-10 scroll-mt-24">
         <h2 className="text-[14.5px] font-medium tracking-tight text-ink">壁纸场景</h2>
         <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
           纯静态包只允许 HTML 与 CSS；需要 JavaScript 时申请 <InlineCode>wallpaper.script</InlineCode>
@@ -385,8 +585,8 @@ export default function SubmitPage() {
         <CodeBlock>{SCENE_STEPS}</CodeBlock>
       </section>
 
-      <section className="mt-10">
-        <h2 className="text-[14.5px] font-medium tracking-tight text-ink">桌面工具</h2>
+      <section id="widget" className="mt-10 scroll-mt-24">
+        <h2 className="text-[14.5px] font-medium tracking-tight text-ink">桌面组件</h2>
         <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
           静态 Web 包 + 一份 widget.json。能力只能从宿主白名单里选，申请得越少越容易过审：
           不需要联网就别写 <InlineCode>widget.network</InlineCode>。
@@ -394,8 +594,8 @@ export default function SubmitPage() {
         <CodeBlock>{WIDGET_STEPS}</CodeBlock>
       </section>
 
-      <section className="mt-10">
-        <h2 className="text-[14.5px] font-medium tracking-tight text-ink">两个 SDK 与官方示例</h2>
+      <section id="sdk" className="mt-10 scroll-mt-24">
+        <h2 className="text-[14.5px] font-medium tracking-tight text-ink">SDK 与官方示例</h2>
         <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
           宿主把能给的能力收进两个包里：壁纸场景走{" "}
           <InlineCode>@lull/scene-sdk</InlineCode>，桌面工具走{" "}
@@ -469,16 +669,50 @@ export default function SubmitPage() {
         </div>
       </section>
 
-      <section className="mt-10 rounded-2xl border border-line bg-panel/50 p-6">
-        <h2 className="text-[14.5px] font-medium tracking-tight text-ink">合并标准</h2>
-        <dl className="mt-4 space-y-3 text-[12.5px]">
-          {RULES.map((row) => (
-            <div key={row.term} className="grid gap-1 sm:grid-cols-[7rem_1fr] sm:gap-4">
-              <dt className="font-medium text-ink">{row.term}</dt>
-              <dd className="leading-relaxed text-muted">{row.body}</dd>
+      <section id="item-json" className="mt-10 scroll-mt-24">
+        <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+          <h2 className="text-[14.5px] font-medium tracking-tight text-ink">item.json 文档</h2>
+          <p className="font-mono text-[10px] tracking-[0.18em] text-faint">website only</p>
+        </div>
+        <p className="mt-2 text-[12.5px] leading-relaxed text-muted">
+          只在站点展示用：不进包、不影响摘要与签名，Lull 也不会读取。缺了它
+          <InlineCode>pnpm content:check</InlineCode> 直接报错；<InlineCode>meta</InlineCode>
+          全部可选，没写就是「未声明」。
+        </p>
+
+        <h3 className="mt-6 text-[13px] font-medium tracking-tight text-ink">① 本体字段</h3>
+        <FieldTable rows={ITEM_JSON_FIELDS} />
+        <p className="mt-2 text-[11.5px] leading-relaxed text-faint">
+          <InlineCode>addedAt</InlineCode> 与 <InlineCode>featured</InlineCode> 由合并流程覆盖，
+          其余字段保持作者写的样子。
+        </p>
+
+        <h3 className="mt-6 text-[13px] font-medium tracking-tight text-ink">② meta（可选）</h3>
+        <p className="mt-1.5 text-[12.5px] leading-relaxed text-muted">
+          决定作品在目录页能被哪些筛选命中。两条规则：能从包内清单确认的（性能等级、目标帧率、
+          平台、窗口尺寸、是否透明、<InlineCode>wallpaper.sync</InlineCode>）不用写；只能由作者判断的
+          （渲染类型/技术、内容分类、交互与更新策略、窗口能力、<InlineCode>networkPolicy</InlineCode>）
+          必须手写。
+        </p>
+        <p className="mt-2 text-[12px] leading-relaxed text-ink-soft">
+          未声明的能力是 <InlineCode>null</InlineCode>：筛选「不支持」时不会命中它，
+          「未声明」不等于「不支持」。
+        </p>
+
+        <div className="mt-4 space-y-5">
+          {META_GROUPS.map((group) => (
+            <div key={group.group}>
+              <p className="text-[12.5px] font-medium text-ink">{group.group}</p>
+              <p className="mt-0.5 text-[11.5px] leading-relaxed text-muted">{group.hint}</p>
+              <FieldTable rows={group.fields} />
             </div>
           ))}
-        </dl>
+        </div>
+
+        <p className="mt-3 text-[11.5px] leading-relaxed text-faint">
+          以上是站点侧扩展，不属于 Lull 内容包格式；枚举的单一事实来源是
+          <InlineCode>schemas/community-item.schema.json</InlineCode>。
+        </p>
       </section>
 
       <section id="issues" className="mt-10 scroll-mt-24 rounded-2xl border border-line bg-panel/50 p-6">
@@ -667,8 +901,8 @@ export default function SubmitPage() {
         </p>
       </section>
 
-      <section className="mt-10">
-        <h2 className="text-[14.5px] font-medium tracking-tight text-ink">然后呢</h2>
+      <section id="next" className="mt-10 scroll-mt-24">
+        <h2 className="text-[14.5px] font-medium tracking-tight text-ink">提交作品</h2>
         <ol className="mt-3 space-y-2.5 text-[12.5px] leading-relaxed text-ink-soft">
           <li>
             1. 填 issue 表单（无需 fork）。提交后 CI 会跑一遍{" "}
@@ -690,6 +924,12 @@ export default function SubmitPage() {
           </a>
         </div>
       </section>
+        </div>
+
+        <aside className="hidden xl:block">
+          <SectionOutline className="sticky top-24" />
+        </aside>
+      </div>
     </div>
   );
 }

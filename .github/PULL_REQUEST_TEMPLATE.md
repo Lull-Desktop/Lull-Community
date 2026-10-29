@@ -9,7 +9,7 @@
 > 否则登记表里的 commit 与内容会对不上（`pnpm content:check` 会报出来）。
 
 - [ ] 新增壁纸场景（`content/scenes/<slug>/`）
-- [ ] 新增桌面工具（`content/widgets/<slug>/`）
+- [ ] 新增桌面组件（`content/widgets/<slug>/`）
 - [ ] 更新已有作品（版本号已递增）
 - [ ] 修复内容或文档问题
 

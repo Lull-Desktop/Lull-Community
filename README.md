@@ -1,6 +1,6 @@
 # Lull Community
 
-Lull 的第三方社区站：浏览、下载、提交**壁纸场景**与**桌面工具**。
+Lull 的第三方社区站：浏览、下载、提交**壁纸场景**与**桌面组件**。
 
 - 社区站点：<https://lull-desktop.github.io/Lull-Community/>
 - Lull-App下载：<https://github.com/Lull-Desktop/Lull>

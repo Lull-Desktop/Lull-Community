@@ -22,7 +22,7 @@ export async function generateMetadata({
     title: item.name,
     description: item.description,
     openGraph: {
-      title: `${item.name} · Lull 桌面工具`,
+      title: `${item.name} · Lull 桌面组件`,
       description: item.description,
     },
   };
