@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "slug": "webgl-fluid",
+  "tags": ["WebGL", "流体", "抽象", "辉光", "GPU 密集"],
+  "featured": false,
+  "addedAt": "2026-11-08",
+  "preview": "preview.webp",
+  "authorUrl": "https://github.com/PavelDoGreat/WebGL-Fluid-Simulation",
+  "note": "来自 Lively Wallpaper 社区库的 WebGL Fluid Simulation（PavelDoGreat 原作 MIT，rocksdanister 的 Lively 适配版）。最小转换收录：仅移除 dat.GUI 等死代码与死资源，未迁移 Lively 参数与音频联动；上游的 livelyPropertyListener 等桥接函数原样保留但在 Lull 下永不触发。启动时注入的一轮 splat 会随耗散逐渐淡出，属上游行为，未做改动。",
+  "meta": {
+    "renderType": "2d",
+    "renderTech": ["webgl"],
+    "sceneType": "abstract",
+    "visualStyle": ["generative"],
+    "animationMode": "realtime",
+    "hardwareLevel": "accelerated",
+    "powerProfile": "quality",
+    "networkPolicy": "none",
+    "recommendedUse": ["highQuality"],
+    "qualityProfiles": ["low", "medium", "high"],
+    "multiMonitorModes": ["independent"],
+    "supportsReducedMotion": false
+  }
+}
