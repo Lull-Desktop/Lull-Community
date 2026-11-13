@@ -649,9 +649,9 @@ export function ItemDetail({ item }: { item: CatalogItem }) {
             <div className="rounded-2xl border border-line bg-panel/50 p-4">
               <p className="text-[12.5px] font-medium text-ink">许可与署名</p>
               <p className="mt-2 text-[12px] leading-relaxed text-muted">
-                作品以 <span className="font-mono text-ink-soft">{item.license}</span> 发布，
-                署名 <span className="text-ink-soft">{item.author}</span>。
-                转载或二次分发请保留署名与许可声明。
+                许可标识：<span className="font-mono text-ink-soft">{item.license}</span>；
+                署名：<span className="text-ink-soft">{item.author}</span>。
+                使用或分发前请查阅作品的许可说明。
               </p>
               {item.homepage && (
                 <a
@@ -678,7 +678,7 @@ export function ItemDetail({ item }: { item: CatalogItem }) {
                   rel="noreferrer noopener"
                   className="mt-2.5 block text-[12px] text-accent hover:underline"
                 >
-                  许可原文（{item.license}）→
+                  许可说明（{item.license}）→
                 </a>
               )}
             </div>

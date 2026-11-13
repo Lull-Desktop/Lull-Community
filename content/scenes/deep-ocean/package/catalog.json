@@ -8,7 +8,7 @@
       "name": "深海鱼群 / Deep Ocean School",
       "version": "1.1.1",
       "description": "深海鱼群/ Deep Ocean School",
-      "license": "MIT",
+      "license": "LicenseRef-Unspecified",
       "capabilities": [
         "wallpaper.viewport",
         "wallpaper.canvas",
@@ -126,7 +126,7 @@
       "integrity": {
         "algorithm": "sha256",
         "scope": "package",
-        "digest": "7b519dd41af688e5a47037377f742d58ef559ec9dd5e621a0414db8936118e01"
+        "digest": "10c29c2a6bff3494c1f888d24188b1236166775688e2d2fa3d530a1bb29f849b"
       }
     }
   ]
