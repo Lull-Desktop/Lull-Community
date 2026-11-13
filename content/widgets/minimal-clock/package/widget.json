@@ -3,23 +3,24 @@
   "type": "widget",
   "id": "community-clock",
   "name": "极简时钟",
-  "version": "1.1.0",
-  "description": "复古双铃指针时钟，显示本地时间与日期，不申请额外宿主能力。",
+  "version": "1.2.0",
+  "description": "复古双铃指针时钟，显示本地时间与日期，支持拖动和调整大小。",
   "author": "Lull Community",
   "license": "MIT",
   "builtin": false,
   "hostApi": 1,
   "entry": "index.html",
   "lifecycle": "background",
-  "capabilities": ["widget.ui"],
+  "capabilities": ["widget.ui", "widget.chrome"],
   "window": {
     "width": 480,
     "height": 300,
-    "minWidth": 480,
-    "minHeight": 300,
+    "minWidth": 320,
+    "minHeight": 240,
     "resizable": false,
     "transparent": true,
-    "chrome": "host"
+    "chrome": "custom",
+    "fit": "content"
   },
   "network": []
 }

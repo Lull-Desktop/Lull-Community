@@ -37,6 +37,12 @@
         </div>
       </div>
       <time class="sr-only" id="time"></time>
+      <div class="window-controls" role="group" aria-label="时钟窗口控制">
+        <button type="button" id="smaller" aria-label="缩小时钟" title="缩小时钟">−</button>
+        <button type="button" id="larger" aria-label="放大时钟" title="放大时钟">＋</button>
+        <button type="button" id="close" aria-label="关闭时钟" title="关闭时钟">×</button>
+      </div>
+      <p id="status" class="status" role="status" aria-live="polite"></p>
     </main>
     <script src="./main.js" type="module"></script>
   </body>

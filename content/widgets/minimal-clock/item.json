@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "slug": "minimal-clock",
-  "tags": ["时钟", "复古", "指针", "零权限"],
+  "tags": ["时钟", "复古", "指针", "可调整"],
   "featured": true,
   "addedAt": "2026-10-25",
   "preview": "preview.webp",
@@ -9,12 +9,13 @@
     "renderType": "web",
     "renderTech": ["css"],
     "widgetType": "clock",
-    "interactionLevel": "static",
+    "interactionLevel": "interactive",
     "updatePolicy": "interval",
     "backgroundPolicy": "continue",
     "networkPolicy": "none",
     "platforms": ["windows"],
     "recommendedUse": ["office"],
-    "supportsReducedMotion": true
+    "supportsReducedMotion": true,
+    "supportsDrag": true
   }
 }
