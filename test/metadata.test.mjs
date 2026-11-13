@@ -74,8 +74,8 @@ test("从清单继承的性能等级会标注来源", () => {
 
 test("widget 的清单事实与作者声明各自独立", () => {
   const clock = metaOf("minimal-clock");
-  assert.deepEqual(clock.defaultSize, { width: 480, height: 300 });
-  assert.deepEqual(clock.minSize, { width: 320, height: 240 });
+  assert.deepEqual(clock.defaultSize, { width: 540, height: 600 });
+  assert.deepEqual(clock.minSize, { width: 320, height: 300 });
   // 清单明确写了 resizable:false / transparent:true，属于确认值
   assert.equal(clock.resizable, false);
   assert.equal(clock.supportsTransparency, true);

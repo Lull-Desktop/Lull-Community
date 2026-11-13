@@ -30,7 +30,13 @@ const smaller = document.getElementById("smaller");
 const larger = document.getElementById("larger");
 const close = document.getElementById("close");
 const status = document.getElementById("status");
-const sizes = [{ width: 320, height: 240 }, { width: 400, height: 270 }, { width: 480, height: 300 }];
+const sizes = [
+  { width: 320, height: 300 },
+  { width: 340, height: 350 },
+  { width: 400, height: 420 },
+  { width: 460, height: 500 },
+  { width: 540, height: 600 },
+];
 let client = null;
 let currentWidth = window.innerWidth;
 let resizing = false;

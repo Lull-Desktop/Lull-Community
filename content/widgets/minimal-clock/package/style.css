@@ -10,7 +10,7 @@
 html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: transparent; }
 body { -webkit-font-smoothing: antialiased; }
 .clock { width: 100%; height: 100%; display: grid; place-items: center; overflow: hidden; }
-.alarm-clock { position: relative; width: min(74vw, 76vh); aspect-ratio: 1 / 1.18; cursor: grab; touch-action: none; }
+.alarm-clock { position: relative; width: min(90vw, 76vh); aspect-ratio: 1 / 1.18; cursor: grab; touch-action: none; }
 .alarm-clock:active { cursor: grabbing; }
 .handle {
   position: absolute; z-index: 0; left: 28%; top: 1%; width: 44%; height: 24%;
@@ -45,12 +45,12 @@ body { -webkit-font-smoothing: antialiased; }
 .hour-track { inset: 7%; border: 1px solid #9a9d8f; }
 .numbers { position: absolute; inset: 9%; }
 .numbers span { position: absolute; inset: 0; text-align: center; transform: rotate(calc(var(--n) * 30deg)); }
-.numbers b { display: inline-block; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(13px, 7.2vh, 32px);
+.numbers b { display: inline-block; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(13px, 7.2vh, 54px);
   line-height: 1.05; font-weight: 400; transform: rotate(calc(var(--n) * -30deg)); }
-.dial-label { position: absolute; top: 36%; width: 100%; text-align: center; font: 600 clamp(5px, 1.5vh, 7px)/1 sans-serif;
+.dial-label { position: absolute; top: 36%; width: 100%; text-align: center; font: 600 clamp(5px, 1.5vh, 12px)/1 sans-serif;
   letter-spacing: .22em; color: #7b8274; } .dial-label span { color: var(--accent); }
 .dial-date { position: absolute; top: 67%; width: 100%; text-align: center; color: #757c70;
-  font: 500 clamp(6px, 1.7vh, 8px)/1.2 'Segoe UI', 'Microsoft YaHei', sans-serif; letter-spacing: .05em; }
+  font: 500 clamp(6px, 1.7vh, 14px)/1.2 'Segoe UI', 'Microsoft YaHei', sans-serif; letter-spacing: .05em; }
 .hand { position: absolute; z-index: 3; left: 50%; top: 50%; transform-origin: 50% 85%; border-radius: 100% 100% 15% 15%; }
 .hour-hand { width: 3.4%; height: 28%; margin-left: -1.7%; margin-top: -23.8%; background: #1d2420;
   clip-path: polygon(50% 0, 100% 72%, 72% 100%, 28% 100%, 0 72%); }
@@ -61,7 +61,7 @@ body { -webkit-font-smoothing: antialiased; }
   transform: translate(-50%, -50%); background: radial-gradient(circle at 35% 30%, #a9b0a2, #26302b 48%, #101714 75%);
   box-shadow: 0 1px 2px #0008; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-.window-controls { position: absolute; z-index: 10; top: 8px; right: 8px; display: flex; gap: 3px;
+.window-controls { position: absolute; z-index: 10; top: 8px; left: 50%; transform: translateX(-50%); display: flex; gap: 3px;
   padding: 3px; border: 1px solid #ffffff25; border-radius: 10px; background: #14201de6;
   box-shadow: 0 3px 12px #0005; opacity: 0; transition: opacity 140ms ease; }
 .clock:hover .window-controls, .window-controls:focus-within { opacity: 1; }
