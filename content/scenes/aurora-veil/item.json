@@ -1,20 +1,36 @@
 {
   "schemaVersion": 1,
   "slug": "aurora-veil",
-  "tags": ["极光", "星空", "山脊"],
+  "tags": [
+    "极光",
+    "星空",
+    "山脊"
+  ],
   "featured": true,
   "addedAt": "2026-10-25",
   "preview": "preview.webp",
   "meta": {
     "renderType": "web",
-    "renderTech": ["css"],
+    "renderTech": [
+      "css"
+    ],
     "sceneType": "nature",
-    "visualStyle": ["cinematic", "minimal"],
-    "animationMode": "loop",
-    "recommendedUse": ["office", "laptop"],
-    "qualityProfiles": ["medium", "high"],
+    "visualStyle": [
+      "cinematic",
+      "minimal"
+    ],
+    "animationMode": "interactive",
+    "recommendedUse": [
+      "office",
+      "laptop"
+    ],
+    "qualityProfiles": [
+      "medium",
+      "high"
+    ],
     "powerProfile": "efficient",
     "supportsReducedMotion": true,
     "networkPolicy": "none"
-  }
+  },
+  "note": "社区改造版本：支持 Lull 场景宿主 API 3 的鼠标位置与可调参数。"
 }

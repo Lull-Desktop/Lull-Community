@@ -9,7 +9,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 export const panelVariants = cva("", {
   variants: {
     variant: {
-      card: "relative rounded-2xl border border-line bg-gradient-to-b from-white/[0.028] to-transparent transition-colors hover:border-line-2",
+      card: "relative rounded-2xl border border-line bg-gradient-to-b from-white/[0.035] to-panel/70 transition-colors hover:border-line-2",
       rail: "rounded-2xl border border-line bg-white/[0.02]",
       stage:
         "overflow-hidden rounded-3xl border border-line-2 shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9),0_0_60px_-20px_rgba(159,191,150,0.35)]",

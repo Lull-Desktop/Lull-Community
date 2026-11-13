@@ -151,7 +151,7 @@ export function FilterPanel({
                 onClick={() => changeType(value)}
                 aria-pressed={active}
                 className={cn(
-                  "rounded-full px-2.5 py-1 text-[11.5px] transition-colors",
+                  "rounded-full px-3 py-2 text-[12px] transition-colors",
                   active
                     ? "bg-primary/20 font-medium text-ink"
                     : "text-muted hover:text-ink",
@@ -215,7 +215,7 @@ export function FilterPanel({
           onClick={() => setShowAdvanced((value) => !value)}
           aria-expanded={showAdvanced}
           className={cn(
-            "ml-auto flex h-8 items-center gap-1.5 rounded-full border px-3 text-[12px] transition-colors",
+            "ml-auto flex h-10 items-center gap-1.5 rounded-full border px-3 text-[12px] transition-colors",
             showAdvanced || activeCount > 0
               ? "border-primary/45 bg-primary/[0.07] text-ink"
               : "border-line text-muted hover:border-line-2 hover:text-ink",

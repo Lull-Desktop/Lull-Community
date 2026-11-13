@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>深海鱼群 / Deep Ocean School</title>
+  <!--
+    发布版入口页：只在 Lull 壁纸 iframe 里运行。
+
+    约束（宿主会对内容包做 strict 校验）：
+    - 所有资源必须是包内相对路径，不能用 /assets/... 这种站点根绝对路径；
+    - 不能引用远程资源；
+    - 不能使用 onclick= 这类内联事件处理器（宿主 CSP 禁止）；
+    - 宿主会给每个 <script> 注入 nonce，所以脚本用外链 + type="module"。
+
+    body 的径向渐变是兜底：WebGPU 不可用或初始化失败时不留白屏/纯黑屏。
+  -->
+  <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background-color: #01121a;
+      background-image:
+        radial-gradient(120% 90% at 50% 0%, #0d4f66 0%, #062a3a 42%, #01121a 100%);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+    }
+
+    /* 渐变遮罩：首帧后由 GameRuntime 自动 display:none；初始化失败时留下提示文字 */
+    #msg {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      box-sizing: border-box;
+      text-align: center;
+      font: 400 15px/1.7 system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+      color: rgba(198, 234, 246, 0.82);
+      letter-spacing: 0.08em;
+      background: transparent;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    #msg strong {
+      font-weight: 500;
+      letter-spacing: 0.18em;
+    }
+
+    #msg span {
+      opacity: 0.6;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div id="msg"><strong>正在潜入深海…</strong></div>
+  <script type="module" src="./scene.js"></script>
+</body>
+</html>

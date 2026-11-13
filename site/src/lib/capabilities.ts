@@ -32,6 +32,11 @@ export const SCENE_CAPABILITIES: Record<string, CapabilityInfo> = {
     detail: "在壁纸设置里暴露可调参数",
     level: "基础",
   },
+  "pointer": {
+    label: "鼠标位置",
+    detail: "接收桌面上的鼠标位置与移动状态，不读取点击或按键",
+    level: "基础",
+  },
   "script": {
     label: "执行脚本",
     detail:

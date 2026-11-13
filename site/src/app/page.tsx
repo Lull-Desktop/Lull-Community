@@ -13,22 +13,22 @@ export default function CatalogPage() {
 
   return (
     <div className="shell">
-      <header className="max-w-2xl pt-10 sm:pt-12">
+      <header className="relative overflow-hidden border-b border-line pb-8 pt-12 sm:pb-10 sm:pt-16">
         <div className="flex flex-wrap items-center gap-3">
-          <p className="text-[10.5px] font-semibold tracking-[0.12em] text-muted">Last Updated</p>
-          <span className="font-mono text-[10.5px] tracking-[0.12em] text-muted">
-             {catalog.generatedAt.slice(0, 10).split("-").join("/")}
+          <p className="eyebrow">Lull Community / 作品画廊</p>
+          <span className="font-mono text-[11px] tracking-[0.08em] text-muted">
+            更新于 {catalog.generatedAt.slice(0, 10).split("-").join("/")}
           </span>
         </div>
-        <h1 className="mt-3 flex items-baseline gap-3 text-[clamp(2.1rem,4.2vw,3rem)] font-semibold tracking-[-0.02em]">
+        <h1 className="mt-5 font-serif text-[clamp(2.4rem,5vw,3.75rem)] font-normal tracking-[-0.035em]">
           组件市场
         </h1>
-        <p className="mt-4 text-[13.5px] leading-relaxed text-muted ">
-          Lull 的官方拓展组件与社区模组市场，由社区审核认证后并分享在市场中。
+        <p className="mt-4 max-w-2xl text-[15px] leading-[1.85] text-ink-soft sm:text-base">
+          发现由社区分享的动态壁纸与桌面组件，为你的桌面寻找下一片风景。
         </p>
       </header>
 
-      <div className="mt-2">
+      <div className="mt-7 sm:mt-8">
         <CatalogBrowser items={catalog.items} />
       </div>
     </div>

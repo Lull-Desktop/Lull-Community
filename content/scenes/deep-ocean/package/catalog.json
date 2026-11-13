@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "scenes": [
+    {
+      "schemaVersion": 1,
+      "type": "scene",
+      "id": "community.deep-ocean",
+      "name": "深海鱼群 / Deep Ocean School",
+      "version": "1.1.1",
+      "description": "深海鱼群/ Deep Ocean School",
+      "license": "MIT",
+      "capabilities": [
+        "wallpaper.viewport",
+        "wallpaper.canvas",
+        "wallpaper.params",
+        "wallpaper.script",
+        "wallpaper.pointer"
+      ],
+      "entry": "scenes/deep-ocean/index.html",
+      "theme": {
+        "background": "#01121a",
+        "accent": "#4fc3f7"
+      },
+      "params": [
+        {
+          "key": "render-scale",
+          "type": "number",
+          "label": "Render Scale / 渲染像素比例",
+          "description": "Rendered pixels relative to native resolution. / 实际渲染像素占比。",
+          "default": 1,
+          "min": 0.1,
+          "max": 1,
+          "step": 0.01
+        },
+        {
+          "key": "fish-count",
+          "type": "enum",
+          "label": "School Size / 鱼群数量",
+          "description": "Number of fish in the school; applies immediately after the change. / 鱼群数量，切换后立即生效（原地重建群体，无需重载）。",
+          "default": "6144",
+          "options": [
+            {
+              "value": "2048",
+              "label": "2048"
+            },
+            {
+              "value": "3072",
+              "label": "3072"
+            },
+            {
+              "value": "4096",
+              "label": "4096"
+            },
+            {
+              "value": "6144",
+              "label": "6144"
+            },
+            {
+              "value": "8192",
+              "label": "8192"
+            },
+            {
+              "value": "12288",
+              "label": "12288"
+            }
+          ]
+        },
+        {
+          "key": "density",
+          "type": "number",
+          "label": "Water Density / 海水浑浊度",
+          "description": "Larger = murkier water and shorter light shafts. / 越大水体越浑浊、光柱越短。",
+          "default": 1,
+          "min": 0.3,
+          "max": 2.5,
+          "step": 0.01
+        },
+        {
+          "key": "brightness",
+          "type": "number",
+          "label": "Fish Brightness / 鱼身亮度",
+          "description": "Scales the schooling body albedo. / 调节鱼身反照率亮度。",
+          "default": 1,
+          "min": 0.3,
+          "max": 2,
+          "step": 0.01
+        },
+        {
+          "key": "bloom",
+          "type": "number",
+          "label": "Bloom / 柔光泛光",
+          "description": "Glow strength of bright highlights. / 高光柔光强度。",
+          "default": 0.5,
+          "min": 0,
+          "max": 1.5,
+          "step": 0.01
+        },
+        {
+          "key": "rays",
+          "type": "number",
+          "label": "Light Shafts / 光柱强度",
+          "description": "Volumetric sun shaft intensity. / 体积光柱强度。",
+          "default": 1,
+          "min": 0,
+          "max": 3,
+          "step": 0.01
+        },
+        {
+          "key": "auto-events",
+          "type": "boolean",
+          "label": "Auto Events / 自动演出",
+          "description": "Enable auto events. / 开启后鱼群会自动移动。",
+          "default": true
+        }
+      ],
+      "performance": {
+        "tier": "high",
+        "targetFps": 60
+      },
+      "compatibility": {
+        "hostApi": 3,
+        "platforms": [
+          "windows"
+        ]
+      },
+      "integrity": {
+        "algorithm": "sha256",
+        "scope": "package",
+        "digest": "7b519dd41af688e5a47037377f742d58ef559ec9dd5e621a0414db8936118e01"
+      }
+    }
+  ]
+}

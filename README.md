@@ -83,7 +83,7 @@ Lull 主仓库：
 
 `schemas/scene.schema.json` 与 `catalog.schema.json` 是上游逐字副本；`release.schema.json` 与
 `package-signature.schema.json` 是本仓库的发布契约（见 `schemas/README.md`）。上游改格式，这里跟着改；
-`scripts/lib/digest.mjs` 里带一个**已知值自检**：官方「雾岚」包的摘要必须算出
+`scripts/lib/digest.mjs` 里带一个**已知值自检**：固定保存的官方「雾岚」1.0 样本（`test/fixtures/mist-v1/`）摘要必须算出
 `f6b86e63…a608ecb`，算不出来就说明算法漂移了，此时打出的所有 zip 都会被安装器拒绝。
 
 ## 本地开发

@@ -109,8 +109,8 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
         <TypeParamSync onChange={setType} />
       </Suspense>
 
-      <div className="flex flex-col gap-3 border-b border-line pb-4">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-4 border-b border-line pb-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <label className="relative flex-1">
             <span className="sr-only">搜索作品</span>
             <svg
@@ -128,7 +128,7 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="搜作品名、作者或标签…"
-              className="h-9 w-full rounded-full border border-line bg-white/[0.02] pl-10 pr-4 text-[13px] text-ink placeholder:text-faint transition-colors focus:border-primary/60 focus:outline-none"
+              className="h-11 w-full rounded-full border border-line bg-white/[0.025] pl-10 pr-4 text-[14px] text-ink placeholder:text-faint transition-colors focus:border-primary/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
             />
           </label>
 
@@ -140,7 +140,7 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
                 onClick={() => setSort(option.key)}
                 aria-pressed={sort === option.key}
                 className={cn(
-                  "rounded-full px-2.5 py-1 text-[11.5px] transition-colors",
+                  "rounded-full px-3 py-2 text-[12px] transition-colors",
                   sort === option.key ? "bg-primary/12 text-ink" : "text-muted hover:text-ink",
                 )}
               >
@@ -162,7 +162,7 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
         />
       </div>
 
-      <p className="py-3 text-[12px] text-muted">
+      <p aria-live="polite" className="py-5 text-[13px] text-muted">
         共 <span className="font-mono text-ink">{visible.length}</span> 个作品
         {type !== "all" && <span> · {FILTER_KIND_LABELS[type]}</span>}
         {filters.common.tags.length > 0 && (
@@ -182,8 +182,8 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
       </p>
 
       {visible.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-line-2 bg-panel/40 px-6 py-16 text-center">
-          <p className="text-[13.5px] text-ink">没有匹配的作品</p>
+        <div className="rounded-2xl border border-dashed border-line-2 bg-panel/40 px-6 py-20 text-center">
+          <p className="font-serif text-xl text-ink">没有找到匹配的作品</p>
           <p className="mt-1.5 text-[12.5px] text-muted">
             换个资源类型、内容类型或关键词，或者清掉筛选条件看看全部。
           </p>
@@ -192,7 +192,7 @@ export function CatalogBrowser({ items }: { items: CatalogItem[] }) {
           </Button>
         </div>
       ) : (
-        <div className="grid gap-[18px] sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((item) => (
             <ItemCard key={`${item.kind}-${item.slug}`} item={item} />
           ))}

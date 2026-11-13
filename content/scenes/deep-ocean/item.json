@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "slug": "deep-ocean",
+  "tags": ["深海", "鱼群", "WebGPU", "可调参数"],
+  "featured": false,
+  "addedAt": "2026-11-13",
+  "preview": "preview.webp",
+  "meta": {
+    "renderType": "3d",
+    "renderTech": ["webgpu"],
+    "requiredFeatures": ["WebGPU"],
+    "sceneType": "nature",
+    "animationMode": "interactive"
+  }
+}

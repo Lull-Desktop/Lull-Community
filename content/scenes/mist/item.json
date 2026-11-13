@@ -1,21 +1,37 @@
 {
   "schemaVersion": 1,
   "slug": "mist",
-  "tags": ["薄雾", "极简", "低功耗"],
+  "tags": [
+    "薄雾",
+    "极简",
+    "低功耗"
+  ],
   "featured": true,
   "addedAt": "2026-10-20",
   "preview": "preview.webp",
   "authorUrl": "https://github.com/lull-desktop",
-  "note": "种子内容：来自 Lull 官方内容目录，摘要与 Rust 侧已知值一致，用作算法自检基准。",
+  "note": "社区改造版本：支持 Lull 场景宿主 API 3 的鼠标位置与可调参数。",
   "meta": {
     "renderType": "web",
-    "renderTech": ["css"],
+    "renderTech": [
+      "css"
+    ],
     "sceneType": "ambient",
-    "visualStyle": ["minimal"],
-    "animationMode": "loop",
-    "recommendedUse": ["office"],
-    "qualityProfiles": ["low", "medium"],
-    "multiMonitorModes": ["mirror", "span"],
+    "visualStyle": [
+      "minimal"
+    ],
+    "animationMode": "interactive",
+    "recommendedUse": [
+      "office"
+    ],
+    "qualityProfiles": [
+      "low",
+      "medium"
+    ],
+    "multiMonitorModes": [
+      "mirror",
+      "span"
+    ],
     "powerProfile": "efficient",
     "supportsReducedMotion": true,
     "networkPolicy": "none"

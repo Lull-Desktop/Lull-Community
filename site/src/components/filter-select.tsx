@@ -77,8 +77,8 @@ export function FilterSelect({
         className={cn(
           "flex items-center justify-between gap-2 border bg-white/[0.02] text-left transition-colors",
           compact
-            ? "h-8 rounded-full px-3 text-[12px]"
-            : "mt-2 h-9 w-full rounded-lg px-3 text-[12.5px]",
+            ? "h-10 rounded-full px-3 text-[12px]"
+            : "mt-2 h-10 w-full rounded-lg px-3 text-[13px]",
           open ? "border-primary/50" : "border-line hover:border-line-2",
         )}
       >

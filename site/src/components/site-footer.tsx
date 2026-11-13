@@ -44,8 +44,6 @@ const COLUMNS = [
 ];
 
 export function SiteFooter() {
-  const tags = [...new Set(catalog.items.flatMap((item) => item.tags))].slice(0, 14);
-
   return (
     <footer className="mt-[clamp(40px,6vw,80px)] border-t border-line text-[.86rem] text-faint">
       <div className="shell">
@@ -65,9 +63,8 @@ export function SiteFooter() {
                 className="font-serif text-[13px] tracking-[0.36em] uppercase"
               />
             </p>
-            <p className="mt-3 max-w-[340px] text-[12.5px] leading-[1.75] text-muted">
-              这里是 Lull 的官方拓展组件与社区模组市场，目前市场通过 GitHub 仓库管理，通过社区审核认证后并分享在市场中。
-              若你是开发者，欢迎提交分享你的作品！
+            <p className="mt-4 max-w-[340px] text-[13px] leading-[1.75] text-muted">
+              在这里发现并分享动态壁纸与桌面组件。作品由社区共同维护，让每个人的桌面都有自己的风景。
             </p>
           </div>
 

@@ -1,159 +1,48 @@
 <!doctype html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>极光帷幕 · Lull 社区场景</title>
-    <style>
-      /* 纯静态场景：只有 HTML 与 CSS，运行在 sandbox="" 的 iframe 里，不执行 JS。
-         没有远程字体、脚本、图片；所有素材都是渐变与形状。 */
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      html, body {
-        width: 100%; height: 100%; overflow: hidden;
-        background: #04060e;
-        color-scheme: dark;
-      }
-
-      .sky {
-        position: fixed; inset: 0;
-        background:
-          radial-gradient(120% 80% at 50% 118%, rgba(24, 66, 84, 0.55), transparent 62%),
-          radial-gradient(70% 50% at 18% 8%, rgba(38, 54, 108, 0.45), transparent 70%),
-          linear-gradient(180deg, #05070f 0%, #070c1a 42%, #04060e 100%);
-      }
-
-      /* 星空：三层不同密度与亮度的点，缓慢闪烁制造纵深 */
-      .stars {
-        position: absolute; inset: -10%;
-        background-repeat: repeat;
-        animation: twinkle 9s ease-in-out infinite alternate;
-      }
-      .stars.a {
-        background-image:
-          radial-gradient(1.4px 1.4px at 20% 30%, #e8f3ff 40%, transparent 41%),
-          radial-gradient(1.2px 1.2px at 62% 18%, #dce9ff 40%, transparent 41%),
-          radial-gradient(1.6px 1.6px at 84% 46%, #ffffff 40%, transparent 41%),
-          radial-gradient(1.1px 1.1px at 38% 68%, #cfe0ff 40%, transparent 41%);
-        background-size: 420px 420px, 560px 560px, 700px 700px, 340px 340px;
-        opacity: 0.85;
-      }
-      .stars.b {
-        background-image:
-          radial-gradient(1px 1px at 12% 52%, #bcd4ff 40%, transparent 41%),
-          radial-gradient(1px 1px at 48% 8%, #e6f0ff 40%, transparent 41%),
-          radial-gradient(1px 1px at 72% 74%, #cbd9ff 40%, transparent 41%),
-          radial-gradient(1px 1px at 90% 22%, #ffffff 40%, transparent 41%),
-          radial-gradient(1px 1px at 30% 88%, #b9cdf5 40%, transparent 41%);
-        background-size: 300px 300px, 380px 380px, 460px 460px, 520px 520px, 260px 260px;
-        opacity: 0.55;
-        animation-delay: -3s;
-        animation-duration: 13s;
-      }
-
-      /* 极光帷幕：三片色带先被 clip-path 切成折线，再由父层统一模糊。
-         模糊必须放在父层——先模糊再裁剪会让边缘重新变硬。 */
-      .veils {
-        position: absolute; inset: -30% -20%;
-        filter: blur(52px) saturate(160%);
-        mix-blend-mode: screen;
-        pointer-events: none;
-      }
-      .veil {
-        position: absolute; inset: 0;
-        transform-origin: 50% 100%;
-        will-change: transform;
-      }
-      .veil.v1 {
-        background: linear-gradient(
-          100deg,
-          transparent 12%,
-          rgba(72, 214, 178, 0.42) 34%,
-          rgba(126, 255, 214, 0.28) 48%,
-          transparent 68%
-        );
-        clip-path: polygon(0% 100%, 24% 34%, 46% 62%, 68% 22%, 100% 100%);
-        animation: sway 46s ease-in-out infinite alternate;
-      }
-      .veil.v2 {
-        background: linear-gradient(
-          80deg,
-          transparent 8%,
-          rgba(96, 140, 255, 0.32) 36%,
-          rgba(168, 154, 255, 0.26) 52%,
-          transparent 76%
-        );
-        clip-path: polygon(6% 100%, 34% 46%, 58% 68%, 82% 30%, 100% 100%);
-        animation: sway 64s ease-in-out infinite alternate-reverse;
-      }
-      .veil.v3 {
-        background: linear-gradient(
-          120deg,
-          transparent 20%,
-          rgba(58, 190, 176, 0.24) 44%,
-          rgba(120, 230, 210, 0.16) 58%,
-          transparent 82%
-        );
-        clip-path: polygon(0% 100%, 40% 62%, 62% 44%, 100% 100%);
-        animation: sway 80s ease-in-out infinite alternate;
-        animation-delay: -12s;
-      }
-
-      /* 地平线冷光，把天空与山体分开 */
-      .glow {
-        position: absolute; left: -10%; right: -10%; bottom: -12%; height: 46%;
-        background: radial-gradient(50% 100% at 50% 100%, rgba(90, 214, 196, 0.28), transparent 70%);
-        filter: blur(20px);
-      }
-
-      .ridge {
-        position: absolute; left: -2%; right: -2%; bottom: 0;
-      }
-      .ridge.far {
-        height: 34%;
-        background: linear-gradient(180deg, #0a1424 0%, #070d18 100%);
-        clip-path: polygon(0% 62%, 8% 46%, 17% 58%, 26% 34%, 36% 52%, 47% 40%, 58% 56%, 68% 36%, 79% 54%, 90% 42%, 100% 58%, 100% 100%, 0% 100%);
-        opacity: 0.85;
-      }
-      .ridge.near {
-        height: 24%;
-        background: linear-gradient(180deg, #05090f 0%, #03060a 100%);
-        clip-path: polygon(0% 70%, 12% 50%, 22% 64%, 34% 44%, 45% 60%, 56% 46%, 70% 66%, 82% 50%, 92% 62%, 100% 54%, 100% 100%, 0% 100%);
-      }
-
-      /* 轻微暗角，避免边缘抢视线 */
-      .vignette {
-        position: absolute; inset: 0;
-        background: radial-gradient(120% 90% at 50% 42%, transparent 52%, rgba(2, 4, 8, 0.72) 100%);
-        pointer-events: none;
-      }
-
-      @keyframes sway {
-        from { transform: translate3d(-3%, 1%, 0) rotate(-2.4deg) scale(1.04); }
-        to   { transform: translate3d(3%, -1.5%, 0) rotate(2.2deg) scale(1.1); }
-      }
-      @keyframes twinkle {
-        from { opacity: 0.42; }
-        to   { opacity: 0.92; }
-      }
-
-      /* 尊重系统的「减少动态效果」 */
-      @media (prefers-reduced-motion: reduce) {
-        .veil, .stars { animation: none; }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="sky"></div>
-    <div class="stars a"></div>
-    <div class="stars b"></div>
-    <div class="veils">
-      <div class="veil v3"></div>
-      <div class="veil v2"></div>
-      <div class="veil v1"></div>
-    </div>
-    <div class="glow"></div>
-    <div class="ridge far"></div>
-    <div class="ridge near"></div>
-    <div class="vignette"></div>
-  </body>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>极光帷幕 · Lull</title>
+  <style>
+    :root { --x: 50%; --y: 42%; --halo: 0; --strength: 1; --play: running; color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: #040914; }
+    .scene { position: absolute; inset: 0; overflow: hidden; background: radial-gradient(ellipse at 50% 73%, #214759 0%, #101b32 32%, transparent 70%), linear-gradient(#040814, #0c182b 66%, #101c27); }
+    .stars, .stars::after { position: absolute; inset: 0; content: ""; background-image: radial-gradient(1px 1px at 15% 22%, #fff 85%, transparent), radial-gradient(1.4px 1.4px at 61% 32%, #d8f9ff 80%, transparent), radial-gradient(1px 1px at 74% 68%, #c8dcff 80%, transparent), radial-gradient(1px 1px at 34% 74%, #fff 80%, transparent); background-size: 237px 191px, 391px 271px, 311px 223px, 467px 293px; opacity: .54; animation: glimmer 8s ease-in-out infinite alternate; animation-play-state: var(--play); }
+    .stars::after { inset: 0; transform: translate(63px, 28px); opacity: .35; animation-delay: -4s; }
+    .moon { position: absolute; width: clamp(30px, 4vw, 66px); aspect-ratio: 1; border-radius: 50%; top: 16%; right: 19%; background: #def5ea; box-shadow: 0 0 32px 8px #a6e9d544, 0 0 95px 35px #a4e4d81a; opacity: .7; }
+    .aurora { position: absolute; inset: -18% -12% 21%; opacity: calc(.85 * var(--strength)); filter: blur(20px); mix-blend-mode: screen; }
+    .curtain { position: absolute; inset: 0; transform-origin: center 80%; animation: sway 34s ease-in-out infinite alternate; animation-play-state: var(--play); }
+    .curtain.one { background: repeating-linear-gradient(96deg, transparent 0 3%, #86ffca26 4%, transparent 6% 8%), linear-gradient(105deg, transparent 8%, #1ce2a96b 34%, #6af6c786 47%, #1fa4c63b 61%, transparent 78%); clip-path: polygon(0 25%, 14% 14%, 31% 30%, 50% 18%, 67% 32%, 84% 20%, 100% 31%, 100% 69%, 78% 63%, 59% 77%, 39% 61%, 20% 74%, 0 62%); }
+    .curtain.two { background: linear-gradient(103deg, transparent 16%, #5884fc45 38%, #b2a7ff49 51%, #49dfc157 66%, transparent 84%); clip-path: polygon(0 33%, 20% 26%, 37% 36%, 56% 22%, 78% 35%, 100% 26%, 100% 64%, 74% 70%, 50% 58%, 27% 72%, 0 57%); animation-duration: 49s; animation-direction: alternate-reverse; }
+    .light { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(circle 24vmax at var(--x) var(--y), #b6ffe83b, #65f8cf12 40%, transparent 72%); opacity: var(--halo); transition: opacity 1s ease, background-position .35s ease; mix-blend-mode: screen; }
+    .landscape { position: absolute; inset: auto 0 0; width: 100%; height: 52%; }
+    .water { position: absolute; inset: 76% 0 0; background: radial-gradient(ellipse at 48% 0%, #7ce2c333, transparent 60%), repeating-linear-gradient(0deg, transparent 0 12px, #b7fff10b 13px, transparent 15px 26px), linear-gradient(#102a31, #071218 82%); }
+    .reflection { position: absolute; left: 22%; right: 20%; top: 76%; bottom: -4%; background: linear-gradient(100deg, transparent, #4de4be2b 35%, #9ce9d72d 52%, transparent 75%); filter: blur(18px); transform: skewX(-12deg); animation: shimmer 12s ease-in-out infinite alternate; animation-play-state: var(--play); }
+    .shore { position: absolute; bottom: 0; left: 0; right: 0; height: 15%; background: #050e13; clip-path: polygon(0 39%, 11% 56%, 23% 51%, 38% 72%, 51% 77%, 64% 69%, 80% 75%, 92% 49%, 100% 38%, 100% 100%, 0 100%); }
+    .vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 44%, transparent 43%, #02060c99 100%); pointer-events: none; }
+    @keyframes sway { from { transform: translate3d(-3%, 1%, 0) rotate(-2deg) scale(1.04); } to { transform: translate3d(3%, -1%, 0) rotate(2deg) scale(1.08); } }
+    @keyframes glimmer { from { opacity: .35; } to { opacity: .7; } }
+    @keyframes shimmer { from { transform: skewX(-12deg) translateX(-3%); opacity: .55; } to { transform: skewX(-10deg) translateX(3%); opacity: .9; } }
+    @media (prefers-reduced-motion: reduce) { *, *::after { animation: none !important; transition: none !important; } }
+    [data-reduced="true"] *, [data-reduced="true"] *::after { animation: none !important; transition: none !important; }
+  </style>
+</head>
+<body>
+  <main class="scene" aria-label="星空下，极光在群山和湖面上缓缓流动">
+    <div class="stars"></div><div class="moon"></div>
+    <div class="aurora"><div class="curtain two"></div><div class="curtain one"></div></div>
+    <div class="light"></div>
+    <svg class="landscape" viewBox="0 0 1440 520" preserveAspectRatio="none" aria-hidden="true">
+      <defs><linearGradient id="far" x2="0" y2="1"><stop stop-color="#476977"/><stop offset="1" stop-color="#172f3b"/></linearGradient><linearGradient id="near" x2="0" y2="1"><stop stop-color="#1a3b45"/><stop offset="1" stop-color="#0c2027"/></linearGradient></defs>
+      <path fill="url(#far)" d="M0 255 105 200 177 226 300 111 388 192 480 127 583 222 710 119 816 202 916 146 1011 219 1124 101 1232 201 1330 148 1440 214 1440 520 0 520Z"/>
+      <path fill="#a7d6d03b" d="m257 151 43-40 88 81-54-26-34-21-15 18-18-5zm405 8 48-40 106 83-67-37-33-20-18 19-12-5zm414-10 48-48 108 100-57-36-39-26-19 17-13-5z"/>
+      <path fill="url(#near)" d="M0 321 91 270 182 295 274 251 375 313 472 255 565 304 674 248 791 320 899 249 1017 310 1125 258 1227 303 1327 253 1440 287 1440 520 0 520Z"/>
+      <path fill="#0a1d24" d="M0 362 97 328 188 349 282 320 385 356 491 325 597 355 710 326 820 360 937 325 1053 359 1160 331 1282 360 1372 325 1440 344 1440 520 0 520Z"/>
+    </svg>
+    <div class="water"></div><div class="reflection"></div><div class="shore"></div><div class="vignette"></div>
+  </main>
+  <script src="./scene.js" defer></script>
+</body>
 </html>

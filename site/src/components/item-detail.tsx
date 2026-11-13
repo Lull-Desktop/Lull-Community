@@ -95,10 +95,10 @@ function Masthead({ item }: { item: CatalogItem }) {
             </span>
           </div>
 
-          <h1 className="mt-3.5 text-[clamp(1.8rem,3.6vw,2.6rem)] font-normal leading-[1.18] tracking-[-0.02em]">
+          <h1 className="mt-4 font-serif text-[clamp(2.2rem,4vw,3.25rem)] font-normal leading-[1.18] tracking-[-0.02em]">
             {item.name}
           </h1>
-          <p className="mt-3 max-w-2xl text-[13.5px] leading-relaxed text-muted">
+          <p className="mt-4 max-w-2xl text-[15px] leading-[1.8] text-ink-soft">
             {item.description}
           </p>
         </div>
@@ -561,7 +561,7 @@ export function ItemDetail({ item }: { item: CatalogItem }) {
   return (
     <div className="relative">
       {/* 顶部环境光：壁纸直接用自己的画面，工具用一层紫光（截图当背景会把界面文字放大成噪点） */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] overflow-hidden">
+      <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] overflow-hidden [mask-image:linear-gradient(to_bottom,black_35%,transparent_100%)]">
         {item.kind === "scene" ? (
           <img
             src={asset(item.preview)}
@@ -576,12 +576,13 @@ export function ItemDetail({ item }: { item: CatalogItem }) {
         <div className="absolute inset-0 bg-gradient-to-b from-void/40 via-void/80 to-void" />
       </div>
 
-      <div className="shell py-10">
+      <div className="shell py-10 sm:py-14">
         <Masthead item={item} />
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_19.5rem]">
+        <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_20rem]">
           <div className="min-w-0">
-            <div className="overflow-hidden rounded-2xl ring-1 ring-white/12 shadow-[0_40px_90px_-50px_rgba(159,191,150,0.85)]">
+            <div className="overflow-hidden rounded-2xl border border-line-2 bg-panel shadow-[0_24px_60px_-30px_rgba(0,0,0,0.9)]">
+              <div aria-hidden="true" className="flex items-center justify-between border-b border-line px-4 py-3 font-mono text-[10px] tracking-[0.16em] text-muted"><span>● &nbsp;● &nbsp;●</span><span>LULL / PREVIEW</span></div>
               <img
                 src={asset(item.preview)}
                 alt={`${item.name} 预览`}
@@ -602,7 +603,7 @@ export function ItemDetail({ item }: { item: CatalogItem }) {
               </div>
             )}
 
-            <div className="mt-8 space-y-8">
+            <div className="mt-10 space-y-10">
               <div className="lg:hidden">
                 <InstallCard item={item} />
               </div>

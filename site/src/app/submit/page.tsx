@@ -464,7 +464,7 @@ function SectionOutline({ className }: { className?: string }) {
           <li key={entry.id}>
             <a
               href={`#${entry.id}`}
-              className="group flex items-baseline gap-2 text-[12px] leading-relaxed text-muted transition-colors hover:text-ink"
+              className="group flex items-baseline gap-2 text-[13px] leading-relaxed text-muted transition-colors hover:text-ink"
             >
               <span className="font-mono text-[10px] text-line-2 transition-colors group-hover:text-primary">
                 {String(index + 1).padStart(2, "0")}
@@ -490,10 +490,10 @@ export default function SubmitPage() {
 
           <header>
         <p className="eyebrow">contribute</p>
-        <h1 className="mt-3 text-[clamp(1.8rem,3.6vw,2.4rem)] font-normal tracking-[-0.02em]">
+        <h1 className="mt-4 font-serif text-[clamp(2.3rem,4vw,3.25rem)] font-normal tracking-[-0.02em]">
           提交你的<span className="text-gradient">作品</span>
         </h1>
-        <p className="mt-4 text-[13.5px] leading-relaxed text-muted">
+        <p className="mt-4 text-[15px] leading-[1.85] text-ink-soft">
           点击下方提交按钮，根据 issue 表单操作提交（无需 fork），管理员会审核并合并更新。
         </p>
  
@@ -520,7 +520,7 @@ export default function SubmitPage() {
               ↗
             </span>
           </a>
-                 <p>
+                 <p className="w-full pt-2 text-[13px] leading-relaxed text-muted">
           如何使用SDK开发组件？查看{" "}
           <a
             href="https://lull-desktop.github.io/Lull/docs/scene-sdk/"

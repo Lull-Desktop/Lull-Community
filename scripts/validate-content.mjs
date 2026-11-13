@@ -39,6 +39,7 @@ export const SCENE_CAPABILITIES = [
   "wallpaper.sync",
   "wallpaper.params",
   "wallpaper.script",
+  "wallpaper.pointer",
 ];
 
 /** Widget 能力白名单，对应上游 `PLUGIN_CAPABILITIES`。 */
@@ -193,13 +194,25 @@ function checkScene(bundle, validators, report) {
   }
   if (
     (scene.capabilities.includes("wallpaper.params") ||
-      scene.capabilities.includes("wallpaper.sync")) &&
+      scene.capabilities.includes("wallpaper.sync") ||
+      scene.capabilities.includes("wallpaper.pointer")) &&
     !scene.capabilities.includes("wallpaper.script")
   ) {
     report.error(
       at,
-      "wallpaper.params / wallpaper.sync 只能用于脚本场景，必须同时申请 wallpaper.script",
+      "wallpaper.params / wallpaper.sync / wallpaper.pointer 只能用于脚本场景，必须同时申请 wallpaper.script",
     );
+  }
+
+  if (scene.capabilities.includes("wallpaper.pointer") && (scene.compatibility?.hostApi ?? 0) < 3) {
+    report.error(at, "wallpaper.pointer 需要 compatibility.hostApi >= 3");
+  }
+
+  if (scene.game && (!scene.capabilities.includes("wallpaper.script") || (scene.compatibility?.hostApi ?? 0) < 2)) {
+    report.error(at, "game 绑定需要 wallpaper.script 与 compatibility.hostApi >= 2");
+  }
+  if (scene.params?.some((param) => param.type === "text") && (scene.compatibility?.hostApi ?? 0) < 4) {
+    report.error(at, "text 参数需要 compatibility.hostApi >= 4");
   }
 
   // entry：schema 已校验格式，这里校验落盘位置与文件存在
@@ -505,15 +518,13 @@ export function loadContent(options = {}) {
     },
   };
 
-  // 摘要算法自检：拿官方「雾岚」包当基准，防止实现与 Rust 漂移
+  // 摘要算法自检：固定的官方雾岚 1.0 样本不随社区作品更新。
   if (options.verifyDigest !== false) {
-    const mistDir = join(contentDir, "scenes", "mist", "package", "scenes", "mist");
-    if (existsSync(mistDir)) {
-      try {
-        assertDigestAlgorithm(mistDir);
-      } catch (error) {
-        report.error("scripts/lib/digest.mjs", error.message);
-      }
+    const mistDir = join(ROOT, "test", "fixtures", "mist-v1");
+    try {
+      assertDigestAlgorithm(mistDir);
+    } catch (error) {
+      report.error("scripts/lib/digest.mjs", error.message);
     }
   }
 

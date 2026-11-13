@@ -6,13 +6,16 @@
       "type": "scene",
       "id": "community.aurora-veil",
       "name": "极光帷幕",
-      "version": "1.0.0",
-      "description": "三层被柔化的极光色带在星野上缓慢摆动，山脊压住地平线的冷光。纯 CSS 动画，无脚本、无外部资源。",
+      "version": "1.1.0",
+      "description": "星光与极光在雪山湖泊上流动，鼠标移动时微光轻轻追随。",
       "author": "Lull Community",
       "license": "CC-BY-4.0",
       "capabilities": [
         "wallpaper.viewport",
-        "wallpaper.canvas"
+        "wallpaper.canvas",
+        "wallpaper.params",
+        "wallpaper.script",
+        "wallpaper.pointer"
       ],
       "entry": "scenes/aurora-veil/index.html",
       "theme": {
@@ -24,7 +27,7 @@
         "targetFps": 30
       },
       "compatibility": {
-        "hostApi": 1,
+        "hostApi": 3,
         "platforms": [
           "windows"
         ]
@@ -32,8 +35,27 @@
       "integrity": {
         "algorithm": "sha256",
         "scope": "package",
-        "digest": "2fffe53b91b5b0cf4900929fdeeb7c3335ddfe76e1e2beafcec3ffca1277b650"
-      }
+        "digest": "c1bb2714e95f9eda63583b9bb0a3b92e540f4235cc4bfbc41132a72bbb2cc09e"
+      },
+      "params": [
+        {
+          "key": "intensity",
+          "type": "number",
+          "label": "氛围强度",
+          "description": "极光与倒影的明亮程度。",
+          "default": 1,
+          "min": 0.2,
+          "max": 1.4,
+          "step": 0.1
+        },
+        {
+          "key": "interactive",
+          "type": "boolean",
+          "label": "鼠标响应",
+          "description": "关闭后仍保留自动动画；鼠标点击始终穿透桌面。",
+          "default": true
+        }
+      ]
     }
   ]
 }

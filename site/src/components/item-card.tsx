@@ -4,9 +4,9 @@ import type { CSSProperties } from "react";
 import SpotlightCard from "@/components/react-bits/SpotlightCard";
 import { asset, formatBytes, itemHref, kindLabel, type CatalogItem } from "@/lib/catalog";
 
-/** SpotlightCard 的默认表面是纯色深灰；站点要的是「透明 + 自己的淡绿描边」，用 CSS 变量盖掉。 */
+/** SpotlightCard 的默认表面是纯色深灰；站点使用自己的面板色与淡绿描边，用 CSS 变量盖掉。 */
 const SURFACE = {
-  "--spotlight-card-surface": "transparent",
+  "--spotlight-card-surface": "var(--color-panel)",
   "--spotlight-card-border": "var(--color-line)",
   "--spotlight-card-shadow": "none",
 } as CSSProperties;
@@ -22,14 +22,14 @@ export function ItemCard({ item, priority = false }: { item: CatalogItem; priori
     <SpotlightCard
       className="h-full rounded-2xl! p-0!"
       style={SURFACE}
-      spotlightColor="rgba(159, 191, 150, 0.75)"
+      spotlightColor="rgba(178, 205, 166, 0.55)"
       spotlightSize={300}
       intensity={0.18}
       borderGlow={0.75}
       proximity={90}
       softness={0.75}
     >
-      <Link href={itemHref(item)} className="group flex h-full flex-col">
+      <Link href={itemHref(item)} className="group flex h-full flex-col focus-visible:outline-offset-[-4px]">
         <div className="relative aspect-[16/9] overflow-hidden bg-void">
           <img
             src={asset(item.preview)}
@@ -41,7 +41,7 @@ export function ItemCard({ item, priority = false }: { item: CatalogItem; priori
             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
           />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-void/90 via-void/15 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-void/65 via-transparent to-transparent" />
 
           <span className="absolute top-3 right-3 rounded-md bg-void/70 px-2 py-0.5 font-mono text-[10.5px] text-ink-soft ring-1 ring-white/10 backdrop-blur-md">
             {formatBytes(item.downloadBytes)}
@@ -71,9 +71,9 @@ export function ItemCard({ item, priority = false }: { item: CatalogItem; priori
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col gap-1.5 px-3.5 py-3.5">
+        <div className="flex flex-1 flex-col gap-2 px-5 py-5">
           <div className="flex items-baseline justify-between gap-3">
-            <h3 className="truncate text-[25px] font-semibold tracking-tight text-ink transition-colors group-hover:text-white">
+            <h3 className="truncate text-[19px] font-medium tracking-tight text-ink transition-colors group-hover:text-white">
               {item.name}
             </h3>
             <span className="shrink-0 rounded-md bg-primary/[0.1] px-1.5 py-0.5 font-mono text-[10px] text-faint ring-1 ring-white/10 transition-colors group-hover:text-ink-soft group-hover:ring-primary/30">
@@ -81,9 +81,9 @@ export function ItemCard({ item, priority = false }: { item: CatalogItem; priori
             </span>
           </div>
 
-          <p className="line-clamp-2 text-[12px] leading-[1.7] text-muted">{item.description}</p>
+          <p className="line-clamp-2 text-[13px] leading-[1.75] text-muted">{item.description}</p>
 
-          <div className="mt-auto flex items-center gap-2 pt-1 font-mono text-[10px] text-muted/85">
+          <div className="mt-auto flex items-center gap-2 border-t border-line pt-3 font-mono text-[11px] text-muted">
             <span className="truncate">{item.author}</span>
             <span className="ml-auto shrink-0">{item.license}</span>
             <span className="shrink-0 text-line-2" aria-hidden="true">
