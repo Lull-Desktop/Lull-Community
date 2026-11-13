@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "slug": "minimal-clock",
-  "tags": ["时钟", "玻璃", "零权限"],
+  "tags": ["时钟", "复古", "指针", "零权限"],
   "featured": true,
   "addedAt": "2026-10-25",
   "preview": "preview.webp",
@@ -15,6 +15,6 @@
     "networkPolicy": "none",
     "platforms": ["windows"],
     "recommendedUse": ["office"],
-    "supportsReducedMotion": false
+    "supportsReducedMotion": true
   }
 }

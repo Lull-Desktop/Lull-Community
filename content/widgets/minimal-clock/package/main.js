@@ -1,36 +1,23 @@
-/**
- * 极简时钟：不依赖 @lull/widget-sdk，不需要任何宿主能力。
- * 页面对着时间自己走；只在秒数变化时更新文本，避免每秒重排整块布局。
- */
-const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
-
-const timeEl = document.getElementById("time");
-const secondsEl = document.getElementById("seconds");
+/** Local time, updated at the next second boundary without host permissions. */
+const weekdays = ["日", "一", "二", "三", "四", "五", "六"];
+const hourHand = document.getElementById("hour-hand");
+const minuteHand = document.getElementById("minute-hand");
+const secondHand = document.getElementById("second-hand");
 const dateEl = document.getElementById("date");
-
+const timeEl = document.getElementById("time");
 const pad = (value) => String(value).padStart(2, "0");
-
-let lastSecond = -1;
 
 function render() {
   const now = new Date();
-  if (now.getSeconds() === lastSecond) {
-    requestAnimationFrame(render);
-    return;
-  }
-  lastSecond = now.getSeconds();
-
-  timeEl.textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}`;
-  secondsEl.textContent = pad(now.getSeconds());
-  dateEl.textContent =
-    `${now.getFullYear()}年${pad(now.getMonth() + 1)}月${pad(now.getDate())}日 ` +
-    `星期${WEEKDAYS[now.getDay()]}`;
-
-  // 秒数跳变时的轻微闪动，纯装饰
-  secondsEl.classList.add("tick");
-  setTimeout(() => secondsEl.classList.remove("tick"), 180);
-
-  requestAnimationFrame(render);
+  const seconds = now.getSeconds();
+  const minutes = now.getMinutes() + seconds / 60;
+  const hours = (now.getHours() % 12) + minutes / 60;
+  hourHand.style.transform = `rotate(${hours * 30}deg)`;
+  minuteHand.style.transform = `rotate(${minutes * 6}deg)`;
+  secondHand.style.transform = `rotate(${seconds * 6}deg)`;
+  dateEl.textContent = `${now.getMonth() + 1}月${now.getDate()}日 星期${weekdays[now.getDay()]}`;
+  timeEl.dateTime = now.toISOString();
+  timeEl.textContent = `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 星期${weekdays[now.getDay()]} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(seconds)}`;
+  setTimeout(render, 1000 - now.getMilliseconds());
 }
-
 render();

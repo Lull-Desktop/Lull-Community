@@ -1,97 +1,62 @@
-/* 玻璃面板 + 大字时钟。面板半透明，放在浅色或深色桌面上都能看清。 */
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
+/* A small, self-contained enamel alarm clock; dimensions follow the widget viewport. */
+* { box-sizing: border-box; }
 :root {
-  color-scheme: dark;
-  --panel: rgba(10, 16, 22, 0.62);
-  --edge: rgba(150, 220, 205, 0.16);
-  --ink: #eef6f4;
-  --muted: rgba(226, 240, 236, 0.56);
-  --accent: #48d6b2;
+  --case: #111819;
+  --ink: #252b28;
+  --paper: #f0ede2;
+  --accent: #657e6a;
+  --metal: #b5b8ae;
 }
-
-html,
-body {
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  overflow: hidden;
-  font-family: "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
+html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: transparent; }
+body { -webkit-font-smoothing: antialiased; }
+.clock { width: 100%; height: 100%; display: grid; place-items: center; overflow: hidden; }
+.alarm-clock { position: relative; width: min(74vw, 76vh); aspect-ratio: 1 / 1.18; }
+.handle {
+  position: absolute; z-index: 0; left: 28%; top: 1%; width: 44%; height: 24%;
+  border: max(3px, .018em) solid #a7aaa2; border-bottom: 0; border-radius: 48% 48% 0 0;
+  box-shadow: inset 0 2px 2px #f9f9ef, 0 2px 2px #303735;
 }
-
-.clock {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  padding: 24px 28px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  text-align: center;
-  border-radius: 20px;
-  background: var(--panel);
-  border: 1px solid var(--edge);
-  box-shadow:
-    0 24px 60px -28px rgba(0, 0, 0, 0.65),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(18px) saturate(130%);
-  overflow: hidden;
+.bell { position: absolute; z-index: 1; top: 13%; width: 36%; height: 20%;
+  border: 1px solid #080d0d; border-radius: 100% 100% 12% 12%;
+  background: radial-gradient(ellipse at 42% 15%, #6c7772 0, #283230 22%, #101717 58%, #040808 100%);
+  box-shadow: inset 0 2px 2px #a7b0a6, 0 3px 3px #0008;
 }
-
-.glow {
-  position: absolute;
-  top: -40%;
-  left: -10%;
-  width: 80%;
-  height: 120%;
-  background: radial-gradient(closest-side, rgba(72, 214, 178, 0.22), transparent);
-  filter: blur(18px);
-  pointer-events: none;
-}
-
-.time {
-  position: relative;
-  font-size: clamp(56px, 22vw, 96px);
-  line-height: 0.94;
-  font-weight: 240;
-  letter-spacing: -0.03em;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1;
-}
-
-.meta {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 13px;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
-
-#seconds {
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.dot {
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: currentColor;
-  opacity: 0.5;
-}
-
-/* 秒数跳动的呼吸感：只动透明度，不触发重排 */
-#seconds {
-  transition: opacity 180ms ease-out;
-}
-
-#seconds.tick {
-  opacity: 0.45;
-}
+.bell::before { content: ""; position: absolute; width: 12%; height: 15%; left: 44%; top: -12%;
+  border-radius: 50% 50% 25% 25%; background: linear-gradient(90deg, #505954, #e2e3d9 48%, #5d655f); }
+.bell-left { left: 3%; transform: rotate(-24deg); }
+.bell-right { right: 3%; transform: rotate(24deg); }
+.hammer { position: absolute; z-index: 1; width: 12%; height: 4%; top: 18%; left: 44%; border-radius: 30%;
+  background: linear-gradient(#f2f3e8, #727c76 50%, #d1d3c9); box-shadow: 0 2px 3px #0009; }
+.hammer::after { content: ""; position: absolute; top: 90%; left: 41%; width: 18%; height: 190%; background: #9ba39b; }
+.leg { position: absolute; z-index: 0; bottom: 0; width: 7%; height: 17%;
+  background: linear-gradient(90deg, #545b56, #e3e4d9 45%, #777f78); border-radius: 0 0 30% 30%; }
+.leg-left { left: 20%; transform: rotate(30deg); } .leg-right { right: 20%; transform: rotate(-30deg); }
+.case { position: absolute; z-index: 2; left: 2%; top: 23%; width: 96%; aspect-ratio: 1; border-radius: 50%;
+  padding: 6.2%; background: linear-gradient(135deg, #67726c 0%, #121a19 15%, #030808 55%, #3e4a45 83%, #101817 100%);
+  box-shadow: 0 5px 8px #0008, inset 0 2px 2px #ffffff80, inset 0 -3px 3px #000; }
+.dial { position: relative; width: 100%; height: 100%; border-radius: 50%; overflow: hidden;
+  color: var(--ink); border: 2px solid #8e978b;
+  background: radial-gradient(circle at 42% 35%, #fffef7 0%, var(--paper) 69%, #d1d1c3 100%);
+  box-shadow: 0 0 0 3px #313b35, inset 0 0 0 2px #f9f8ed, inset 0 0 10px #555a4c88; }
+.minute-track, .hour-track { position: absolute; inset: 4%; border-radius: 50%; }
+.minute-track { border: 1px solid #50564c; background: repeating-conic-gradient(from -0.5deg, #555b50 0deg 0.65deg, transparent 0.65deg 6deg);
+  -webkit-mask: radial-gradient(circle closest-side, transparent 89%, #000 90%); mask: radial-gradient(circle closest-side, transparent 89%, #000 90%); }
+.hour-track { inset: 7%; border: 1px solid #9a9d8f; }
+.numbers { position: absolute; inset: 9%; }
+.numbers span { position: absolute; inset: 0; text-align: center; transform: rotate(calc(var(--n) * 30deg)); }
+.numbers b { display: inline-block; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(13px, 7.2vh, 32px);
+  line-height: 1.05; font-weight: 400; transform: rotate(calc(var(--n) * -30deg)); }
+.dial-label { position: absolute; top: 36%; width: 100%; text-align: center; font: 600 clamp(5px, 1.5vh, 7px)/1 sans-serif;
+  letter-spacing: .22em; color: #7b8274; } .dial-label span { color: var(--accent); }
+.dial-date { position: absolute; top: 67%; width: 100%; text-align: center; color: #757c70;
+  font: 500 clamp(6px, 1.7vh, 8px)/1.2 'Segoe UI', 'Microsoft YaHei', sans-serif; letter-spacing: .05em; }
+.hand { position: absolute; z-index: 3; left: 50%; top: 50%; transform-origin: 50% 85%; border-radius: 100% 100% 15% 15%; }
+.hour-hand { width: 3.4%; height: 28%; margin-left: -1.7%; margin-top: -23.8%; background: #1d2420;
+  clip-path: polygon(50% 0, 100% 72%, 72% 100%, 28% 100%, 0 72%); }
+.minute-hand { width: 2.6%; height: 38%; margin-left: -1.3%; margin-top: -32.3%; background: #1d2420;
+  clip-path: polygon(50% 0, 100% 78%, 70% 100%, 30% 100%, 0 78%); }
+.second-hand { width: .8%; height: 43%; margin-left: -.4%; margin-top: -36.55%; background: #778b70; }
+.pin { position: absolute; z-index: 4; top: 50%; left: 50%; width: 6%; aspect-ratio: 1; border-radius: 50%;
+  transform: translate(-50%, -50%); background: radial-gradient(circle at 35% 30%, #a9b0a2, #26302b 48%, #101714 75%);
+  box-shadow: 0 1px 2px #0008; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }

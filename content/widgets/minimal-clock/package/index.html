@@ -7,14 +7,36 @@
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
-    <main class="clock">
-      <div class="glow" aria-hidden="true"></div>
-      <p class="time" id="time">--:--</p>
-      <p class="meta">
-        <span id="seconds">--</span>
-        <span class="dot" aria-hidden="true"></span>
-        <span id="date">----年--月--日 星期-</span>
-      </p>
+    <main class="clock" aria-label="传统指针时钟">
+      <div class="alarm-clock" aria-hidden="true">
+        <div class="handle"></div>
+        <div class="bell bell-left"></div>
+        <div class="bell bell-right"></div>
+        <div class="hammer"></div>
+        <div class="leg leg-left"></div>
+        <div class="leg leg-right"></div>
+        <div class="case">
+          <div class="dial">
+            <div class="minute-track"></div>
+            <div class="hour-track"></div>
+            <div class="numbers">
+              <span style="--n: 1"><b>1</b></span><span style="--n: 2"><b>2</b></span>
+              <span style="--n: 3"><b>3</b></span><span style="--n: 4"><b>4</b></span>
+              <span style="--n: 5"><b>5</b></span><span style="--n: 6"><b>6</b></span>
+              <span style="--n: 7"><b>7</b></span><span style="--n: 8"><b>8</b></span>
+              <span style="--n: 9"><b>9</b></span><span style="--n: 10"><b>10</b></span>
+              <span style="--n: 11"><b>11</b></span><span style="--n: 12"><b>12</b></span>
+            </div>
+            <div class="dial-label">LULL <span>•</span> CLOCK</div>
+            <div class="dial-date" id="date"></div>
+            <div class="hand hour-hand" id="hour-hand"></div>
+            <div class="hand minute-hand" id="minute-hand"></div>
+            <div class="hand second-hand" id="second-hand"></div>
+            <div class="pin"></div>
+          </div>
+        </div>
+      </div>
+      <time class="sr-only" id="time"></time>
     </main>
     <script src="./main.js" type="module"></script>
   </body>
